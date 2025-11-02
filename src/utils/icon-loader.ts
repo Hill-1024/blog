@@ -9,8 +9,8 @@ interface IconifyLoadOptions {
 
 class IconLoader {
 	private static instance: IconLoader;
-	private isLoaded = false;
-	private isLoading = false;
+	private isLoaded = true;
+	private isLoading = true;
 	private loadPromise: Promise<void> | null = null;
 	private observers: Set<() => void> = new Set();
 
