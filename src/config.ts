@@ -50,11 +50,11 @@ export const siteConfig: SiteConfig = {
 	},
 
 	bangumi: {
-		userId: "sai", // 在此处设置你的Bangumi用户ID，可以设置为 "sai" 测试
+		userId: "1174942", // 在此处设置你的Bangumi用户ID，可以设置为 "sai" 测试
 	},
 
 	anime: {
-		mode: "local", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置
+		mode: "bangumi", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置
 	},
 
 	// 文章列表布局配置
@@ -77,14 +77,12 @@ export const siteConfig: SiteConfig = {
 		// 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
 		src: {
 			desktop: [
-				"/assets/desktop-banner/d1.webp",
-				"/assets/desktop-banner/d2.webp",
-				"/assets/desktop-banner/d3.webp",
-				"/assets/desktop-banner/d4.webp",
-				"/assets/desktop-banner/d5.webp",
-				"/assets/desktop-banner/d6.webp",
-				"/assets/desktop-banner/d7.webp",
-				"/assets/desktop-banner/d8.webp",
+				"/assets/desktop-banner/d1.png",
+				"/assets/desktop-banner/d2.jpg",
+				"/assets/desktop-banner/d3.jpg",
+				"/assets/desktop-banner/d4.jpg",
+				"/assets/desktop-banner/d5.jpg",
+				"/assets/desktop-banner/d6.jpg",
 			], // 桌面横幅图片
 			mobile: [
 				"/assets/mobile-banner/m1.webp",
@@ -255,7 +253,7 @@ export const navBarConfig: NavBarConfig = {
 			icon: "material-symbols:person",
 			children: [
 				LinkPreset.Anime,
-				LinkPreset.Diary,
+				//LinkPreset.Diary,
 				{
 					name: "Gallery",
 					url: "/albums/",
