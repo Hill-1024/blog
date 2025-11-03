@@ -33,7 +33,7 @@ export const siteConfig: SiteConfig = {
 	// 特色页面开关配置(关闭不在使用的页面有助于提升SEO,关闭后直接在顶部导航删除对应的页面就行)
 	featurePages: {
 		anime: true, // 番剧页面开关
-		diary: false, // 日记页面开关
+		diary: true, // 日记页面开关
 		friends: true, // 友链页面开关
 		projects: true, // 项目页面开关
 		skills: true, // 技能页面开关
@@ -95,7 +95,7 @@ export const siteConfig: SiteConfig = {
 				"/assets/mobile-banner/m8.webp",
                 "/assets/mobile-banner/m9.webp",
                 "/assets/mobile-banner/m10.webp",
-                "/assets/mobile-banner/m11.webp"
+                "/assets/mobile-banner/m11.webp",
 			], // 移动横幅图片
 		}, // 使用本地横幅图片
 
@@ -104,7 +104,7 @@ export const siteConfig: SiteConfig = {
 		carousel: {
 			enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
 
-			interval: 1.5, // 轮播间隔时间（秒）
+			interval: 3, // 轮播间隔时间（秒）
 		},
 
 		waves: {
@@ -186,30 +186,32 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	enable: true, // 启用全屏壁纸功能,非Banner模式下生效
 	src: {
 		desktop: [
-			"/assets/desktop-banner/d1.webp",
-			"/assets/desktop-banner/d2.webp",
-			"/assets/desktop-banner/d3.webp",
-			"/assets/desktop-banner/d4.webp",
-			"/assets/desktop-banner/d5.webp",
-			"/assets/desktop-banner/d6.webp",
-			"/assets/desktop-banner/d7.webp",
-			"/assets/desktop-banner/d8.webp",
+            "/assets/desktop-banner/d1.png",
+            "/assets/desktop-banner/d2.jpg",
+            "/assets/desktop-banner/d3.jpg",
+            "/assets/desktop-banner/d4.jpg",
+            "/assets/desktop-banner/d5.jpg",
+            "/assets/desktop-banner/d6.jpg",
+
 		], // 桌面横幅图片
 		mobile: [
-			"/assets/mobile-banner/m1.webp",
-			"/assets/mobile-banner/m2.webp",
-			"/assets/mobile-banner/m3.webp",
-			"/assets/mobile-banner/m4.webp",
-			"/assets/mobile-banner/m5.webp",
-			"/assets/mobile-banner/m6.webp",
-			"/assets/mobile-banner/m7.webp",
-			"/assets/mobile-banner/m8.webp",
+            "/assets/mobile-banner/m1.webp",
+            "/assets/mobile-banner/m2.webp",
+            "/assets/mobile-banner/m3.webp",
+            "/assets/mobile-banner/m4.webp",
+            "/assets/mobile-banner/m5.webp",
+            "/assets/mobile-banner/m6.webp",
+            "/assets/mobile-banner/m7.webp",
+            "/assets/mobile-banner/m8.webp",
+            "/assets/mobile-banner/m9.webp",
+            "/assets/mobile-banner/m10.webp",
+            "/assets/mobile-banner/m11.webp",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
 	carousel: {
 		enable: true, // 启用轮播
-		interval: 1, // 轮播间隔时间（秒）
+		interval: 3, // 轮播间隔时间（秒）
 	},
 	zIndex: -1, // 层级，确保壁纸在背景层
 	opacity: 0.8, // 壁纸透明度
@@ -253,7 +255,7 @@ export const navBarConfig: NavBarConfig = {
 			icon: "material-symbols:person",
 			children: [
 				LinkPreset.Anime,
-				//LinkPreset.Diary,
+				LinkPreset.Diary,
 				{
 					name: "Gallery",
 					url: "/albums/",
