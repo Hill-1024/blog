@@ -47,4 +47,5 @@ export const iconMap = {
 
     // 添加新图标
     //'自定义名称': 'icon-library:icon-name'
+
 };
