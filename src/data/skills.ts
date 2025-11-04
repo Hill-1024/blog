@@ -77,7 +77,17 @@ export const skillsData: Skill[] = [
 		projects: [],
 		color: "#7F52FF",
 	},
-
+    {
+        id: "rust",
+        name: "Rust",
+        description: "",
+        icon: "logos:rust",
+        category: "backend",
+        level: "beginner",
+        experience: { years: 0, months: 2 },
+        projects: [],
+        color: "#FF5D01",
+    },
 
 	// Database Skills
 
