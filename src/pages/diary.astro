@@ -28,7 +28,7 @@ const moments = [
     {
         id: 2,
         content: "归家,然后去找高中动漫社小登",
-        date: "2025-11-07T15:25:00Z",
+        date: "2025-11-07T17:07:00Z",//15.25
         images: ["https://i0.hdslb.com/bfs/new_dyn/b889e1b030342792f13856de1c371bff186510120.jpg@1192w.avif"],
     },
 ];
@@ -38,8 +38,9 @@ function formatTime(dateString: string): string {
 	const now = new Date();
 	const date = new Date(dateString);
 	const diffInMinutes = Math.floor(
-		(now.getTime() - date.getTime()) / (1000.0 * 60),
+		(now.getTime()-now.getTimezoneOffset()*60*1000 - date.getTime()) / (1000 * 60),
 	);
+
 	if (diffInMinutes < 60) {
 		return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
 	}
