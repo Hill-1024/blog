@@ -244,9 +244,15 @@ export const navBarConfig: NavBarConfig = {
                     name: "洛谷",
                     url: "https://www.luogu.com.cn/user/816033",
                     external: true,
-                    icon: "",
+                    icon: "simple-icons:luogu",
 
-                }
+                },
+                {
+                    name: "CodeForces",
+                    url: "https://codeforces.com/profile/Hill-Q",
+                    external: true,
+                    icon: "simple-icons:codeforces",
+                },
 			],
 		},
 		{
@@ -314,6 +320,16 @@ export const profileConfig: ProfileConfig = {
 			icon: "fa6-brands:github",
 			url: "https://github.com/hill-1024",
 		},
+        {
+            name: "洛谷",
+            icon: "simple-icons:luogu",
+            url: "https://www.luogu.com.cn/user/816033",
+        },
+        {
+            name: "CodeForces",
+            icon: "simple-icons:codeforces",
+            url: "https://codeforces.com/profile/Hill-Q",
+        },
 	],
 };
 
