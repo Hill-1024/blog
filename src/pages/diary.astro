@@ -25,6 +25,12 @@ const moments = [
         date: "2025-10-13T17:55:26Z",
         images: ["/images/diary/boring.webp"],
     },
+    {
+        id: 2,
+        content: "归家,然后去找高中动漫社小登",
+        date: "2025-11-07T15:25:00Z",
+        images: ["https://i0.hdslb.com/bfs/new_dyn/b889e1b030342792f13856de1c371bff186510120.jpg@1192w.avif"],
+    },
 ];
 
 // 时间格式化函数
@@ -32,19 +38,20 @@ function formatTime(dateString: string): string {
 	const now = new Date();
 	const date = new Date(dateString);
 	const diffInMinutes = Math.floor(
-		(now.getTime() - date.getTime()) / (1000 * 60),
+		(now.getTime() - date.getTime()) / (1000.0 * 60),
 	);
-
 	if (diffInMinutes < 60) {
 		return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
 	}
-	if (diffInMinutes < 1440) {
+    if (diffInMinutes < 1440) {
 		// 24小时
 		const hours = Math.floor(diffInMinutes / 60);
 		return `${hours}${i18n(I18nKey.diaryHoursAgo)}`;
 	}
-	const days = Math.floor(diffInMinutes / 1440);
-	return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
+        const days = Math.floor(diffInMinutes / 1440);
+        return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
+
+
 }
 ---
 
