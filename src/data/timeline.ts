@@ -26,7 +26,7 @@ export interface TimelineItem {
 export const timelineData: TimelineItem[] = [
 	{
 		id: "current-study",
-		title: "College Life",
+		title: "Get into the College",
 		description:
 			"",
 		type: "education",
