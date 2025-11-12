@@ -6,6 +6,7 @@ category: 教程
 draft: false
 ---
 
+
 # **前言**
 本来笔者在愉悦地使用hy2，然后发现总是连接不稳定\
 在我们的[小正太Rkk](https://blog.rkk.moe/)的建议下，笔者换用了Trojan来继续搭建我们的妙妙小工具
