@@ -19,7 +19,7 @@ export const devicesData: DeviceCategory = {
     OnePlus: [
         {
             name: "OnePlus 12",
-            image: "/images/device/oneplus12.jpg",
+            image: "http://img03.product.imobile.com.cn/product/2023/12/11506/657a7778a47e4_200x150.png",
             specs: "Snapdragon 8gen3 Black / 16GB + 512GB",
             description: "Never Settle",
             link: "https://www.oneplus.com/cn/12",
