@@ -7,6 +7,7 @@ pinned: false
 password: "123456"
 tags: ["测试", "加密"]
 category: "技术"
+draft: true
 ---
 
 此博客模板基于 https://astro.build/ 构建。对于本指南中未提及的内容，您可以在 https://docs.astro.build/ 中找到答案。
