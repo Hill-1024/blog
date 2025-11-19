@@ -42,9 +42,13 @@ function formatTime(dateString: string): string {
 ---
 
 <MainGridLayout title={i18n(I18nKey.diary)} description="即刻短文">
+	<!-- 引入右侧边栏布局管理器 -->
+  <script>
+    import('/src/scripts/right-sidebar-layout.js');
+  </script>
 	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
 		<div class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full">
-			<div class="relative max-w-4xl">
+		<div class="relative max-w-4xl w-full px-2 md:px-0">
 				<!-- 页面头部 -->
 				<div class="moments-header mb-6">
 					<div class="header-content">
@@ -73,9 +77,9 @@ function formatTime(dateString: string): string {
 				<div class="moment-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
 					{moment.images.map((image, index) => (
 					<div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform">
-						<img
-							src={image}
-							alt={i18n(I18nKey.diaryImage)}
+						<img 
+							src={image} 
+								alt="diary moment image"
 							class="w-full h-full object-cover"
 							loading="lazy"
 						/>
@@ -250,10 +254,6 @@ function formatTime(dateString: string): string {
 	
 	/* 优化小屏幕显示 */
 	@media (max-width: 480px) {
-		.card-base {
-			margin: 0 -0.5rem;
-		}
-		
 		.moment-item {
 			border-radius: 8px;
 		}

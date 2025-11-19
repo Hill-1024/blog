@@ -1,18 +1,29 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { getPostUrlBySlug } from "@utils/url-utils";
+import { getPostUrl } from "@utils/url-utils";
+import { sidebarLayoutConfig, siteConfig } from "../config";
 import PostCard from "./PostCard.astro";
-import { siteConfig } from "../config";
 
 const { page } = Astro.props;
 
 let delay = 0;
 const interval = 50;
+
+// 检查是否启用双侧边栏
+const isBothSidebars = sidebarLayoutConfig.position === "both";
+
+// 根据配置设置初始布局模式，避免闪烁
+const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
+const initialLayoutClass =
+	defaultLayout === "grid"
+		? "grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 grid-mode"
+		: "flex flex-col gap-2 md:gap-4 list-mode";
 ---
 <div 
   id="post-list-container"
-  class="transition-all duration-500 ease-in-out flex flex-col rounded-[var(--radius-large)] bg-[var(--card-bg)] py-0 md:py-0 md:bg-transparent gap-2 md:gap-4 mb-4 list-mode md:list-mode"
-  data-default-layout={siteConfig.postListLayout.defaultMode}
+  class={`transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] py-0 md:py-0 md:bg-transparent mb-4 ${initialLayoutClass}`}
+  data-default-layout={defaultLayout}
+  data-both-sidebars={isBothSidebars}
 >
     {page.data.map((entry: CollectionEntry<"posts">) => (
         <PostCard
@@ -22,7 +33,7 @@ const interval = 50;
                 category={entry.data.category}
                 published={entry.data.published}
                 updated={entry.data.updated}
-                url={getPostUrlBySlug(entry.slug)}
+                url={getPostUrl(entry)}
                 image={entry.data.image}
                 description={entry.data.description}
                 draft={entry.data.draft}
@@ -46,12 +57,27 @@ const interval = 50;
         return;
       }
 
+      // 检查是否启用双侧边栏
+      const isBothSidebars = postListContainer.getAttribute("data-both-sidebars") === "true";
+
       // 从localStorage读取用户偏好
       const savedLayout = localStorage.getItem("postListLayout");
       const defaultLayout = postListContainer.getAttribute("data-default-layout") || "list";
-      const currentLayout = savedLayout || defaultLayout;
+      let currentLayout = savedLayout || defaultLayout;
 
-      console.debug("Initializing layout:", { savedLayout, defaultLayout, currentLayout });
+      console.debug("Initializing layout:", { savedLayout, defaultLayout, currentLayout, isBothSidebars });
+      
+      // 检查main-grid是否已经设置了正确的layout-mode，避免重复操作导致闪烁
+      const mainGrid = document.getElementById('main-grid');
+      if (mainGrid) {
+        const existingMode = mainGrid.getAttribute('data-layout-mode');
+        if (existingMode === currentLayout) {
+          console.debug("Layout already correct, skipping update to avoid flicker");
+          postListContainer.classList.add("js-initialized");
+          publishLayoutInit();
+          return;
+        }
+      }
 
       // 移动端由CSS处理，桌面端才需要JavaScript初始化
       const isDesktop = window.innerWidth >= 769;
@@ -83,11 +109,35 @@ const interval = 50;
       // 网格模式：双列布局
       postListContainer.classList.add("grid", "grid-cols-1", "md:grid-cols-2", "gap-6");
       postListContainer.classList.remove("flex", "flex-col");
+      
+      // 在 grid 模式下隐藏右侧边栏
+      const rightSidebar = document.querySelector('.right-sidebar-container');
+      if (rightSidebar) {
+        (rightSidebar as HTMLElement).classList.add('hidden-in-grid-mode');
+      }
+      
+      // 调整主网格布局以使用更多空间
+      const mainGrid = document.getElementById('main-grid');
+      if (mainGrid) {
+        mainGrid.setAttribute('data-layout-mode', 'grid');
+      }
     } else {
       postListContainer.classList.add("list-mode");
       // 列表模式：单列布局
       postListContainer.classList.add("flex", "flex-col");
       postListContainer.classList.remove("grid", "grid-cols-1", "md:grid-cols-2", "gap-6");
+      
+      // 在 list 模式下显示右侧边栏
+      const rightSidebar = document.querySelector('.right-sidebar-container');
+      if (rightSidebar) {
+        (rightSidebar as HTMLElement).classList.remove('hidden-in-grid-mode');
+      }
+      
+      // 恢复主网格布局
+      const mainGrid = document.getElementById('main-grid');
+      if (mainGrid) {
+        mainGrid.setAttribute('data-layout-mode', 'list');
+      }
     }
     
     // 添加初始化完成标记，用于移除闪烁保护
@@ -101,6 +151,10 @@ const interval = 50;
 
   // 监听布局变化事件
   window.addEventListener("layoutChange", (event: any) => {
+    const postListContainer = document.getElementById("post-list-container");
+    if (!postListContainer) return;
+
+    // 直接应用用户选择的布局
     updatePostListLayout(event.detail.layout);
   });
 

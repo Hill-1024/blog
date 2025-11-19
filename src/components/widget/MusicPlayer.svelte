@@ -15,10 +15,10 @@ import { i18n } from "../../i18n/translation";
 let mode = musicPlayerConfig.mode ?? "meting";
 // Meting API 地址，从配置中获取或使用默认地址(bilibili.uno(由哔哩哔哩松坂有希公益管理)),服务器在海外,部分音乐平台可能不支持并且速度可能慢,也可以自建Meting API
 let meting_api =
-    musicPlayerConfig.meting_api ??
-    "https://api.qijieya.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r";
+	musicPlayerConfig.meting_api ??
+	"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
 // Meting API 的 ID，从配置中获取或使用默认值
-let meting_id = musicPlayerConfig.id ?? "17404271289";
+let meting_id = musicPlayerConfig.id ?? "14164869977";
 // Meting API 的服务器，从配置中获取或使用默认值,有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
 let meting_server = musicPlayerConfig.server ?? "netease";
 // Meting API 的类型，从配置中获取或使用默认值
@@ -44,7 +44,7 @@ let isLoading = false;
 // 是否随机播放，默认为 false
 let isShuffled = false;
 // 循环模式，0: 不循环, 1: 单曲循环, 2: 列表循环，默认为 0
-let isRepeating = 2;
+let isRepeating = 0;
 // 错误信息，默认为空字符串
 let errorMessage = "";
 // 是否显示错误信息，默认为 false
@@ -59,7 +59,16 @@ let currentSong = {
 	duration: 0,
 };
 
-let playlist = [];
+type Song = {
+	id: number;
+	title: string;
+	artist: string;
+	cover: string;
+	url: string;
+	duration: number;
+};
+
+let playlist: Song[] = [];
 let currentIndex = 0;
 let audio: HTMLAudioElement;
 let progressBar: HTMLElement;
@@ -247,7 +256,7 @@ function handleLoadSuccess() {
 	}
 }
 
-function handleLoadError(event: Event) {
+function handleLoadError(_event: Event) {
 	isLoading = false;
 	showErrorMessage(`无法播放 "${currentSong.title}"，正在尝试下一首...`);
 	if (playlist.length > 1) setTimeout(() => nextSong(), 1000);
@@ -326,7 +335,7 @@ function handleAudioEvents() {
 			isPlaying = false;
 		}
 	});
-	audio.addEventListener("error", (event) => {
+	audio.addEventListener("error", (_event) => {
 		isLoading = false;
 	});
 	audio.addEventListener("stalled", () => {});
@@ -408,19 +417,20 @@ onDestroy(() => {
     <div class="mini-player card-base bg-[var(--float-panel-bg)] shadow-xl rounded-2xl p-3 transition-all duration-500 ease-in-out"
          class:opacity-0={isExpanded || isHidden}
          class:scale-95={isExpanded || isHidden}
-         class:pointer-events-none={isExpanded || isHidden}
-         on:click={toggleExpanded}
-         on:keydown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleExpanded();
-            }
-         }}
-         role="button"
-         tabindex="0"
-         aria-label="展开音乐播放器">
-        <div class="flex items-center gap-3 cursor-pointer">
-            <div class="cover-container relative w-12 h-12 rounded-full overflow-hidden">
+         class:pointer-events-none={isExpanded || isHidden}>
+        <div class="flex items-center gap-3">
+            <!-- 封面区域：点击控制播放/暂停 -->
+            <div class="cover-container relative w-12 h-12 rounded-full overflow-hidden cursor-pointer"
+                 on:click={togglePlay}
+                 on:keydown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        togglePlay();
+                    }
+                 }}
+                 role="button"
+                 tabindex="0"
+                 aria-label={isPlaying ? '暂停' : '播放'}>
                 <img src={getAssetPath(currentSong.cover)} alt="封面"
                      class="w-full h-full object-cover transition-transform duration-300"
                      class:spinning={isPlaying && !isLoading}
@@ -435,7 +445,18 @@ onDestroy(() => {
                     {/if}
                 </div>
             </div>
-            <div class="flex-1 min-w-0">
+            <!-- 歌曲信息区域：点击展开播放器 -->
+            <div class="flex-1 min-w-0 cursor-pointer"
+                 on:click={toggleExpanded}
+                 on:keydown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleExpanded();
+                    }
+                 }}
+                 role="button"
+                 tabindex="0"
+                 aria-label="展开音乐播放器">
                 <div class="text-sm font-medium text-90 truncate">{currentSong.title}</div>
                 <div class="text-xs text-50 truncate">{currentSong.artist}</div>
             </div>

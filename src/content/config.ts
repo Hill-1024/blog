@@ -21,9 +21,11 @@ const postsCollection = defineCollection({
 		encrypted: z.boolean().optional().default(false),
 		password: z.string().optional().default(""),
 
-		
 
-		/* For internal use */
+        /* Custom permalink */
+        permalink: z.string().optional(),
+
+        /* For internal use */
 		prevTitle: z.string().default(""),
 		prevSlug: z.string().default(""),
 		nextTitle: z.string().default(""),

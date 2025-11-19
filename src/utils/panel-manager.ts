@@ -10,53 +10,77 @@ class PanelManager {
     private panelStack: PanelId[] = [];
     private readonly duration = 100;
 
-    /**
-     * 应用动画打开浮窗
-     */
-    private animateIn(panel: HTMLElement): Promise<void> {
-        return new Promise((resolve) => {
-            panel.classList.remove('float-panel-closed');
-            panel.style.opacity = '0';
-            panel.style.transform = 'scale(0.95) translateY(-10px)';
-            panel.style.pointerEvents = 'none';
-            
-            panel.offsetHeight; // 强制重排
-            
-            panel.style.transition = `all ${this.duration}ms ease-out`;
-            
-            requestAnimationFrame(() => {
-                panel.style.opacity = '1';
-                panel.style.transform = 'scale(1) translateY(0)';
-                panel.style.pointerEvents = 'auto';
-                
-                setTimeout(() => {
-                    panel.style.transition = '';
-                    resolve();
-                }, this.duration);
-            });
-        });
-    }
+	/**
+	 * 应用动画打开浮窗
+	 */
+	private animateIn(panel: HTMLElement): Promise<void> {
+		return new Promise((resolve) => {
+			// 检查是否正在主题切换，如果是则跳过动画
+			const isThemeTransitioning = document.documentElement.classList.contains('is-theme-transitioning');
+			
+			if (isThemeTransitioning) {
+				// 主题切换期间，直接显示面板，不设置pointer-events: none
+				panel.classList.remove('float-panel-closed');
+				panel.style.opacity = '1';
+				panel.style.transform = 'scale(1) translateY(0)';
+				resolve();
+				return;
+			}
+			
+			panel.classList.remove('float-panel-closed');
+			panel.style.opacity = '0';
+			panel.style.transform = 'scale(0.95) translateY(-10px)';
+			panel.style.pointerEvents = 'none';
+			
+			panel.offsetHeight; // 强制重排
+			
+			panel.style.transition = `all ${this.duration}ms ease-out`;
+			
+			requestAnimationFrame(() => {
+				panel.style.opacity = '1';
+				panel.style.transform = 'scale(1) translateY(0)';
+				panel.style.pointerEvents = 'auto';
+				
+				setTimeout(() => {
+					panel.style.transition = '';
+					resolve();
+				}, this.duration);
+			});
+		});
+	}
 
-    /**
-     * 应用动画关闭浮窗
-     */
-    private animateOut(panel: HTMLElement): Promise<void> {
-        return new Promise((resolve) => {
-            panel.style.transition = `all ${this.duration}ms ease-out`;
-            panel.style.pointerEvents = 'none';
-            panel.style.opacity = '0';
-            panel.style.transform = 'scale(0.95) translateY(-10px)';
-            
-            setTimeout(() => {
-                panel.classList.add('float-panel-closed');
-                panel.style.transition = '';
-                panel.style.opacity = '';
-                panel.style.transform = '';
-                panel.style.pointerEvents = '';
-                resolve();
-            }, this.duration);
-        });
-    }
+	/**
+	 * 应用动画关闭浮窗
+	 */
+	private animateOut(panel: HTMLElement): Promise<void> {
+		return new Promise((resolve) => {
+			// 检查是否正在主题切换
+			const isThemeTransitioning = document.documentElement.classList.contains('is-theme-transitioning');
+			
+			if (isThemeTransitioning) {
+				// 主题切换期间，直接关闭面板，不设置pointer-events: none
+				panel.classList.add('float-panel-closed');
+				panel.style.opacity = '';
+				panel.style.transform = '';
+				resolve();
+				return;
+			}
+			
+			panel.style.transition = `all ${this.duration}ms ease-out`;
+			panel.style.pointerEvents = 'none';
+			panel.style.opacity = '0';
+			panel.style.transform = 'scale(0.95) translateY(-10px)';
+			
+			setTimeout(() => {
+				panel.classList.add('float-panel-closed');
+				panel.style.transition = '';
+				panel.style.opacity = '';
+				panel.style.transform = '';
+				panel.style.pointerEvents = '';
+				resolve();
+			}, this.duration);
+		});
+	}
 
     /**
      * 切换指定浮窗的开关状态

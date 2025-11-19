@@ -27,7 +27,9 @@ const diaryData: DiaryItem[] = [
         images: ["https://i0.hdslb.com/bfs/new_dyn/b889e1b030342792f13856de1c371bff186510120.jpg@1192w.avif"],
     },
 ];
+/*
 
+ */
 // 获取日记统计数据
 export const getDiaryStats = () => {
 	const total = diaryData.length;

@@ -19,10 +19,10 @@
 
 
 
-/* 导入 Hanalei 字体 */
+/* 导入 萝莉体 第二版 字体 */
 @font-face {
-	font-family: "Hanalei";
-	src: url("/assets/font/Hanalei.woff2") format("woff2");
+	font-family: "萝莉体 第二版";
+	src: url("/assets/font/萝莉体 第二版.woff2") format("woff2");
 	font-style: normal;
 	font-weight: 400;
 	font-display: swap;
@@ -133,6 +133,20 @@ html {
         will-change: auto !important;
     }
     
+    /* 主题切换时临时隐藏代码块以提升性能 */
+    /* 这个行为可以通过配置文件中的 expressiveCodeConfig.hideDuringThemeTransition 控制 */
+    .is-theme-transitioning .expressive-code {
+        content-visibility: hidden !important;
+        /* 避免闪烁 */
+        opacity: 0.99;
+    }
+    
+    /* 当禁用隐藏代码块功能时（通过JavaScript动态控制） */
+    .is-theme-transitioning .expressive-code:not(.hide-during-transition) {
+        /* 保持代码块可见，但禁用过渡效果 */
+        content-visibility: visible !important;
+        opacity: 1 !important;
+    }    
     /* 禁用复杂选择器元素的过渡 - 仅在非 View Transitions 模式下 */
     .is-theme-transitioning:not(.use-view-transition) .float-panel,
     .is-theme-transitioning:not(.use-view-transition) .float-panel *,

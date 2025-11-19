@@ -50,39 +50,39 @@ function exec(command, options = {}) {
   try {
     return execSync(command, { stdio: 'inherit', ...options });
   } catch (error) {
-    console.error(`❌ Command execution failed: ${command}`);
+    console.error(`Command execution failed: ${command}`);
     throw error;
   }
 }
 
 async function main() {
-  console.log('🌸 Welcome to Mizuki Content Repository Initialization Wizard!\n');
+  console.log('Mizuki Content Repository Initialization\n');
   
   console.log('Using independent repository mode to manage content\n');
   
   // 询问内容仓库 URL
-  const repoUrl = await question('Please enter content repository URL (e.g., https://github.com/username/Mizuki-Content.git): ');
+  const repoUrl = await question('Content repository URL: ');
   
   if (!repoUrl.trim()) {
-    console.error('❌ Content repository URL cannot be empty!');
+    console.error('Error: Content repository URL cannot be empty!');
     rl.close();
     return;
   }
   
   // 确认信息
-  console.log('\n📋 Configuration:');
-  console.log(`   Mode: Independent Repository`);
-  console.log(`   Repository: ${repoUrl.trim()}`);
+  console.log('\nConfiguration:');
+  console.log(`  Mode: Independent Repository`);
+  console.log(`  Repository: ${repoUrl.trim()}`);
   
-  const confirm = await question('\nConfirm to start initialization? (y/n): ');
+  const confirm = await question('\nConfirm initialization? (y/n): ');
   
   if (confirm.toLowerCase() !== 'y') {
-    console.log('❌ Initialization cancelled');
+    console.log('Initialization cancelled');
     rl.close();
     return;
   }
   
-  console.log('\n🚀 Starting initialization...\n');
+  console.log('\nStarting initialization...\n');
   
   // 创建 .env 文件
   const envPath = path.join(rootDir, '.env');
@@ -100,10 +100,10 @@ BCRYPT_SALT_ROUNDS=12
 `;
   
   fs.writeFileSync(envPath, envContent);
-  console.log('✅ Created .env file');
+  console.log('Created .env file');
   
   // 同步内容
-  console.log('\n📥 Synchronizing content repository...');
+  console.log('Synchronizing content repository...');
   try {
     exec('pnpm run sync-content', { 
       cwd: rootDir,
@@ -112,26 +112,22 @@ BCRYPT_SALT_ROUNDS=12
         CONTENT_REPO_URL: repoUrl.trim()
       }
     });
-    console.log('✅ Content synchronized successfully!');
+    console.log('Content synchronized successfully');
   } catch (error) {
-    console.error('❌ Content synchronization failed. Please check configuration and run manually: pnpm run sync-content');
+    console.error('Content synchronization failed. Run manually: pnpm run sync-content');
   }
   
   // 提示后续步骤
-  console.log('\n🎉 Initialization completed!\n');
-  console.log('📝 Next steps:');
-  console.log('1. Check content/ directory to confirm content has been synchronized');
-  console.log('2. Run pnpm dev to start development server');
-  console.log('3. Visit http://localhost:4321 to view your blog');
-  console.log('\n📚 More information:');
-  console.log('- Content repository structure: docs/CONTENT_REPOSITORY.md');
+  console.log('\nInitialization completed\n');
+  console.log('\nDocumentation:');
+  console.log('- Content repository: docs/CONTENT_REPOSITORY.md');
   console.log('- Migration guide: docs/MIGRATION_GUIDE.md');
   
   rl.close();
 }
 
 main().catch(error => {
-  console.error('❌ Initialization failed:', error);
+  console.error('Initialization failed:', error);
   rl.close();
   process.exit(1);
 });
