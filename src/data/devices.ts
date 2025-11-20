@@ -19,7 +19,7 @@ export const devicesData: DeviceCategory = {
     OnePlus: [
         {
             name: "OnePlus 12",
-            image: "/images/diary/oneplus12.jpg",
+            image: "/images/device/oneplus12.jpg",
             specs: "Snapdragon 8gen3 Black / 16GB + 512GB",
             description: "Never Settle",
             link: "https://www.oneplus.com/cn/12",
