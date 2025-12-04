@@ -530,7 +530,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
             // 组件类型：站点统计组件
             type: "site-stats",
             // 是否启用该组件
-            enable: false,
+            enable: true,
             // 组件显示顺序
             order: 5,
             // 组件位置
