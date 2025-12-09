@@ -39,7 +39,7 @@ const diaryData: DiaryItem[] = [
         images: ["/images/diary/sakura.jpg"],
     },
     {
-        id: 4,
+        id: 5,
         content: "感慨,kotlin太好用了😭,以前写cpp过的是什么苦日子",
         date: "2025-12-08T23:55:00Z",
         images: ["/images/diary/haha.png"],
