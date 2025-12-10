@@ -1,8 +1,6 @@
 ---
 title: 成功从Hexo迁移到Astro
 published: 2025-11-03
-tags: [none]
-category: none
 draft: false
 ---
 
