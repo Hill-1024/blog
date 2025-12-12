@@ -53,10 +53,11 @@ export function getFriendsList(): FriendItem[] {
 
 // 获取随机排序的友情链接数据
 export function getShuffledFriendsList(): FriendItem[] {
-	const shuffled = [...friendsData];
+	let shuffled = [...friendsData];
 	for (let i = shuffled.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
 		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
 	}
+    //shuffled.push({id: 0,title: "Hill",imgurl: "https://blog.hill-q.com/assets/home/avatar.jpg",desc:"Just Foward",siteurl:"https://blog.hill-q.com",tags: []})
 	return shuffled;
 }

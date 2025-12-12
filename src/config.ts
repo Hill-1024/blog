@@ -67,7 +67,7 @@ export const siteConfig: SiteConfig = {
         // 注意：如果侧边栏配置启用了"both"双侧边栏，则无法使用文章列表"grid"网格（双列）布局
         defaultMode: "list",
         // 是否允许用户切换布局
-        allowSwitch: true,
+        allowSwitch: false,
     },
 
     // 标签样式配置
@@ -162,7 +162,7 @@ export const siteConfig: SiteConfig = {
         },
 
         navbar: {
-            transparentMode: "semifull", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明
+            transparentMode: "full", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明
         },
     },
     toc: {
@@ -388,7 +388,7 @@ export const profileConfig: ProfileConfig = {
 };
 
 export const licenseConfig: LicenseConfig = {
-    enable: true,
+    enable: false,
     name: "CC BY-NC-SA 4.0",
     url: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
 };
@@ -585,7 +585,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
         //hidden:不显示侧边栏(桌面端)   drawer:抽屉模式(移动端不显示)   sidebar:显示侧边栏
         layout: {
             // 移动端：抽屉模式
-            mobile: "sidebar",
+            mobile: "drawer",
             // 平板端：显示侧边栏
             tablet: "sidebar",
             // 桌面端：显示侧边栏
