@@ -24,7 +24,7 @@ const diaryData: DiaryItem[] = [
         id: 2,
         content: "归家,然后去找高中动漫社小登",
         date: "2025-11-07T15:25:00Z",//07T15.25
-        images: ["/images/diary/mutsumiMoe.avif"],
+        images: ["/images/diary/mutsumiMoe.png"],
     },
     {
         id: 3,
@@ -34,12 +34,6 @@ const diaryData: DiaryItem[] = [
     },
     {
         id: 4,
-        content: "acm新生选拔赛决赛快到了,好紧张",
-        date: "2025-11-26T15:02:00Z",
-        images: ["/images/diary/sakura.jpg"],
-    },
-    {
-        id: 5,
         content: "感慨,kotlin太好用了😭,以前写cpp过的是什么苦日子",
         date: "2025-12-08T23:55:00Z",
         images: ["/images/diary/haha.png"],

@@ -1,13 +1,15 @@
 <h1>本博客基于Astro-Mizuki主题框架</h1>
-<img src="https://api.iconify.design/material-icon-theme:astro.svg" width="68" height="68">
+<img src="https://api.iconify.design/material-icon-theme:astro.svg" width="68" height="68" alt="Astro-Logos">
 
-<h2>Astro</h2>
+:::note[Astro]
+:::
 
-- [Astro](https://docs.astro.build/zh-cn/getting-started/)
-- [Github](https://github.com/withastro/astro)
+- ::github{repo="withastro/astro"}
+- [Astro-Docs](https://docs.astro.build/zh-cn/getting-started/)
 
-<h2>Mizuki</h2>
+:::note[Mizuki]
+:::
 
-- [Mizuki](https://docs.mizuki.mysqil.com/guide/get-started/)
-- [Github](https://github.com/matsuzaka-yuki/Mizuki)
+- ::github{repo="matsuzaka-yuki/mizuki"}
+- [Mizuki-Docs](https://docs.mizuki.mysqil.com/guide/get-started/)
 

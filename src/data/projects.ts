@@ -19,7 +19,19 @@ export interface Project {
 }
 
 export const projectsData: Project[] = [
-
+    {
+        id: "activity-manage-system",
+        title: "活动管理系统",
+        description: "第一次大学课设",
+        image: "/images/projects/sakura.jpg",
+        category: "desktop",
+        techStack: ["Web", "C/C++"],
+        status: "completed",
+        sourceCode: "https://github.com/Hill-1024/activity-manage-system",
+        startDate: "2025-12-16",
+        endDate: "2025-12-20",
+        tags: [],
+    },
 ];
 
 // Get project statistics
