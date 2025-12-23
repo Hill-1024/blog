@@ -2,7 +2,6 @@
 title: 课设-社团活动管理系统
 published: 2025-12-18
 description: 记第一次课设
-image: amy.jpeg
 alias: "社团活动管理系统"
 tags: []
 category: "大学课设"

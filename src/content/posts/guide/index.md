@@ -1,83 +1,51 @@
 ---
-title: 课设-社团活动管理系统
-published: 2025-12-18
-description: 记第一次课设
-image: amy.jpeg
-alias: "社团活动管理系统"
-tags: []
-category: "大学课设"
+title: Mizuki 简易指南
+published: 2024-04-01
+description: "如何使用此博客模板"
+image: "./cover.png"
+tags: ["Mizuki", "博客", "自定义"]
+category: 指南
+draft: true
+---
+
+此博客模板基于 https://astro.build/ 构建。对于本指南中未提及的内容，您可以在 https://docs.astro.build/ 中找到答案。
+
+## 文章的前言元数据
+
+```yaml
+---
+title: My First Blog Post
+published: 2023-09-09
+description: This is the first post of my new Astro blog.
+image: ./cover.jpg
+tags: [Foo, Bar]
+category: Front-end
 draft: false
 ---
-# 题目: 社团活动管理系统
-
-## 要求:
-
-- 用户登陆/注册功能
-- 学生报名功能
-- 管理员发布/删除活动功能
-- 管理员查看报名清单功能
-- 具有图形化界面
-
-## 项目结构
-
-```FILE
-|
-|-Data //数据存储文件夹
-| |-activity.txt
-| |-student.txt
-| |-trash.txt
-|-frontend //前端界面文件夹
-| |-admin.html
-| |-index.html
-| |-studnet.html
-|-main.c //核心逻辑处理
-|-mongoose.c //mongoose网络库文件
-|-mongoose.h //mongoose网络库文件
 ```
 
-## 总体设计
+| 属性           | 描述                                                                                                                                                                                                 |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `title`        | 文章的标题。                                                                                                                                                                                          |
+| `published`    | 文章的发布日期。                                                                                                                                                                                      |
+| `pinned`       | 是否将此文章置顶于文章列表顶部。                                                                                                                                                                      |
+| `description`  | 文章的简短描述。显示在索引页面上。                                                                                                                                                                    |
+| `image`        | 文章的封面图片路径。<br/>1. 以 `http://` 或 `https://` 开头：使用网络图片<br/>2. 以 `/` 开头：指向 `public` 目录中的图片<br/>3. 无前缀：相对于 markdown 文件的位置                                     |
+| `tags`         | 文章的标签。                                                                                                                                                                                          |
+| `category`     | 文章的分类。                                                                                                                                                                                          |
+| `licenseName`  | 文章内容的许可证名称。                                                                                                                                                                                |
+| `author`       | 文章的作者。                                                                                                                                                                                          |
+| `sourceLink`   | 文章内容的来源链接或参考。                                                                                                                                                                            |
+| `draft`        | 如果文章仍为草稿，则不会显示。                                                                                                                                                                        |
 
-利用mongoose库提供的网络通信功能,让C/Cpp程序和前端直接通过JSON通信,让我们的逻辑处理程序充当web中的后端服务器处理前端的POST请求,让图形界面模块和逻辑处理模块解耦合,缩短开发流程
+## 文章文件的存放位置
 
-## 详细设计
-```mermaid
-graph TD
-    A[程序启动]-->B[从文件夹开始load各项数据]
-    B-->C[主程序开始对目标端口监听]
-    C-->D[访问本地对应端口]
-    D-->E[启动前端界面]
-    E-->F{后端等待前端交互}
-    F-->|最长轮询1000ms| F
-    F-->|/api/login|login[登陆]-->|sid,password|back
-    F-->|/api/register|register[注册]-->|sid,name,password,phone_number,class|back
-    F-->|/api/activities|activities[获取活动列表]-->|aid|back
-    F-->|/api/add|add[添加活动]-->|name,catagory,deadline,max_capacity|back
-    F-->|/api/enroll|enroll[参加活动]-->|aid,sid|back
-    F-->|/api/delete|delete[删除活动]-->|aid|back
-    F-->|/api/details|details[获取学生详情页]-->|sid|back
-    F-->|/api/status|satus[获取活动绘图总览]-->back
-    back[C程序后端]
+您的文章文件应放置在 `src/content/posts/` 目录中。您还可以创建子目录以更好地组织文章和资源。
+
 ```
-### 前端请求:
-
-- 登陆(/api/login):发送POST内容{ID,password}
-    - 返回成功:依据账号类型跳转至目标界面
-    - 返回失败:警告框提示密码错误
-- 注册(/api/register):发送POST内容{ID,name,password,phone_number,class}
-    - 返回成功:返回登陆界面
-    - 返回失败:警告框提示相应问题
-- 获取活动列表(/api/activities):无POST内容
-    - 接受返回字符串,根据JSON改写内部HTML,显示活动状态
-- 发布新活动(/api/add):发送POST内容{name,category,location,deadline,max_capacity}
-    - 返回成功:重新获取活动列表
-    - 返回失败:警告框提示相应问题
-- 报名参加活动(/api/enroll):发送POST内容{ID}
-    - 返回成功:重新获取活动列表
-    - 返回失败:警告框提示相应问题
-- 删除活动(/api/delete):发送POST内容{ID}
-    - 重新获取活动列表
-- 获取学生详情(/api/details):发送POST内容{ID}
-    - 展开表格显示详情
-- 获取活动总览(/api/stats):无POST内容
-    - 根据返回数据绘制饼状图
-
+src/content/posts/
+├── post-1.md
+└── post-2/
+    ├── cover.png
+    └── index.md
+```
