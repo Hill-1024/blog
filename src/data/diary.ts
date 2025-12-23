@@ -13,31 +13,36 @@ export interface DiaryItem {
 
 // 示例日记数据
 const diaryData: DiaryItem[] = [
-    {
-        id: 1,
-        content:
-            "好无聊的一天",
-        date: "2025-10-13T17:55:26Z",
-        images: ["/images/diary/boring.webp"],
-    },
-    {
-        id: 2,
-        content: "归家,然后去找高中动漫社小登",
-        date: "2025-11-07T15:25:00Z",//07T15.25
-        images: ["/images/diary/mutsumiMoe.png"],
-    },
-    {
-        id: 3,
-        content: "小冷的天气",
-        date: "2025-11-20T10:37:00Z",
-        images: ["/images/diary/cold.jpg"],
-    },
-    {
-        id: 4,
-        content: "感慨,kotlin太好用了😭,以前写cpp过的是什么苦日子",
-        date: "2025-12-08T23:55:00Z",
-        images: ["/images/diary/haha.png"],
-     },
+	{
+		id: 1,
+		content: "好无聊的一天",
+		date: "2025-10-13T17:55:26Z",
+		images: ["/images/diary/boring.webp"],
+	},
+	{
+		id: 2,
+		content: "归家,然后去找高中动漫社小登",
+		date: "2025-11-07T15:25:00Z", //07T15.25
+		images: ["/images/diary/mutsumiMoe.png"],
+	},
+	{
+		id: 3,
+		content: "小冷的天气",
+		date: "2025-11-20T10:37:00Z",
+		images: ["/images/diary/cold.jpg"],
+	},
+	{
+		id: 4,
+		content: "感慨,kotlin太好用了😭,以前写cpp过的是什么苦日子",
+		date: "2025-12-08T23:55:00Z",
+		images: ["/images/diary/haha.png"],
+	},
+	{
+		id: 5,
+		content: "Amiya生日快乐",
+		date: "2025-12-23T00:00:00Z",
+		images: ["/images/diary/amy.jpeg"],
+	},
 ];
 /*
 
