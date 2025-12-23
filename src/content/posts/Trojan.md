@@ -3,6 +3,7 @@ title: 宝宝级Trojan教程
 published: 2025-11-13
 tags: ["Tech"]
 category: 教程
+permalink: "Trojan部署教程"
 draft: false
 ---
 
