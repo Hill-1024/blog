@@ -29,7 +29,7 @@ draft: false
 |-frontend //前端界面文件夹
 | |-admin.html
 | |-index.html
-| |-studnet.html
+| |-student.html
 |-main.c //核心逻辑处理
 |-mongoose.c //mongoose网络库文件
 |-mongoose.h //mongoose网络库文件
@@ -40,6 +40,9 @@ draft: false
 利用mongoose库提供的网络通信功能,让C/Cpp程序和前端直接通过JSON通信,让我们的逻辑处理程序充当web中的后端服务器处理前端的POST请求,让图形界面模块和逻辑处理模块解耦合,缩短开发流程
 
 ## 详细设计
+
+### 流程图
+
 ```mermaid
 graph TD
     A[程序启动]-->B[从文件夹开始load各项数据]
@@ -51,33 +54,37 @@ graph TD
     F-->|/api/login|login[登陆]-->|sid,password|back
     F-->|/api/register|register[注册]-->|sid,name,password,phone_number,class|back
     F-->|/api/activities|activities[获取活动列表]-->|aid|back
-    F-->|/api/add|add[添加活动]-->|name,catagory,deadline,max_capacity|back
+    F-->|/api/add|add[添加活动]-->|name,category,location,deadline,max_capacity|back
     F-->|/api/enroll|enroll[参加活动]-->|aid,sid|back
     F-->|/api/delete|delete[删除活动]-->|aid|back
     F-->|/api/details|details[获取学生详情页]-->|sid|back
     F-->|/api/status|satus[获取活动绘图总览]-->back
     back[C程序后端]
 ```
+
 ### 前端请求:
 
-- 登陆(/api/login):发送POST内容{ID,password}
-    - 返回成功:依据账号类型跳转至目标界面
-    - 返回失败:警告框提示密码错误
-- 注册(/api/register):发送POST内容{ID,name,password,phone_number,class}
-    - 返回成功:返回登陆界面
-    - 返回失败:警告框提示相应问题
+- 登陆(/api/login):发送POST内容{sID,password}
+  - 返回成功:依据账号类型跳转至目标界面
+  - 返回失败:警告框提示密码错误
+- 注册(/api/register):发送POST内容{sID,name,password,phone_number,class}
+  - 返回成功:返回登陆界面
+  - 返回失败:警告框提示相应问题
 - 获取活动列表(/api/activities):无POST内容
-    - 接受返回字符串,根据JSON改写内部HTML,显示活动状态
+  - 接受返回字符串,根据JSON改写内部HTML,显示活动状态
 - 发布新活动(/api/add):发送POST内容{name,category,location,deadline,max_capacity}
-    - 返回成功:重新获取活动列表
-    - 返回失败:警告框提示相应问题
-- 报名参加活动(/api/enroll):发送POST内容{ID}
-    - 返回成功:重新获取活动列表
-    - 返回失败:警告框提示相应问题
-- 删除活动(/api/delete):发送POST内容{ID}
-    - 重新获取活动列表
-- 获取学生详情(/api/details):发送POST内容{ID}
-    - 展开表格显示详情
-- 获取活动总览(/api/stats):无POST内容
-    - 根据返回数据绘制饼状图
+  - 返回成功:重新获取活动列表
+  - 返回失败:警告框提示相应问题
+- 报名参加活动(/api/enroll):发送POST内容{aID,sID}
+  - 返回成功:重新获取活动列表
+  - 返回失败:警告框提示相应问题
+- 删除活动(/api/delete):发送POST内容{aID}
+  - 重新获取活动列表
+- 获取学生详情(/api/details):发送POST内容{sID}
+  - 展开表格显示详情
+- 获取活动总览(/api/status):无POST内容
+  - 根据返回数据绘制饼状图
 
+## 感悟总结
+
+...
