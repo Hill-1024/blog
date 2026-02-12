@@ -46,10 +46,10 @@ export const devicesData: DeviceCategory = {
 	Microsoft: [
 		{
 			name: "Surface Pro 3",
-			image: "https://support.microsoft.com/zh-cn/surface/surface-pro-3-%E8%A7%84%E6%A0%BC%E5%92%8C%E5%8A%9F%E8%83%BD-4c142a41-134f-f22b-0142-a5cf073b56ee3",
+			image: "https://surfacetip.com/wp-content/uploads/2016/08/device-surface-pro-3-e1471925568336.png",
 			specs: "4GB + 256GB",
 			description: "The Original Hybrid.",
-			link: "https://support.microsoft.com/zh-cn/surface/surface-pro-4-%E8%A7%84%E6%A0%BC%E5%92%8C%E5%8A%9F%E8%83%BD-e3a8ac71-4cee-9107-23bc-7bd08d47cf75",
+			link: "https://support.microsoft.com/zh-cn/surface/surface-pro-3-%E8%A7%84%E6%A0%BC%E5%92%8C%E5%8A%9F%E8%83%BD-4c142a41-134f-f22b-0142-a5cf073b56ee3",
 		},
 	],
 	MOONDROP: [
