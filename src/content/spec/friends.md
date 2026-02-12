@@ -36,7 +36,7 @@ class="items-center justify-center gap-1 px-3 py-2
     active:scale-95 transition-all duration-200
     font-medium text-sm"
 >
-blog.hill-q.com/assets/home/avatar.jpg
+mutsumi.moe/assets/home/avatar.jpg
 </text>
 <button id="AvatarBtn"
         onclick=copy("Avatar",id)
@@ -61,7 +61,7 @@ class="items-center justify-center gap-1 px-3 py-2
     active:scale-95 transition-all duration-200
     font-medium text-sm"
 >
-blog.hill-q.com
+mutsumi.moe
 </text>
 <button id="UrlBtn"
         onclick=copy("Url",id)
