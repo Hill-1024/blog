@@ -319,11 +319,11 @@ if (typeof window !== "undefined") {
 </script>
 
 <!-- TOC toggle button for mobile -->
-<button 
-	on:click={togglePanel} 
-	aria-label="Table of Contents" 
+<button
+	on:click={togglePanel}
+	aria-label="Table of Contents"
 	id="mobile-toc-switch"
-	class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 lg:!hidden theme-switch-btn"
+	class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 lg:hidden! theme-switch-btn"
 >
 	<Icon icon="material-symbols:format-list-bulleted" class="text-[1.25rem]" />
 </button>
@@ -335,7 +335,7 @@ if (typeof window !== "undefined") {
 		top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
 >
 	<div class="flex items-center justify-between mb-4">
-		<h3 class="text-lg font-bold text-[var(--primary)]">{isHomePage ? i18n(I18nKey.postList) : i18n(I18nKey.tableOfContents)}</h3>
+		<h3 class="text-lg font-bold text-(--primary)">{isHomePage ? i18n(I18nKey.postList) : i18n(I18nKey.tableOfContents)}</h3>
 		<button 
 			on:click={togglePanel}
 			aria-label="Close TOC"
@@ -374,7 +374,7 @@ if (typeof window !== "undefined") {
 	{:else}
 		{#if tocItems.length === 0}
 			<div class="text-center py-8 text-black/50 dark:text-white/50">
-				<p>当前页面没有目录</p>
+				<p>{i18n(I18nKey.tocEmpty)}</p>
 			</div>
 		{:else}
 			<div class="toc-content">
