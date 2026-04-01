@@ -449,7 +449,7 @@ export const commentConfig: CommentConfig = {
     repoId: "R_kgDOR2p_WQ",
     category: "Announcements",
     categoryId: "DIC_kwDOR2p_Wc4C5wZM",
-    mapping: "url",
+    mapping: "pathname",
     strict: "0",
     reactionsEnabled: "1",
     emitMetadata: "0",
