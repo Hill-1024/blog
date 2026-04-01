@@ -1,4 +1,4 @@
-import type {
+﻿import type {
 	AnnouncementConfig,
 	CommentConfig,
 	ExpressiveCodeConfig,
@@ -9,6 +9,8 @@ import type {
 	NavBarConfig,
 	PermalinkConfig,
 	ProfileConfig,
+	RandomPostsConfig,
+	RelatedPostsConfig,
 	SakuraConfig,
 	ShareConfig,
 	SidebarLayoutConfig,
@@ -95,6 +97,10 @@ export const siteConfig: SiteConfig = {
 		defaultMode: "list",
 		// 是否允许用户切换布局
 		allowSwitch: false,
+		// 文章列表页分类导航条配置
+		categoryBar: {
+			enable: true, // 是否在文章列表页显示分类导航条
+		},
 	},
 
 	// 标签样式配置
@@ -189,8 +195,10 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 	toc: {
-		enable: true, // 启用目录功能
-		mode: "float", // 目录显示模式："float" 悬浮按钮模式，"sidebar" 侧边栏模式
+		enable: true, // 总开关，启用目录功能
+		mobileTop: true, // 手机端顶部 TOC 按钮
+		desktopSidebar: true, // 电脑端右侧边栏 TOC
+		floating: true, // 悬浮 TOC 按钮
 		depth: 2, // 目录深度，1-6，1 表示只显示 h1 标题，2 表示显示 h1 和 h2 标题，依此类推
 		useJapaneseBadge: true, // 使用日语假名标记（あいうえお...）代替数字，开启后会将 1、2、3... 改为 あ、い、う...
 	},
@@ -221,11 +229,21 @@ export const siteConfig: SiteConfig = {
 			// 中日韩字体 - 作为回退字体
 			fontFamily: "萝莉体 第二版",
 			fontWeight: "500",
-			localFonts: ["萝莉体 第二版.ttf"],
+			localFonts: ["loli.ttf"],
 			enableCompress: true, // 启用字体子集优化，减少字体文件大小
 		},
 	},
-	showLastModified: true, // 控制“上次编辑”卡片显示的开关
+	showLastModified: true, // 控制"上次编辑"卡片显示的开关
+	pageProgressBar: {
+		enable: true, // 启用页面顶部进度条
+		height: 3, // 进度条高度 3px
+		duration: 6000, // 动画时长 6s
+	},
+
+	thirdPartyAnalytics: {
+		enable: false, // 是否启用第三方统计（Microsoft Clarity），默认关闭，启用可能影响 Lighthouse 评分
+		clarityId: "", // Clarity 项目 ID
+	},
 };
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
@@ -396,15 +414,17 @@ export const permalinkConfig: PermalinkConfig = {
 	 * - %minute% : 2位分钟 (00-59)
 	 * - %second% : 2位秒数 (00-59)
 	 * - %post_id% : 文章序号（按发布时间升序排列，最早的文章为1）
-	 * - %postname% : 文章文件名（slug）
+	 * - %postname% : 文章文件名（slug，通常为全小写）
+	 * - %raw_postname% : 文章原始文件名（保留大小写）
 	 * - %category% : 分类名（无分类时为 "uncategorized"）
 	 *
 	 * 示例：
 	 * - "%year%-%monthnum%-%postname%" => "/2024-12-my-post/"
 	 * - "%post_id%-%postname%" => "/42-my-post/"
 	 * - "%category%-%postname%" => "/tech-my-post/"
+	 * - "%year%/%monthnum%/%day%/%postname%" => "/2024/12/01/my-post/"
 	 *
-	 * 注意：不支持斜杠 "/"，所有生成的链接都在根目录下
+	 * 注意：支持使用斜杠 "/" 构建嵌套路径。
 	 */
 	format: "%postname%", // 默认使用文件名
 };
@@ -419,9 +439,24 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 
 export const commentConfig: CommentConfig = {
 	enable: false, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
+	system: "twikoo", // 评论系统选择: "twikoo" | "giscus"
 	twikoo: {
 		envId: "https://twikoo.vercel.app",
 		lang: SITE_LANG,
+	},
+	giscus: {
+		repo: "your-github-username/your-repo-name",
+		repoId: "your-repo-id",
+		category: "Announcements",
+		categoryId: "your-category-id",
+		mapping: "pathname",
+		strict: "0",
+		reactionsEnabled: "1",
+		emitMetadata: "0",
+		inputPosition: "top",
+		theme: "preferred_color_scheme",
+		lang: SITE_LANG,
+		loading: "lazy",
 	},
 };
 
@@ -443,6 +478,8 @@ export const announcementConfig: AnnouncementConfig = {
 
 export const musicPlayerConfig: MusicPlayerConfig = {
 	enable: true, // 启用音乐播放器功能
+	showFloatingPlayer: false,
+	floatingEntryMode: 'fab',
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
 	meting_api:
 		"https://api.qijieya.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r", // Meting API 地址
@@ -465,109 +502,126 @@ export const footerConfig: FooterConfig = {
  * sidebar: 控制组件所在的侧边栏（left 或 right）。注意：移动端通常不显示右侧栏内容。若组件设置在 right，请确保 layout.position 为 "both"。
  */
 export const sidebarLayoutConfig: SidebarLayoutConfig = {
-	// 侧边栏组件属性配置列表
-	properties: [
-		{
-			// 组件类型：用户资料组件
-			type: "profile",
-			// 组件位置："top" 表示固定在顶部
-			position: "top",
-			// CSS 类名，用于应用样式和动画
-			class: "onload-animation",
-			// 动画延迟时间（毫秒），用于错开动画效果
-			animationDelay: 0,
-		},
-		{
-			// 组件类型：公告组件
-			type: "announcement",
-			// 组件位置："top" 表示固定在顶部
-			position: "top",
-			// CSS 类名
-			class: "onload-animation",
-			// 动画延迟时间
-			animationDelay: 50,
-		},
-		{
-			// 组件类型：分类组件
-			type: "categories",
-			// 组件位置："sticky" 表示粘性定位，可滚动
-			position: "top",
-			// CSS 类名
-			class: "onload-animation",
-			// 动画延迟时间
-			animationDelay: 150,
-			// 响应式配置
-			responsive: {
-				// 折叠阈值：当分类数量超过5个时自动折叠
-				collapseThreshold: 5,
-			},
-		},
-		{
-			// 组件类型：标签组件
-			type: "tags",
-			// 组件位置："sticky" 表示粘性定位
-			position: "top",
-			// CSS 类名
-			class: "onload-animation",
-			// 动画延迟时间
-			animationDelay: 250,
-			// 响应式配置
-			responsive: {
-				// 折叠阈值：当标签数量超过20个时自动折叠
-				collapseThreshold: 20,
-			},
-		},
-		{
-			// 组件类型：站点统计组件
-			type: "site-stats",
-			// 组件位置
-			position: "top",
-			// CSS 类名
-			class: "onload-animation",
-			// 动画延迟时间
-			animationDelay: 200,
-		},
-		{
-			// 组件类型：日历组件(移动端不显示)
-			type: "calendar",
-			// 组件位置
-			position: "top",
-			// CSS 类名
-			class: "onload-animation",
-			// 动画延迟时间
-			animationDelay: 250,
-		},
-	],
+  // 侧边栏组件属性配置列表
+  properties: [
+    {
+      // 组件类型：用户资料组件
+      type: "profile",
+      // 组件位置："top" 表示固定在顶部
+      position: "top",
+      // CSS 类名，用于应用样式和动画
+      class: "onload-animation",
+      // 动画延迟时间（毫秒），用于错开动画效果
+      animationDelay: 0,
+    },
+    {
+      // 组件类型：公告组件
+      type: "announcement",
+      // 组件位置："top" 表示固定在顶部
+      position: "top",
+      // CSS 类名
+      class: "onload-animation",
+      // 动画延迟时间
+      animationDelay: 50,
+    },
+    {
+      // 组件类型：侧栏音乐组件
+      type: "music-sidebar",
+      position: "sticky",
+      class: "onload-animation",
+      animationDelay: 100,
+    },
+    {
+      // 组件类型：分类组件
+      type: "categories",
+      // 组件位置："sticky" 表示粘性定位，可滚动
+      position: "sticky",
+      // CSS 类名
+      class: "onload-animation",
+      // 动画延迟时间
+      animationDelay: 150,
+      // 响应式配置
+      responsive: {
+        // 折叠阈值：当分类数量超过5个时自动折叠
+        collapseThreshold: 5,
+      },
+    },
+    {
+      // 组件类型：标签组件
+      type: "tags",
+      // 组件位置："sticky" 表示粘性定位
+      position: "top",
+      // CSS 类名
+      class: "onload-animation",
+      // 动画延迟时间
+      animationDelay: 250,
+      // 响应式配置
+      responsive: {
+        // 折叠阈值：当标签数量超过20个时自动折叠
+        collapseThreshold: 20,
+      },
+    },
+    {
+      // 组件类型：卡片式目录组件
+      type: "card-toc",
+      // 组件位置
+      position: "sticky",
+      // CSS 类名
+      class: "onload-animation",
+      // 动画延迟时间
+      animationDelay: 200,
+    },
+    {
+      // 组件类型：站点统计组件
+      type: "site-stats",
+      // 组件位置
+      position: "top",
+      // CSS 类名
+      class: "onload-animation",
+      // 动画延迟时间
+      animationDelay: 200,
+    },
+    {
+      // 组件类型：日历组件(移动端不显示)
+      type: "calendar",
+      // 组件位置
+      position: "top",
+      // CSS 类名
+      class: "onload-animation",
+      // 动画延迟时间
+      animationDelay: 250,
+    },
+  ],
 
-	// 侧栏组件布局配置
-	components: {
-		left: ["calendar", "categories"],
-		right: ["profile", "tags"],
-		drawer: ["profile", "categories", "tags"],
-	},
+  // 侧栏组件布局配置
+  components: {
+    left: ["calendar","music-sidebar"],
+    right: ["profile", "categories"],
+    drawer: ["profile", "announcement", "music-sidebar", "categories", "tags"],
+  },
 
-	// 默认动画配置
-	defaultAnimation: {
-		// 是否启用默认动画
-		enable: true,
-		// 基础延迟时间（毫秒）
-		baseDelay: 0,
-		// 递增延迟时间（毫秒），每个组件依次增加的延迟
-		increment: 50,
-	},
+  // 默认动画配置
+  defaultAnimation: {
+    // 是否启用默认动画
+    enable: true,
+    // 基础延迟时间（毫秒）
+    baseDelay: 0,
+    // 递增延迟时间（毫秒），每个组件依次增加的延迟
+    increment: 50,
+  },
 
-	// 响应式布局配置
-	responsive: {
-		// 断点配置（像素值）
-		breakpoints: {
-			// 移动端断点：屏幕宽度小于768px
-			mobile: 768,
-			// 平板端断点：屏幕宽度小于1280px
-			tablet: 1280,
-			// 桌面端断点：屏幕宽度大于等于1280px
-			desktop: 1280,
-		},
-	},
+  // 响应式布局配置
+  responsive: {
+    // 断点配置（像素值）
+    breakpoints: {
+      // 移动端断点：屏幕宽度小于768px
+      mobile: 768,
+      // 平板端断点：屏幕宽度小于1280px
+      tablet: 1280,
+      // 桌面端断点：屏幕宽度大于等于1280px
+      desktop: 1280,
+    },
+  },
 };
 
 export const sakuraConfig: SakuraConfig = {
@@ -599,7 +653,7 @@ export const sakuraConfig: SakuraConfig = {
 
 // Pio 看板娘配置
 export const pioConfig: import("./types/config").PioConfig = {
-	enable: false, // 启用看板娘
+	enable: false, // 禁用看板娘以提升性能
 	models: ["/pio/models/pio/model.json"], // 默认模型路径
 	position: "left", // 模型位置
 	width: 280, // 默认宽度
@@ -621,6 +675,18 @@ export const pioConfig: import("./types/config").PioConfig = {
 	},
 };
 
+// 相关文章配置
+export const relatedPostsConfig: RelatedPostsConfig = {
+	enable: true,
+	maxCount: 5,
+};
+
+// 随机文章配置
+export const randomPostsConfig: RandomPostsConfig = {
+	enable: true,
+	maxCount: 5,
+};
+
 // 导出所有配置的统一接口
 export const widgetConfigs = {
 	profile: profileConfig,
@@ -631,6 +697,8 @@ export const widgetConfigs = {
 	fullscreenWallpaper: fullscreenWallpaperConfig,
 	pio: pioConfig,
 	share: shareConfig,
+	relatedPosts: relatedPostsConfig,
+	randomPosts: randomPostsConfig,
 } as const;
 
 // umamiConfig相关配置已移动至astro.config.mjs中,统计脚本请自行在Layout.astro文件的<head>中插入
