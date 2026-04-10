@@ -24,226 +24,226 @@ import { LinkPreset } from "./types/config";
 const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
 const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UTC+8
 export const siteConfig: SiteConfig = {
-	title: "Hill-Blog",
-	subtitle: "Powered by Mizuki",
-	siteURL: "https://mutsumi.moe/", // 请替换为你的站点URL，以斜杠结尾
-	siteStartDate: "2025-11-02", // 站点开始运行日期，用于站点统计组件计算运行天数
+  title: "Hill-Blog",
+  subtitle: "Powered by Mizuki",
+  siteURL: "https://mutsumi.moe/", // 请替换为你的站点URL，以斜杠结尾
+  siteStartDate: "2025-11-02", // 站点开始运行日期，用于站点统计组件计算运行天数
 
-	timeZone: SITE_TIMEZONE,
+  timeZone: SITE_TIMEZONE,
 
-	lang: SITE_LANG,
+  lang: SITE_LANG,
 
-	themeColor: {
-		hue: 160, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
-		fixed: true, // 对访问者隐藏主题色选择器
-	},
+  themeColor: {
+    hue: 160, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
+    fixed: true, // 对访问者隐藏主题色选择器
+  },
 
-	// 特色页面开关配置（关闭未使用的页面有助于提升 SEO，关闭后请记得在 navbarConfig 中移除对应链接）
-	featurePages: {
-		anime: true, // 番剧页面开关
-		diary: true, // 日记页面开关
-		friends: true, // 友链页面开关
-		projects: false, // 项目页面开关
-		skills: true, // 技能页面开关
-		timeline: true, // 时间线页面开关
-		albums: true, // 相册页面开关
-		devices: true, // 设备页面开关
-	},
+  // 特色页面开关配置（关闭未使用的页面有助于提升 SEO，关闭后请记得在 navbarConfig 中移除对应链接）
+  featurePages: {
+    anime: true, // 番剧页面开关
+    diary: true, // 日记页面开关
+    friends: true, // 友链页面开关
+    projects: false, // 项目页面开关
+    skills: true, // 技能页面开关
+    timeline: true, // 时间线页面开关
+    albums: true, // 相册页面开关
+    devices: true, // 设备页面开关
+  },
 
-	// 顶栏标题配置
-	navbarTitle: {
-		// 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo
-		mode: "text-icon",
-		// 顶栏标题文本
-		text: "Hill",
-		// 顶栏标题图标路径，默认使用 public/assets/home/home.png
-		icon: "assets/home/avatar.jpg",
-		// 网站Logo图片路径
-		logo: "assets/home/default-logo.png",
-	},
+  // 顶栏标题配置
+  navbarTitle: {
+    // 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo
+    mode: "text-icon",
+    // 顶栏标题文本
+    text: "Hill",
+    // 顶栏标题图标路径，默认使用 public/assets/home/home.png
+    icon: "assets/home/avatar.jpg",
+    // 网站Logo图片路径
+    logo: "assets/home/default-logo.png",
+  },
 
-	// 页面自动缩放配置
-	pageScaling: {
-		enable: true, // 是否开启自动缩放
-		targetWidth: 2000, // 目标宽度，低于此宽度时开始缩放
-	},
+  // 页面自动缩放配置
+  pageScaling: {
+    enable: true, // 是否开启自动缩放
+    targetWidth: 2000, // 目标宽度，低于此宽度时开始缩放
+  },
 
-	bangumi: {
-		userId: "1174942", // 在此处设置你的Bangumi用户ID，可以设置为 "sai" 测试
-		fetchOnDev: false, // 是否在开发环境下获取 Bangumi 数据（默认 false），获取前先执行 pnpm build 构建 json 文件
-	},
+  bangumi: {
+    userId: "1174942", // 在此处设置你的Bangumi用户ID，可以设置为 "sai" 测试
+    fetchOnDev: false, // 是否在开发环境下获取 Bangumi 数据（默认 false），获取前先执行 pnpm build 构建 json 文件
+  },
 
-	bilibili: {
-		vmid: "701935297", // 在此处设置你的Bilibili用户ID (uid)，例如 "1129280784"
-		fetchOnDev: false, // 是否在开发环境下获取 Bilibili 数据（默认 false）
-		coverMirror: "", // 封面图片镜像源（可选，如果需要使用镜像源，例如 "https://images.weserv.nl/?url="）
-		useWebp: true, // 是否使用WebP格式（默认 true）
+  bilibili: {
+    vmid: "701935297", // 在此处设置你的Bilibili用户ID (uid)，例如 "1129280784"
+    fetchOnDev: false, // 是否在开发环境下获取 Bilibili 数据（默认 false）
+    coverMirror: "", // 封面图片镜像源（可选，如果需要使用镜像源，例如 "https://images.weserv.nl/?url="）
+    useWebp: true, // 是否使用WebP格式（默认 true）
 
-		// bilibili 观看进度配置说明(可选，如需配置仔细阅读):
-		// 1. 本地开发：请在 .env 文件中填写 BILI_SESSDATA=your_SESSDATA
-		// 2. 远程构建：请在 GitHub 仓库 Settings -> Secrets 中添加 BILI_SESSDATA
-		// 注意：SESSDATA 为账号凭证，为防止泄露，切记不可使用硬编码。
-		// 安全提示：如 SESSDATA 已泄露，请打开 B站手机端 —— 我的 —— 设置 —— 安全隐私 —— 登陆设备管理 —— 一键退登，销毁已泄露的账号凭证
-	},
+    // bilibili 观看进度配置说明(可选，如需配置仔细阅读):
+    // 1. 本地开发：请在 .env 文件中填写 BILI_SESSDATA=your_SESSDATA
+    // 2. 远程构建：请在 GitHub 仓库 Settings -> Secrets 中添加 BILI_SESSDATA
+    // 注意：SESSDATA 为账号凭证，为防止泄露，切记不可使用硬编码。
+    // 安全提示：如 SESSDATA 已泄露，请打开 B站手机端 —— 我的 —— 设置 —— 安全隐私 —— 登陆设备管理 —— 一键退登，销毁已泄露的账号凭证
+  },
 
-	anime: {
-		mode: "bangumi", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置，"bilibili" 使用Bilibili API
-	},
+  anime: {
+    mode: "bangumi", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置，"bilibili" 使用Bilibili API
+  },
 
-	// 文章列表布局配置
-	postListLayout: {
-		// 默认布局模式："list" 列表模式（单列布局），"grid" 网格模式（双列布局）
-		// 注意：如果侧边栏配置启用了"both"双侧边栏，则无法使用文章列表"grid"网格（双列）布局
-		defaultMode: "list",
-		// 是否允许用户切换布局
-		allowSwitch: false,
-		// 文章列表页分类导航条配置
-		categoryBar: {
-			enable: true, // 是否在文章列表页显示分类导航条
-		},
-	},
+  // 文章列表布局配置
+  postListLayout: {
+    // 默认布局模式："list" 列表模式（单列布局），"grid" 网格模式（双列布局）
+    // 注意：如果侧边栏配置启用了"both"双侧边栏，则无法使用文章列表"grid"网格（双列）布局
+    defaultMode: "list",
+    // 是否允许用户切换布局
+    allowSwitch: false,
+    // 文章列表页分类导航条配置
+    categoryBar: {
+      enable: true, // 是否在文章列表页显示分类导航条
+    },
+  },
 
-	// 标签样式配置
-	tagStyle: {
-		// 是否使用新样式（悬停高亮样式）还是旧样式（外框常亮样式）
-		useNewStyle: true,
-	},
+  // 标签样式配置
+  tagStyle: {
+    // 是否使用新样式（悬停高亮样式）还是旧样式（外框常亮样式）
+    useNewStyle: true,
+  },
 
-	// 壁纸模式配置
-	wallpaperMode: {
-		// 默认壁纸模式：banner=顶部横幅，fullscreen=全屏壁纸，none=无壁纸
-		defaultMode: "banner",
-		// 整体布局方案切换按钮显示设置（默认："desktop"）
-		// "off" = 不显示
-		// "mobile" = 仅在移动端显示
-		// "desktop" = 仅在桌面端显示
-		// "both" = 在所有设备上显示
-		showModeSwitchOnMobile: "desktop",
-	},
+  // 壁纸模式配置
+  wallpaperMode: {
+    // 默认壁纸模式：banner=顶部横幅，fullscreen=全屏壁纸，none=无壁纸
+    defaultMode: "banner",
+    // 整体布局方案切换按钮显示设置（默认："desktop"）
+    // "off" = 不显示
+    // "mobile" = 仅在移动端显示
+    // "desktop" = 仅在桌面端显示
+    // "both" = 在所有设备上显示
+    showModeSwitchOnMobile: "desktop",
+  },
 
-	banner: {
-		// 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
-		src: {
-			desktop: [
-				"/assets/desktop-banner/d1.png",
-				"/assets/desktop-banner/d2.jpg",
-				"/assets/desktop-banner/d3.jpg",
-				"/assets/desktop-banner/d4.jpg",
-				"/assets/desktop-banner/d5.jpg",
-				"/assets/desktop-banner/d6.jpg",
-			], // 桌面横幅图片
-			mobile: [
-				"/assets/mobile-banner/m1.webp",
-				"/assets/mobile-banner/m2.webp",
-				"/assets/mobile-banner/m3.webp",
-				"/assets/mobile-banner/m4.webp",
-				"/assets/mobile-banner/m5.webp",
-				"/assets/mobile-banner/m6.webp",
-				"/assets/mobile-banner/m7.webp",
-				"/assets/mobile-banner/m8.webp",
-				"/assets/mobile-banner/m9.webp",
-				"/assets/mobile-banner/m10.webp",
-				"/assets/mobile-banner/m11.webp",
-			], // 移动横幅图片
-		}, // 使用本地横幅图片
+  banner: {
+    // 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
+    src: {
+      desktop: [
+        "/assets/desktop-banner/d1.png",
+        "/assets/desktop-banner/d2.jpg",
+        "/assets/desktop-banner/d3.jpg",
+        "/assets/desktop-banner/d4.jpg",
+        "/assets/desktop-banner/d5.jpg",
+        "/assets/desktop-banner/d6.jpg",
+      ], // 桌面横幅图片
+      mobile: [
+        "/assets/mobile-banner/m1.webp",
+        "/assets/mobile-banner/m2.webp",
+        "/assets/mobile-banner/m3.webp",
+        "/assets/mobile-banner/m4.webp",
+        "/assets/mobile-banner/m5.webp",
+        "/assets/mobile-banner/m6.webp",
+        "/assets/mobile-banner/m7.webp",
+        "/assets/mobile-banner/m8.webp",
+        "/assets/mobile-banner/m9.webp",
+        "/assets/mobile-banner/m10.webp",
+        "/assets/mobile-banner/m11.webp",
+      ], // 移动横幅图片
+    }, // 使用本地横幅图片
 
-		position: "center", // 等同于 object-position，仅支持 'top', 'center', 'bottom'。默认为 'center'
+    position: "center", // 等同于 object-position，仅支持 'top', 'center', 'bottom'。默认为 'center'
 
-		carousel: {
-			enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
-			interval: 3, // 轮播间隔时间（秒）
-		},
+    carousel: {
+      enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
+      interval: 3, // 轮播间隔时间（秒）
+    },
 
-		waves: {
-			enable: true, // 是否启用水波纹效果（注意：此功能性能开销较大）
-			performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
-			mobileDisable: false, // 移动端禁用
-		},
+    waves: {
+      enable: true, // 是否启用水波纹效果（注意：此功能性能开销较大）
+      performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
+      mobileDisable: false, // 移动端禁用
+    },
 
-		// PicFlow API支持(智能图片API)
-		imageApi: {
-			enable: false, // 启用图片API
-			url: "http://domain.com/api_v2.php?format=text&count=4", // API地址，返回每行一个图片链接的文本
-		},
-		// 这里需要使用PicFlow API的Text返回类型,所以我们需要format=text参数
-		// 项目地址:https://github.com/matsuzaka-yuki/PicFlow-API
-		// 请自行搭建API
+    // PicFlow API支持(智能图片API)
+    imageApi: {
+      enable: false, // 启用图片API
+      url: "http://domain.com/api_v2.php?format=text&count=4", // API地址，返回每行一个图片链接的文本
+    },
+    // 这里需要使用PicFlow API的Text返回类型,所以我们需要format=text参数
+    // 项目地址:https://github.com/matsuzaka-yuki/PicFlow-API
+    // 请自行搭建API
 
-		homeText: {
-			enable: true, // 在主页显示自定义文本
-			title: "Hill's Land", // 主页横幅主标题
+    homeText: {
+      enable: true, // 在主页显示自定义文本
+      title: "Hill's Land", // 主页横幅主标题
 
-			subtitle: ["Personal Blog Site"],
-			typewriter: {
-				enable: true, // 启用副标题打字机效果
+      subtitle: ["Personal Blog Site"],
+      typewriter: {
+        enable: true, // 启用副标题打字机效果
 
-				speed: 100, // 打字速度（毫秒）
-				deleteSpeed: 100, // 删除速度（毫秒）
-				pauseTime: 2000, // 完全显示后的暂停时间（毫秒）
-			},
-		},
+        speed: 100, // 打字速度（毫秒）
+        deleteSpeed: 100, // 删除速度（毫秒）
+        pauseTime: 2000, // 完全显示后的暂停时间（毫秒）
+      },
+    },
 
-		credit: {
-			enable: false, // 显示横幅图片来源文本
+    credit: {
+      enable: false, // 显示横幅图片来源文本
 
-			text: "Describe", // 要显示的来源文本
-			url: "", // （可选）原始艺术品或艺术家页面的 URL 链接
-		},
+      text: "Describe", // 要显示的来源文本
+      url: "", // （可选）原始艺术品或艺术家页面的 URL 链接
+    },
 
-		navbar: {
-			transparentMode: "full", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明
-		},
-	},
-	toc: {
-		enable: true, // 总开关，启用目录功能
-		mobileTop: true, // 手机端顶部 TOC 按钮
-		desktopSidebar: true, // 电脑端右侧边栏 TOC
-		floating: true, // 悬浮 TOC 按钮
-		depth: 2, // 目录深度，1-6，1 表示只显示 h1 标题，2 表示显示 h1 和 h2 标题，依此类推
-		useJapaneseBadge: true, // 使用日语假名标记（あいうえお...）代替数字，开启后会将 1、2、3... 改为 あ、い、う...
-	},
-	showCoverInContent: true, // 在文章内容页显示文章封面
-	generateOgImages: false, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
-	favicon: [
-		// 留空以使用默认 favicon
-		// {
-		//   src: '/favicon/icon.png',    // 图标文件路径
-		//   theme: 'light',              // 可选，指定主题 'light' | 'dark'
-		//   sizes: '32x32',              // 可选，图标大小
-		// }
-	],
+    navbar: {
+      transparentMode: "full", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明
+    },
+  },
+  toc: {
+    enable: true, // 总开关，启用目录功能
+    mobileTop: true, // 手机端顶部 TOC 按钮
+    desktopSidebar: true, // 电脑端右侧边栏 TOC
+    floating: true, // 悬浮 TOC 按钮
+    depth: 2, // 目录深度，1-6，1 表示只显示 h1 标题，2 表示显示 h1 和 h2 标题，依此类推
+    useJapaneseBadge: true, // 使用日语假名标记（あいうえお...）代替数字，开启后会将 1、2、3... 改为 あ、い、う...
+  },
+  showCoverInContent: true, // 在文章内容页显示文章封面
+  generateOgImages: false, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
+  favicon: [
+    // 留空以使用默认 favicon
+    // {
+    //   src: '/favicon/icon.png',    // 图标文件路径
+    //   theme: 'light',              // 可选，指定主题 'light' | 'dark'
+    //   sizes: '32x32',              // 可选，图标大小
+    // }
+  ],
 
-	// 字体配置
-	font: {
-		// 注意：自定义字体需要在 src/styles/main.css 中引入字体文件
-		// 注意：字体子集优化功能目前仅支持 TTF 格式字体,开启后需要在生产环境才能看到效果,在Dev环境下显示的是浏览器默认字体!
-		asciiFont: {
-			// 英文字体 - 优先级最高
-			// 指定为英文字体则无论字体包含多大范围，都只会保留 ASCII 字符子集
-			fontFamily: "ZenMaruGothic-Medium",
-			fontWeight: "400",
-			localFonts: ["ZenMaruGothic-Medium.ttf"],
-			enableCompress: true, // 启用字体子集优化，减少字体文件大小
-		},
-		cjkFont: {
-			// 中日韩字体 - 作为回退字体
-			fontFamily: "萝莉体 第二版",
-			fontWeight: "500",
-			localFonts: ["loli.ttf"],
-			enableCompress: true, // 启用字体子集优化，减少字体文件大小
-		},
-	},
-	showLastModified: false, // 控制"上次编辑"卡片显示的开关
-	pageProgressBar: {
-		enable: true, // 启用页面顶部进度条
-		height: 3, // 进度条高度 3px
-		duration: 6000, // 动画时长 6s
-	},
+  // 字体配置
+  font: {
+    // 注意：自定义字体需要在 src/styles/main.css 中引入字体文件
+    // 注意：字体子集优化功能目前仅支持 TTF 格式字体,开启后需要在生产环境才能看到效果,在Dev环境下显示的是浏览器默认字体!
+    asciiFont: {
+      // 英文字体 - 优先级最高
+      // 指定为英文字体则无论字体包含多大范围，都只会保留 ASCII 字符子集
+      fontFamily: "GoogleSansCode[wght]",
+      fontWeight: "400",
+      localFonts: ["GoogleSansCode[wght].ttf"],
+      enableCompress: true, // 启用字体子集优化，减少字体文件大小
+    },
+    cjkFont: {
+      // 中日韩字体 - 作为回退字体
+      fontFamily: "萝莉体 第二版",
+      fontWeight: "500",
+      localFonts: ["loli.ttf"],
+      enableCompress: true, // 启用字体子集优化，减少字体文件大小
+    },
+  },
+  showLastModified: false, // 控制"上次编辑"卡片显示的开关
+  pageProgressBar: {
+    enable: true, // 启用页面顶部进度条
+    height: 3, // 进度条高度 3px
+    duration: 6000, // 动画时长 6s
+  },
 
-	thirdPartyAnalytics: {
-		enable: false, // 是否启用第三方统计（Microsoft Clarity），默认关闭，启用可能影响 Lighthouse 评分
-		clarityId: "", // Clarity 项目 ID
-	},
+  thirdPartyAnalytics: {
+    enable: false, // 是否启用第三方统计（Microsoft Clarity），默认关闭，启用可能影响 Lighthouse 评分
+    clarityId: "", // Clarity 项目 ID
+  },
 };
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
@@ -596,8 +596,8 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
   // 侧栏组件布局配置
   components: {
     left: ["calendar","music-sidebar"],
-    right: ["profile", "categories"],
-    drawer: ["profile",  "music-sidebar", "categories", "tags"],
+    right: ["profile", "tags"],
+    drawer: ["profile",  "music-sidebar", "tags"],
   },
 
   // 默认动画配置
