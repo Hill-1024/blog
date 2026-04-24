@@ -28,8 +28,8 @@
 
 /* 导入 ZenMaruGothic-Medium 字体 */
 @font-face {
-  font-family: "GoogleSansCode[wght]";
-  src: url("/assets/font/GoogleSansCode[wght].ttf") format("truetype");
+  font-family: "ZenMaruGothic-Medium";
+  src: url("/assets/font/ZenMaruGothic-Medium.ttf") format("truetype");
   font-weight: 500;
   font-display: swap;
 }

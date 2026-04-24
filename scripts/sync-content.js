@@ -9,134 +9,126 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 
 loadEnv();
-console.log("Loaded .env configuration file\n");
+console.log("已加载 .env 配置文件\n");
 
 // 从环境变量读取配置
 const ENABLE_CONTENT_SYNC = process.env.ENABLE_CONTENT_SYNC !== "false"; // 默认启用
-const CONTENT_REPO_URL =
-  process.env.CONTENT_REPO_URL ||
-  "https://github.com/Hill-1024/BlogContent.git";
+const CONTENT_REPO_URL = process.env.CONTENT_REPO_URL || "";
 const CONTENT_DIR = process.env.CONTENT_DIR || path.join(rootDir, "content");
 
-console.log("Starting content synchronization...\n");
+console.log("开始同步内容...\n");
 
 // 检查是否启用内容分离
 if (!ENABLE_CONTENT_SYNC) {
-  console.log("Content separation is disabled (ENABLE_CONTENT_SYNC=false)");
-  console.log(
-    "Tip: Local content will be used, will not sync from remote repository",
-  );
-  console.log("     To enable content separation feature, set in .env:");
-  console.log("     ENABLE_CONTENT_SYNC=true");
-  console.log("     CONTENT_REPO_URL=<your-repo-url>\n");
-  process.exit(0);
+	console.log("内容分离功能已关闭（ENABLE_CONTENT_SYNC=false）");
+	console.log("提示：将使用本地内容，不会从远程仓库同步");
+	console.log("      若要启用内容分离，请在 .env 中设置：");
+	console.log("      ENABLE_CONTENT_SYNC=true");
+	console.log("      CONTENT_REPO_URL=<your-repo-url>\n");
+	process.exit(0);
 }
 
-// 检查并清理旧的内容目录
-if (fs.existsSync(CONTENT_DIR)) {
-  try {
-    fs.rmSync(CONTENT_DIR, { recursive: true, force: true });
-  } catch (err) {
-    console.error(
-      `Failed to delete existing content directory: ${err.message}`,
-    );
-  }
-}
+// 检查内容目录是否存在
+if (!fs.existsSync(CONTENT_DIR)) {
+	console.log(`内容目录不存在：${CONTENT_DIR}`);
+	console.log("将使用独立仓库模式");
 
-// 克隆远程仓库
-try {
-  console.log(`Start Clone from ${CONTENT_REPO_URL}...`);
-  // stdio: "inherit" 可以让终端实时显示 git clone 的进度条
-  execSync(`git clone ${CONTENT_REPO_URL} "${CONTENT_DIR}"`, {
-    stdio: "inherit",
-  });
-} catch (err) {
-  console.error(`\nClone failed: ${err.message}`);
-  process.exit(1);
+	if (!CONTENT_REPO_URL) {
+		console.warn("警告：未设置 CONTENT_REPO_URL，将使用本地内容");
+		console.log(
+			"提示：请设置 CONTENT_REPO_URL 环境变量，或手动创建内容目录",
+		);
+		process.exit(0);
+	}
+
+	try {
+		console.log(`正在克隆内容仓库：${CONTENT_REPO_URL}`);
+		execSync(`git clone --depth 1 ${CONTENT_REPO_URL} ${CONTENT_DIR}`, {
+			stdio: "inherit",
+			cwd: rootDir,
+		});
+		console.log("内容仓库克隆成功");
+	} catch (error) {
+		console.error("克隆失败：", error.message);
+		process.exit(1);
+	}
+} else {
+	console.log(`内容目录已存在：${CONTENT_DIR}`);
+
+	if (fs.existsSync(path.join(CONTENT_DIR, ".git"))) {
+		try {
+			console.log("正在拉取最新内容...");
+			execSync("git pull --allow-unrelated-histories", {
+				stdio: "inherit",
+				cwd: CONTENT_DIR,
+			});
+			console.log("内容更新成功");
+		} catch (error) {
+			console.warn("内容更新失败：", error.message);
+		}
+	}
 }
 
 // 创建符号链接或复制内容
-console.log("\nSetting up content links...");
+console.log("\n正在建立内容链接...");
 
 const contentMappings = [
-  { src: "posts", dest: "src/content/posts" },
-  { src: "spec", dest: "src/content/spec" },
-  { src: "data", dest: "src/data" },
-  { src: "images", dest: "public/images" },
+	{ src: "posts", dest: "src/content/posts" },
+	{ src: "spec", dest: "src/content/spec" },
+	{ src: "data", dest: "src/data" },
+	{ src: "images", dest: "public/images" },
 ];
 
 for (const mapping of contentMappings) {
-  const srcPath = path.join(CONTENT_DIR, mapping.src);
-  const destPath = path.join(rootDir, mapping.dest);
+	const srcPath = path.join(CONTENT_DIR, mapping.src);
+	const destPath = path.join(rootDir, mapping.dest);
 
-  // 检查仓库中是否存在对应的源文件夹
-  if (!fs.existsSync(srcPath)) {
-    console.log(`\n[Warning] Skipping non-existent source: ${mapping.src}`);
-    // 智能提示：打印出仓库里实际存在的内容，帮你排查拼写或未提交空文件夹的问题
-    try {
-      const availableFiles = fs
-        .readdirSync(CONTENT_DIR)
-        .filter((f) => !f.startsWith(".")); // 过滤掉 .git 等隐藏文件
-      console.log(
-        `  -> Available folders in repo: [ ${availableFiles.join(", ")} ]`,
-      );
-    } catch (e) {}
-    continue;
-  }
+	if (!fs.existsSync(srcPath)) {
+		console.log(`跳过不存在的源目录：${mapping.src}`);
+		continue;
+	}
 
-  // 确保目标路径的父级目录存在 (比如 src/content 必须先存在)
-  const destParentDir = path.dirname(destPath);
-  if (!fs.existsSync(destParentDir)) {
-    fs.mkdirSync(destParentDir, { recursive: true });
-  }
+	// 如果目标已存在且不是符号链接,备份它
+	if (fs.existsSync(destPath) && !fs.lstatSync(destPath).isSymbolicLink()) {
+		const backupPath = `${destPath}.backup`;
+		console.log(
+			`正在备份已有内容：${mapping.dest} -> ${mapping.dest}.backup`,
+		);
+		if (fs.existsSync(backupPath)) {
+			fs.rmSync(backupPath, { recursive: true, force: true });
+		}
+		fs.renameSync(destPath, backupPath);
+	}
 
-  // 如果目标已存在且不是符号链接,备份它
-  try {
-    if (fs.existsSync(destPath) && !fs.lstatSync(destPath).isSymbolicLink()) {
-      const backupPath = `${destPath}.backup`;
-      console.log(
-        `Backing up existing content: ${mapping.dest} -> ${mapping.dest}.backup`,
-      );
-      if (fs.existsSync(backupPath)) {
-        fs.rmSync(backupPath, { recursive: true, force: true });
-      }
-      fs.renameSync(destPath, backupPath);
-    }
-  } catch (e) {
-    // 忽略读取状态错误
-  }
+	// 删除现有的符号链接
+	if (fs.existsSync(destPath)) {
+		fs.unlinkSync(destPath);
+	}
 
-  // 强制删除现有的旧软链接或残余文件
-  try {
-    fs.rmSync(destPath, { recursive: true, force: true });
-  } catch (e) {}
-
-  // 创建符号链接 (Windows 需要管理员权限,否则复制文件)
-  try {
-    // 使用绝对路径创建 junction，更稳定
-    fs.symlinkSync(srcPath, destPath, "junction");
-    console.log(`Created symbolic link: ${mapping.dest} -> ${mapping.src}`);
-  } catch (error) {
-    console.log(
-      `Symlink failed, falling back to copy: ${mapping.src} -> ${mapping.dest}`,
-    );
-    copyRecursive(srcPath, destPath);
-  }
+	// 创建符号链接 (Windows 需要管理员权限,否则复制文件)
+	try {
+		const relPath = path.relative(path.dirname(destPath), srcPath);
+		fs.symlinkSync(relPath, destPath, "junction");
+		console.log(`已创建符号链接：${mapping.dest} -> ${mapping.src}`);
+	} catch (error) {
+		console.log(`符号链接失败，改为复制内容：${mapping.src} -> ${mapping.dest}`);
+		copyRecursive(srcPath, destPath);
+	}
 }
 
-console.log("\nContent synchronization completed\n");
+console.log("\n内容同步完成\n");
 
-// 递归复制函数 (如果软链接失败的备用方案)
+// 递归复制函数
 function copyRecursive(src, dest) {
-  if (fs.statSync(src).isDirectory()) {
-    if (!fs.existsSync(dest)) {
-      fs.mkdirSync(dest, { recursive: true });
-    }
-    const files = fs.readdirSync(src);
-    for (const file of files) {
-      copyRecursive(path.join(src, file), path.join(dest, file));
-    }
-  } else {
-    fs.copyFileSync(src, dest);
-  }
+	if (fs.statSync(src).isDirectory()) {
+		if (!fs.existsSync(dest)) {
+			fs.mkdirSync(dest, { recursive: true });
+		}
+		const files = fs.readdirSync(src);
+		for (const file of files) {
+			copyRecursive(path.join(src, file), path.join(dest, file));
+		}
+	} else {
+		fs.copyFileSync(src, dest);
+	}
 }
