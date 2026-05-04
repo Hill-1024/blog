@@ -21,10 +21,19 @@ const config = {
 		let observer = null;
 
 		function getCurrentPath() {
-			const pathname = window.location.pathname;
-			return pathname.endsWith("/") && pathname.length > 1
-				? pathname.slice(0, -1)
-				: pathname;
+			return normalizeTerm(window.location.pathname);
+		}
+
+		function normalizeTerm(term) {
+			const normalized = String(term || "")
+				.trim()
+				.replace(/^\/+/, "");
+
+			if (!normalized) {
+				return "";
+			}
+
+			return normalized.endsWith("/") ? normalized : `${normalized}/`;
 		}
 
 		async function initGiscus() {
@@ -51,8 +60,14 @@ const config = {
 			script.setAttribute("data-repo-id", config.repoId);
 			script.setAttribute("data-category", config.category);
 			script.setAttribute("data-category-id", config.categoryId);
-			script.setAttribute("data-mapping", config.mapping);
-			script.setAttribute("data-term", getCurrentPath());
+			script.setAttribute(
+				"data-mapping",
+				config.term ? "specific" : config.mapping,
+			);
+			script.setAttribute(
+				"data-term",
+				config.term ? normalizeTerm(config.term) : getCurrentPath(),
+			);
 			script.setAttribute("data-strict", config.strict);
 			script.setAttribute(
 				"data-reactions-enabled",
