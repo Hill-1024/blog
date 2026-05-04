@@ -16,12 +16,17 @@ const config = {
 <script is:inline define:vars={{ config }}>
 	(function () {
 		const GISCUS_CONTAINER_ID = "giscus-container";
+		const GISCUS_CONTROLLER_KEY = "__mizukiGiscus";
 		const ROOT_MARGIN = "200px";
 
 		let observer = null;
+		let themeObserver = null;
+		let swupContentReplaceHandler = null;
+		let swupEnableHandler = null;
+		let pageLoadedHandler = null;
 
-		function getCurrentPath() {
-			return normalizeTerm(window.location.pathname);
+		if (window[GISCUS_CONTROLLER_KEY]?.destroy) {
+			window[GISCUS_CONTROLLER_KEY].destroy();
 		}
 
 		function normalizeTerm(term) {
@@ -34,6 +39,10 @@ const config = {
 			}
 
 			return normalized.endsWith("/") ? normalized : `${normalized}/`;
+		}
+
+		function getGiscusTerm() {
+			return normalizeTerm(config.term);
 		}
 
 		async function initGiscus() {
@@ -60,14 +69,8 @@ const config = {
 			script.setAttribute("data-repo-id", config.repoId);
 			script.setAttribute("data-category", config.category);
 			script.setAttribute("data-category-id", config.categoryId);
-			script.setAttribute(
-				"data-mapping",
-				config.term ? "specific" : config.mapping,
-			);
-			script.setAttribute(
-				"data-term",
-				config.term ? normalizeTerm(config.term) : getCurrentPath(),
-			);
+			script.setAttribute("data-mapping", "specific");
+			script.setAttribute("data-term", getGiscusTerm());
 			script.setAttribute("data-strict", config.strict);
 			script.setAttribute(
 				"data-reactions-enabled",
@@ -92,9 +95,28 @@ const config = {
 				observer.disconnect();
 				observer = null;
 			}
-			if (window.swup?.hooks) {
-				window.swup.hooks.off("content:replace", initGiscus);
+			if (themeObserver) {
+				themeObserver.disconnect();
+				themeObserver = null;
 			}
+			if (window.swup?.hooks && swupContentReplaceHandler) {
+				window.swup.hooks.off(
+					"content:replace",
+					swupContentReplaceHandler,
+				);
+			}
+			if (swupEnableHandler) {
+				document.removeEventListener("swup:enable", swupEnableHandler);
+			}
+			if (pageLoadedHandler) {
+				document.removeEventListener(
+					"mizuki:page:loaded",
+					pageLoadedHandler,
+				);
+			}
+			swupContentReplaceHandler = null;
+			swupEnableHandler = null;
+			pageLoadedHandler = null;
 		}
 
 		function setupLazyLoad() {
@@ -118,28 +140,38 @@ const config = {
 		}
 
 		function setupSwupHooks() {
+			if (swupContentReplaceHandler) {
+				return;
+			}
+
+			swupContentReplaceHandler = () => {
+				setTimeout(setupLazyLoad, 200);
+			};
+
 			if (window.swup?.hooks) {
-				window.swup.hooks.on("content:replace", () => {
-					setTimeout(setupLazyLoad, 200);
-				});
-			} else {
-				document.addEventListener(
-					"swup:enable",
-					() => {
-						if (window.swup?.hooks) {
-							window.swup.hooks.on("content:replace", () => {
-								setTimeout(setupLazyLoad, 200);
-							});
-						}
-					},
-					{ once: true },
+				window.swup.hooks.on(
+					"content:replace",
+					swupContentReplaceHandler,
 				);
+			} else {
+				swupEnableHandler = () => {
+					if (window.swup?.hooks && swupContentReplaceHandler) {
+						window.swup.hooks.on(
+							"content:replace",
+							swupContentReplaceHandler,
+						);
+					}
+				};
+				document.addEventListener("swup:enable", swupEnableHandler, {
+					once: true,
+				});
 			}
 		}
 
-		document.addEventListener("mizuki:page:loaded", () => {
+		pageLoadedHandler = () => {
 			setupLazyLoad();
-		});
+		};
+		document.addEventListener("mizuki:page:loaded", pageLoadedHandler);
 
 		window.addEventListener("beforeunload", cleanup);
 
@@ -153,7 +185,7 @@ const config = {
 			setupSwupHooks();
 		}
 
-		const observer_theme = new MutationObserver((mutations) => {
+		themeObserver = new MutationObserver((mutations) => {
 			mutations.forEach((mutation) => {
 				if (
 					mutation.attributeName === "class" ||
@@ -179,7 +211,11 @@ const config = {
 			});
 		});
 
-		observer_theme.observe(document.documentElement, { attributes: true });
+		themeObserver.observe(document.documentElement, { attributes: true });
+
+		window[GISCUS_CONTROLLER_KEY] = {
+			destroy: cleanup,
+		};
 	})();
 </script>
 
