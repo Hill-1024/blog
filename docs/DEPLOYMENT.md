@@ -268,6 +268,27 @@ USE_SUBMODULE=false  # ⚠️ Cloudflare Pages 默认不支持 submodule
 
 ---
 
+## ⚡ Cloudflare Workers 部署（静态站点）
+
+本项目是纯静态 Astro 站点，部署到 Workers 时使用 Workers Static Assets，**不要安装或启用 `@astrojs/cloudflare` SSR 适配器**。
+
+仓库根目录的 `wrangler.jsonc` 已固定以下配置：
+
+- 构建产物目录：`dist`
+- 自定义 404：`src/pages/404.astro`
+- Worker 名称：`blog`
+
+在 Cloudflare Workers → Builds → Settings 中设置：
+
+| 配置项 | 值 |
+|-------|---|
+| Build command | `pnpm build` |
+| Deploy command | `npx wrangler deploy` |
+
+如果此前运行过自动配置并产生了 `@astrojs/cloudflare` 的临时改动，请以仓库中的静态配置为准，重新触发一次部署。静态站点不需要 `main`、`SESSION` KV 或 `IMAGES` binding。
+
+---
+
 ## 🔄 自动同步机制
 
 所有部署平台都使用相同的自动同步机制：
