@@ -52,3 +52,5 @@ src/data/bilibili-data.json
 
 # Lighthouse CI
 .lighthouseci/
+
+AGENTS.md
