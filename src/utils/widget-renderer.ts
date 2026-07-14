@@ -50,10 +50,15 @@ export function buildComponentProps(
 		index,
 	);
 
+	const customProps = component.customProps ?? {};
+	const customClass =
+		typeof customProps.class === "string" ? customProps.class : "";
+	const customStyle =
+		typeof customProps.style === "string" ? customProps.style : "";
 	const props: Record<string, unknown> = {
-		class: componentClass,
-		style: componentStyle,
-		...component.customProps,
+		...customProps,
+		class: [componentClass, customClass].filter(Boolean).join(" "),
+		style: [componentStyle, customStyle].filter(Boolean).join("; "),
 	};
 
 	// TOC 组件需要传入 headings

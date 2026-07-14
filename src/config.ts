@@ -64,7 +64,7 @@ export const siteConfig: SiteConfig = {
 
   // 页面自动缩放配置
   pageScaling: {
-    enable: false, // 使用真实响应式布局，避免窄屏被整体缩放
+    enable: false, // 使用真实响应式布局，避免断点附近出现整体比例跳变
     targetWidth: 2000, // 目标宽度，低于此宽度时开始缩放
   },
 
@@ -96,7 +96,7 @@ export const siteConfig: SiteConfig = {
     // 注意：如果侧边栏配置启用了"both"双侧边栏，则无法使用文章列表"grid"网格（双列）布局
     defaultMode: "list",
     // 是否允许用户切换布局
-    allowSwitch: false,
+    allowSwitch: true,
     // 文章列表页分类导航条配置
     categoryBar: {
       enable: true, // 是否在文章列表页显示分类导航条
@@ -118,7 +118,7 @@ export const siteConfig: SiteConfig = {
     // "mobile" = 仅在移动端显示
     // "desktop" = 仅在桌面端显示
     // "both" = 在所有设备上显示
-    showModeSwitchOnMobile: "off",
+    showModeSwitchOnMobile: "desktop",
   },
 
   banner: {
@@ -150,14 +150,14 @@ export const siteConfig: SiteConfig = {
     position: "center", // 等同于 object-position，仅支持 'top', 'center', 'bottom'。默认为 'center'
 
     carousel: {
-      enable: false, // 静态横幅可降低首屏动态干扰
-      interval: 8, // 重新启用轮播时使用更从容的切换节奏
+      enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
+      interval: 3, // 轮播间隔时间（秒）
     },
 
     waves: {
       enable: true, // 是否启用水波纹效果（注意：此功能性能开销较大）
-      performanceMode: true, // 性能模式：减少动画复杂度(性能提升40%)
-      mobileDisable: true, // 移动端禁用
+      performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
+      mobileDisable: false, // 移动端禁用
     },
 
     // PicFlow API支持(智能图片API)
@@ -175,7 +175,7 @@ export const siteConfig: SiteConfig = {
 
       subtitle: ["Personal Blog Site"],
       typewriter: {
-        enable: false, // 保持首屏文案稳定，减少感官负载
+        enable: true, // 启用副标题打字机效果
 
         speed: 100, // 打字速度（毫秒）
         deleteSpeed: 100, // 删除速度（毫秒）
@@ -191,7 +191,7 @@ export const siteConfig: SiteConfig = {
     },
 
     navbar: {
-      transparentMode: "semi", // 始终保证横幅上的导航可读性
+      transparentMode: "full", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明
     },
   },
   toc: {
@@ -478,7 +478,7 @@ export const announcementConfig: AnnouncementConfig = {
 
 export const musicPlayerConfig: MusicPlayerConfig = {
 	enable: true, // 启用音乐播放器功能
-	showFloatingPlayer: true,
+	showFloatingPlayer: false,
 	floatingEntryMode: 'fab',
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
 	meting_api:
@@ -595,9 +595,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
   // 侧栏组件布局配置
   components: {
-    left: [],
+    left: ["calendar", "music-sidebar"],
     right: ["profile", "tags"],
-    drawer: [],
+    drawer: ["profile", "music-sidebar", "tags"],
   },
 
   // 默认动画配置

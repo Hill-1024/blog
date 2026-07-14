@@ -31,6 +31,16 @@ const tabletStickyComponents = widgetManager.getComponentsByPosition(
 	"left",
 	"tablet",
 );
+const desktopTopComponents = widgetManager.getComponentsByPosition(
+	"top",
+	"left",
+	"desktop",
+);
+const desktopStickyComponents = widgetManager.getComponentsByPosition(
+	"sticky",
+	"left",
+	"desktop",
+);
 ---
 
 <SidebarColumn
@@ -45,13 +55,13 @@ const tabletStickyComponents = widgetManager.getComponentsByPosition(
 />
 
 <style>
-	@media (max-width: 1280px) {
+	@media (max-width: 767px) {
 		#sidebar {
 			display: var(--sidebar-mobile-display, block);
 		}
 	}
 
-	@media (min-width: 769px) and (max-width: 1279px) {
+	@media (min-width: 768px) and (max-width: 1279px) {
 		#sidebar {
 			display: var(--sidebar-tablet-display, block);
 		}
@@ -75,6 +85,9 @@ const tabletStickyComponents = widgetManager.getComponentsByPosition(
 			mobileTopComponents.length > 0 || mobileStickyComponents.length > 0,
 		hasTabletComponents:
 			tabletTopComponents.length > 0 || tabletStickyComponents.length > 0,
+		hasDesktopComponents:
+			desktopTopComponents.length > 0 ||
+			desktopStickyComponents.length > 0,
 	}}
 >
 	const SIDEBAR_MANAGER_KEY = "__mizukiSidebarManagerInitialized";
@@ -123,7 +136,7 @@ const tabletStickyComponents = widgetManager.getComponentsByPosition(
 							showConfig = tabletShowSidebar;
 						} else {
 							deviceType = "desktop";
-							hasComponents = hasTabletComponents;
+							hasComponents = hasDesktopComponents;
 							showConfig = desktopShowSidebar;
 						}
 
@@ -153,7 +166,7 @@ const tabletStickyComponents = widgetManager.getComponentsByPosition(
 				showConfig = tabletShowSidebar;
 			} else {
 				deviceType = "desktop";
-				hasComponents = hasTabletComponents;
+				hasComponents = hasDesktopComponents;
 				showConfig = desktopShowSidebar;
 			}
 

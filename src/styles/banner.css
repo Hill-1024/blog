@@ -2,12 +2,18 @@
  * Banner and page-shell geometry.
  *
  * The banner, the content offset, and Swup all consume
- * --home-banner-height. Keeping one source of truth prevents the hero from
+ * --current-banner-height. Keeping one source of truth prevents the hero from
  * covering the first card or leaving a gap after a responsive navigation.
  */
 
 :root {
-  --home-banner-height: 47vh;
+  --home-banner-height: var(--banner-height-home, 65vh);
+  --content-banner-height: var(--banner-height, 35vh);
+  --current-banner-height: var(--content-banner-height);
+}
+
+body.lg\:is-home {
+  --current-banner-height: var(--home-banner-height);
 }
 
 /* --------------------------------------------------------------------------
@@ -57,24 +63,18 @@
 /* --------------------------------------------------------------------------
    Shared banner/content edge
    -------------------------------------------------------------------------- */
-body.enable-banner #banner-wrapper:not(.mobile-hide-banner) {
+body.enable-banner #banner-wrapper {
   top: 0 !important;
-  height: var(--home-banner-height) !important;
+  height: var(--current-banner-height) !important;
   min-height: 0;
   max-height: none;
 }
 
-body.enable-banner .absolute.w-full.z-30:not(.mobile-main-no-banner, .no-banner-layout) {
-  top: var(--home-banner-height) !important;
-  min-height: calc(100vh - var(--home-banner-height)) !important;
+body.enable-banner .absolute.w-full.z-30:not(.no-banner-layout) {
+  top: var(--current-banner-height) !important;
+  min-height: calc(100vh - var(--current-banner-height)) !important;
 }
 
-/* Non-home routes use the quiet reading shell at every breakpoint. */
-#banner-wrapper.mobile-hide-banner {
-  display: none !important;
-}
-
-.absolute.w-full.z-30.mobile-main-no-banner,
 .absolute.w-full.z-30.no-banner-layout,
 body.no-banner-mode .absolute.w-full.z-30 {
   top: 5.5rem !important;
@@ -93,6 +93,12 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+}
+
+#toc-wrapper.toc-hide,
+#toc-wrapper.toc-not-ready {
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -146,8 +152,8 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   width: 100%;
 }
 
-.mobile-hide-banner #header-waves {
-  display: none !important;
+#header-waves.waves-performance .parallax use:nth-child(-n + 2) {
+  display: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -157,18 +163,55 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   display: none !important;
 }
 
-/* Grid mode already creates columns inside the post list. The page shell must
-   stay single-column now that there is no left rail. */
-#main-grid[data-layout-mode="grid"]:has(#post-list-container) {
-  grid-template-columns: minmax(0, 1fr) !important;
-  grid-template-rows: auto !important;
+#main-grid,
+#main-grid > #sidebar,
+#main-grid > #swup-container,
+#main-grid > .right-sidebar-container {
+  min-width: 0;
 }
 
-#main-grid[data-layout-mode="grid"]:has(#post-list-container) #swup-container {
-  grid-column: 1 / -1 !important;
+.sidebar-sticky-column {
+  top: calc(5.5rem + env(safe-area-inset-top));
+}
+
+body.lg\:is-home .sidebar-sticky-column {
+  top: 1rem;
 }
 
 @media (max-width: 767px) {
+  #main-grid[data-has-drawer="true"] {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto !important;
+  }
+
+  #main-grid[data-has-drawer="true"] #swup-container {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+
+  #main-grid[data-has-drawer="true"] #sidebar {
+    display: block !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    max-width: none !important;
+    margin-bottom: 0.75rem;
+  }
+
+  #main-grid[data-has-drawer="true"] .sidebar-sticky-column {
+    position: static !important;
+    top: auto !important;
+  }
+
+  #main-grid[data-has-drawer="true"] > .footer {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+  }
+
+  #main-grid .right-sidebar-container {
+    display: none !important;
+  }
+
   .mobile-no-sidebar {
     display: block !important;
     width: 100% !important;
@@ -196,6 +239,163 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   }
 }
 
+/* Non-home routes keep the Banner on desktop and collapse it only below the
+   configured desktop breakpoint. The class is persisted by Swup. */
+@media (max-width: 1279px) {
+  #banner-wrapper.mobile-hide-banner {
+    display: none !important;
+  }
+
+  body.enable-banner .absolute.w-full.z-30.mobile-main-no-banner {
+    top: 5.5rem !important;
+    min-height: calc(100vh - 5.5rem) !important;
+  }
+
+  .mobile-hide-banner #header-waves,
+  #header-waves.waves-mobile-disabled {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  #main-grid[data-has-tablet-sidebar="true"] {
+    grid-template-columns: clamp(14rem, 26vw, 17.5rem) minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+  }
+
+  #main-grid[data-has-tablet-sidebar="true"] #sidebar {
+    display: block !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    max-width: none !important;
+  }
+
+  #main-grid[data-has-tablet-sidebar="true"] #swup-container {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  #main-grid .right-sidebar-container {
+    display: none !important;
+  }
+
+  #main-grid > .footer {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+  }
+
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto !important;
+  }
+
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container) #swup-container {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container) #sidebar {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    width: 100% !important;
+    margin-top: 1.5rem;
+  }
+
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container) > .footer {
+    grid-row: 3 !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  #main-grid[data-has-left="true"][data-has-right="true"] {
+    grid-template-columns:
+      clamp(14rem, 18vw, 17.5rem)
+      minmax(0, 1fr)
+      clamp(14rem, 18vw, 17.5rem) !important;
+  }
+
+  #main-grid[data-has-left="true"][data-has-right="false"] {
+    grid-template-columns: clamp(14rem, 18vw, 17.5rem) minmax(0, 1fr) !important;
+  }
+
+  #main-grid[data-has-left="false"][data-has-right="true"] {
+    grid-template-columns: minmax(0, 1fr) clamp(14rem, 18vw, 17.5rem) !important;
+  }
+
+  #main-grid[data-has-left="false"][data-has-right="false"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #main-grid[data-has-left="true"] #sidebar {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  #main-grid[data-has-left="true"] #swup-container {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  #main-grid[data-has-left="false"] #swup-container {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  #main-grid[data-has-left="true"][data-has-right="true"] .right-sidebar-container {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+
+  #main-grid[data-has-left="false"][data-has-right="true"] .right-sidebar-container {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  #main-grid > .footer {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+  }
+
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container)[data-has-left="true"] {
+    grid-template-columns: clamp(14rem, 18vw, 17.5rem) minmax(0, 1fr) !important;
+  }
+
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container)[data-has-left="false"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container)[data-has-left="true"] #swup-container {
+    grid-column: 2 !important;
+  }
+
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container)[data-has-left="false"] #swup-container {
+    grid-column: 1 !important;
+  }
+}
+
+/* `minimal` is a public layout mode, not a sidebar configuration. Keep its
+   single-column contract stronger than every responsive sidebar branch. */
+#main-grid:has(> #swup-container[data-layout-minimal="true"]) {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+}
+
+#main-grid:has(> #swup-container[data-layout-minimal="true"]) #sidebar,
+#main-grid:has(> #swup-container[data-layout-minimal="true"]) .right-sidebar-container {
+  display: none !important;
+}
+
+#main-grid:has(> #swup-container[data-layout-minimal="true"]) #swup-container {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+  width: 100% !important;
+}
+
+#main-grid:has(> #swup-container[data-layout-minimal="true"]) > .footer {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+}
+
 /* --------------------------------------------------------------------------
    Responsive hero sizing
    -------------------------------------------------------------------------- */
@@ -220,11 +420,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 
   .banner-subtitle {
     font-size: clamp(0.95rem, 4vw, 1.1rem);
-  }
-
-  /* The decorative waves cost paint time and add visual density on phones. */
-  #header-waves {
-    display: none;
   }
 }
 

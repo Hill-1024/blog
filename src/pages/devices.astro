@@ -21,7 +21,7 @@ const brands = Object.keys(devicesData);
 const categories = [...new Set(devices.map((device) => device.category))];
 ---
 
-<MainGridLayout title={i18n(I18nKey.devices)} minimal>
+<MainGridLayout title={i18n(I18nKey.devices)}>
 	<script>
 		import("../scripts/right-sidebar-layout.js");
 	</script>

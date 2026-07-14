@@ -62,7 +62,7 @@ export function generateTOCItems(config: TOCConfig): TOCItem[] {
 	const levels = Array.from(headings).map((heading) =>
 		parseInt(heading.tagName.charAt(1), 10),
 	);
-	const minLevel = levels[0] ?? 1;
+	const minLevel = levels.length > 0 ? Math.min(...levels) : 1;
 	let topLevelCount = 0;
 
 	headings.forEach((heading) => {
@@ -72,8 +72,8 @@ export function generateTOCItems(config: TOCConfig): TOCItem[] {
 
 		const level = parseInt(heading.tagName.charAt(1), 10);
 
-		const depth = Math.max(0, level - minLevel);
-		// depth is relative to the first heading in the article, matching desktop TOC.
+		const depth = level - minLevel;
+		// depth is relative to the shallowest heading, matching every TOC form.
 		if (depth < 0 || depth >= config.depth) {
 			return;
 		}
@@ -175,9 +175,17 @@ export function scrollToHeading(id: string, offset = 80): void {
 	if (element) {
 		const elementPosition =
 			element.getBoundingClientRect().top + window.scrollY - offset;
+		const nextURL = new URL(window.location.href);
+		nextURL.hash = id;
+		window.history.replaceState(
+			window.history.state,
+			"",
+			`${nextURL.pathname}${nextURL.search}${nextURL.hash}`,
+		);
 		window.scrollTo({
 			top: elementPosition,
-			behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+			behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+				.matches
 				? "auto"
 				: "smooth",
 		});

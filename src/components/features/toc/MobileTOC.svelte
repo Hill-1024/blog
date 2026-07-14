@@ -70,7 +70,9 @@
 	};
 
 	const scheduleActiveUpdate = () => {
-		if (activeFrame !== undefined) return;
+		if (activeFrame !== undefined) {
+			return;
+		}
 		activeFrame = requestAnimationFrame(() => {
 			activeFrame = undefined;
 			updateActiveHeading();
@@ -87,7 +89,9 @@
 
 		tocItems.forEach((item) => {
 			const heading = document.getElementById(item.id);
-			if (heading) observer?.observe(heading);
+			if (heading) {
+				observer?.observe(heading);
+			}
 		});
 	};
 
@@ -119,7 +123,9 @@
 	};
 
 	const scheduleRefresh = (delay = 80) => {
-		if (refreshTimer !== undefined) window.clearTimeout(refreshTimer);
+		if (refreshTimer !== undefined) {
+			window.clearTimeout(refreshTimer);
+		}
 		refreshTimer = window.setTimeout(() => {
 			refreshTimer = undefined;
 			void init();
@@ -130,7 +136,9 @@
 
 	const registerSwupListener = () => {
 		const swup = window.swup;
-		if (!swup || swup === registeredSwup) return;
+		if (!swup || swup === registeredSwup) {
+			return;
+		}
 
 		registeredSwup?.hooks.off("page:view", handlePageView);
 		swup.hooks.on("page:view", handlePageView);
@@ -163,8 +171,12 @@
 
 		return () => {
 			observer?.disconnect();
-			if (activeFrame !== undefined) cancelAnimationFrame(activeFrame);
-			if (refreshTimer !== undefined) window.clearTimeout(refreshTimer);
+			if (activeFrame !== undefined) {
+				cancelAnimationFrame(activeFrame);
+			}
+			if (refreshTimer !== undefined) {
+				window.clearTimeout(refreshTimer);
+			}
 
 			window.removeEventListener("scroll", scheduleActiveUpdate);
 			window.removeEventListener("resize", scheduleActiveUpdate);
@@ -212,7 +224,7 @@
 		aria-controls="mobile-toc-panel"
 		aria-expanded={isOpen}
 		id="mobile-toc-switch"
-		class="btn-plain scale-animation rounded-lg h-[44px] w-[44px] active:scale-90 lg:!hidden theme-switch-btn"
+		class="btn-plain scale-animation rounded-lg h-[44px] w-[44px] active:scale-90 min-[1280px]:!hidden theme-switch-btn"
 	>
 		<Icon
 			icon="material-symbols:format-list-bulleted"
@@ -226,7 +238,7 @@
 		aria-label={i18n(I18nKey.tableOfContents)}
 		aria-hidden={!isOpen}
 		inert={!isOpen}
-		class="float-panel float-panel-closed mobile-toc-panel absolute md:w-[20rem] w-[calc(100vw-2rem)] top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
+		class="float-panel float-panel-closed mobile-toc-panel absolute md:w-[20rem] w-[calc(100vw-2rem)] top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4 min-[1280px]:!hidden"
 	>
 		<div class="flex items-center justify-between mb-4">
 			<p class="text-lg font-bold text-[var(--primary)]">

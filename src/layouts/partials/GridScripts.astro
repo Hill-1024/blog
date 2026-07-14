@@ -4,8 +4,6 @@
  * 包含壁纸模式管理、布局切换和 Swup 集成逻辑
  */
 
-import { siteConfig } from "../../config";
-
 interface Props {
 	navbarTransparentMode?: string;
 	defaultWallpaperMode?: string;
@@ -18,36 +16,10 @@ const {
 	navbarTransparentMode = "semi",
 	defaultWallpaperMode = "banner",
 	defaultPostListLayout = "list",
-	BANNER_HEIGHT = 47,
+	BANNER_HEIGHT = 35,
 	pageScaling = { enable: false },
 } = Astro.props;
-
-const wallpaperModeSwitchHidden =
-	siteConfig.wallpaperMode?.showModeSwitchOnMobile === "off";
 ---
-
-<script
-	is:inline
-	define:vars={{ defaultWallpaperMode, wallpaperModeSwitchHidden }}
->
-	(() => {
-		const migrationKey = "mizuki:wallpaper-mode:hidden-switch-reset-v1";
-		if (
-			!wallpaperModeSwitchHidden ||
-			localStorage.getItem(migrationKey) === "done"
-		) {
-			return;
-		}
-
-		// 旧版本允许保存 fullscreen / none，但当前配置隐藏了切换入口。
-		// 仅迁移一次到站点默认值；以后重新开放入口时不再覆盖用户选择。
-		const storedMode = localStorage.getItem("wallpaperMode");
-		if (storedMode && storedMode !== defaultWallpaperMode) {
-			localStorage.setItem("wallpaperMode", defaultWallpaperMode);
-		}
-		localStorage.setItem(migrationKey, "done");
-	})();
-</script>
 
 <script
 	type="module"
@@ -102,29 +74,9 @@ const wallpaperModeSwitchHidden =
 				break;
 		}
 
-		// 立即调整主内容区域位置和布局模式（避免闪烁和位置错误）
+		// 立即应用布局模式（正文位置完全由响应式 CSS 与 body 模式类控制）。
 		// 使用 requestAnimationFrame 确保 DOM 准备好
 		requestAnimationFrame(function () {
-			const mainContent = document.querySelector(
-				".absolute.w-full.z-30.pointer-events-none",
-			);
-			if (mainContent) {
-				const isContentPage = mainContent.classList.contains(
-					"mobile-main-no-banner",
-				);
-				if (wallpaperMode === "banner" && !isContentPage) {
-					// 始终与实际 Banner 底边共用同一个响应式高度变量。
-					mainContent.style.setProperty(
-						"top",
-						`var(--home-banner-height, ${BANNER_HEIGHT}vh)`,
-						"important",
-					);
-				} else {
-					// 非首页，以及 fullscreen / none 模式，保持正文靠近导航栏。
-					mainContent.style.setProperty("top", "5.5rem", "important");
-				}
-			}
-
 			// 立即应用布局模式，避免闪烁
 			const mainGrid = document.getElementById("main-grid");
 			if (mainGrid) {
@@ -191,8 +143,6 @@ const wallpaperModeSwitchHidden =
 				if (fullscreenWallpaper) {
 					fullscreenWallpaper.style.display = "none";
 				}
-				// 文章页不再展示横幅，目录应从首屏起保持可见。
-				tocWrapper?.classList.remove("toc-hide");
 				// 先移除body类，避免CSS冲突
 				body.classList.remove("wallpaper-transparent");
 				body.classList.remove("no-banner-mode");
@@ -222,6 +172,16 @@ const wallpaperModeSwitchHidden =
 				}
 				// 强制重排以确保CSS变量正确更新
 				forceReflow();
+				// 读取恢复后的真实 Banner 高度，避免从其他模式切回时
+				// 因先前的 display:none 得到 0 并错误显示目录。
+				if (tocWrapper) {
+					const bannerHeight = bannerWrapper?.offsetHeight ?? 0;
+					const shouldHideTOC =
+						window.innerWidth >= 1280 &&
+						bannerHeight > 0 &&
+						window.scrollY <= bannerHeight;
+					tocWrapper.classList.toggle("toc-hide", shouldHideTOC);
+				}
 				break;
 
 			case "fullscreen":

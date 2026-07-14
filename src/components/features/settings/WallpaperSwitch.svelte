@@ -49,9 +49,10 @@
 			wallpaperOptions[0].icon,
 	);
 
-	function switchWallpaperMode(newMode: WALLPAPER_MODE) {
+	async function switchWallpaperMode(newMode: WALLPAPER_MODE) {
 		mode = newMode;
 		setWallpaperMode(newMode);
+		await panelManager.closePanel("wallpaper-mode-panel");
 	}
 
 	async function togglePanel() {

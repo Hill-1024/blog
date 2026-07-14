@@ -6,23 +6,6 @@ import type {
 } from "../types/config";
 
 /**
- * 组件映射表 - 将组件类型映射到实际的组件路径
- */
-export const WIDGET_COMPONENT_MAP = {
-	profile: "../components/widgets/profile/Profile.astro",
-	announcement: "../components/widgets/announcement/Announcement.astro",
-	categories: "../components/widgets/categories/Categories.astro",
-	tags: "../components/widgets/tags/Tags.astro",
-	toc: "../components/widgets/toc/TOC.astro",
-	"card-toc": "../components/widgets/card-toc/CardTOC.astro",
-	"music-player": "../components/widgets/music-player/MusicPlayer.svelte",
-	pio: "../components/widget/Pio.astro",
-	"site-stats": "../components/widgets/site-stats/SiteStats.astro",
-	calendar: "../components/widgets/calendar/Calendar.astro",
-	custom: null,
-} as const;
-
-/**
  * 组件管理器类
  * 负责管理侧边栏组件的动态加载、排序和渲染
  */
@@ -57,22 +40,38 @@ export class WidgetManager {
 		if (deviceType === "mobile") {
 			activeSidebar = "drawer";
 		}
-		// 平板端保持单列阅读；右侧辅助组件只在桌面显示。
+		// 平板端优先使用左栏；未配置左栏时，将右栏组件迁入唯一的平板栏。
 		else if (deviceType === "tablet") {
 			if (sidebar === "right") {
 				return [];
 			}
-			activeSidebar = "left";
+			const hasTabletLeftComponent = this.config.components.left.some(
+				(type) => {
+					if (!this.isSidebarComponent(type)) {
+						return false;
+					}
+					const prop = this.config.properties.find(
+						(item) => item.type === type,
+					);
+					return !prop?.responsive?.hidden?.includes("tablet");
+				},
+			);
+			activeSidebar = hasTabletLeftComponent ? "left" : "right";
 		}
 
 		const componentTypes = this.config.components[activeSidebar] || [];
 
 		return componentTypes
+			.filter((type) => this.isSidebarComponent(type))
 			.map((type) => {
 				const prop = this.config.properties.find(
 					(p) => p.type === type,
 				);
-				if (prop && prop.position === position) {
+				if (
+					prop &&
+					prop.position === position &&
+					!prop.responsive?.hidden?.includes(deviceType)
+				) {
 					return prop;
 				}
 				// 如果没有在 properties 中找到配置，且位置匹配默认的 top，则返回一个基础配置
@@ -120,23 +119,6 @@ export class WidgetManager {
 			classes.push(component.class);
 		}
 
-		// 添加响应式隐藏类名
-		if (component.responsive?.hidden) {
-			component.responsive.hidden.forEach((device) => {
-				switch (device) {
-					case "mobile":
-						classes.push("hidden", "md:block");
-						break;
-					case "tablet":
-						classes.push("md:hidden", "lg:block");
-						break;
-					case "desktop":
-						classes.push("lg:hidden");
-						break;
-				}
-			});
-		}
-
 		return classes.join(" ");
 	}
 
@@ -172,14 +154,6 @@ export class WidgetManager {
 			return false;
 		}
 		return itemCount >= component.responsive.collapseThreshold;
-	}
-
-	/**
-	 * 获取组件的路径
-	 * @param componentType 组件类型
-	 */
-	getComponentPath(componentType: WidgetComponentType): string | null {
-		return WIDGET_COMPONENT_MAP[componentType];
 	}
 
 	/**

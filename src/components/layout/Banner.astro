@@ -571,7 +571,15 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 	<!-- 水波纹效果 -->
 	{showWave && (
 		<div
-			class="waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]"
+			class:list={[
+				"waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]",
+				{
+					"waves-mobile-disabled":
+						siteConfig.banner.waves?.mobileDisable ?? false,
+					"waves-performance":
+						siteConfig.banner.waves?.performanceMode ?? false,
+				},
+			]}
 			id="header-waves"
 			style="transform: translateZ(0); will-change: fill;"
 		>

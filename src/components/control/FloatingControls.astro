@@ -27,7 +27,13 @@ const { headings = [] } = Astro.props;
 	{
 		siteConfig.toc.enable && siteConfig.toc.floating && (
 			<div
-				class="floating-control-item desktop-toc-control"
+				class:list={[
+					"floating-control-item desktop-toc-control",
+					{
+						"desktop-toc-control-has-rail":
+							siteConfig.toc.desktopSidebar,
+					},
+				]}
 				data-control-key="toc"
 			>
 				<FloatingTOC headings={headings} />
@@ -96,6 +102,12 @@ const { headings = [] } = Astro.props;
 
 	@media (max-width: 1279px) {
 		.desktop-toc-control {
+			display: none;
+		}
+	}
+
+	@media (min-width: 1800px) {
+		.desktop-toc-control-has-rail {
 			display: none;
 		}
 	}
@@ -226,7 +238,12 @@ const { headings = [] } = Astro.props;
 		}
 
 		function isControlVisible(key, id) {
-			if (key === "toc" && window.innerWidth < 1280) {
+			if (
+				key === "toc" &&
+				(window.innerWidth < 1280 ||
+					(window.innerWidth >= 1800 &&
+						Boolean(document.getElementById("toc-wrapper"))))
+			) {
 				return false;
 			}
 			return isButtonVisible(id);
@@ -348,7 +365,10 @@ const { headings = [] } = Astro.props;
 				const isVisible = Boolean(
 					button &&
 					!button.classList.contains("hide") &&
-					(key !== "toc" || window.innerWidth >= 1280),
+					(key !== "toc" ||
+						(window.innerWidth >= 1280 &&
+							(window.innerWidth < 1800 ||
+								!document.getElementById("toc-wrapper")))),
 				);
 				item.classList.toggle("fab-lock-collapsed", !isVisible);
 			}

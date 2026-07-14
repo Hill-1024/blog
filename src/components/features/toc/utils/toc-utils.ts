@@ -37,9 +37,7 @@ export function getMinLevel(headings: HeadingData[]): number {
 	if (headings.length === 0) {
 		return 1;
 	}
-	// 以文章的第一个标题作为层级基准；后文偶发的更浅标题不应
-	// 反向改变前面所有目录项的缩进。
-	return headings[0].level;
+	return Math.min(...headings.map((heading) => heading.level));
 }
 
 /**
@@ -62,9 +60,9 @@ export function generateTOCItems(
 	let h1Count = 0;
 
 	return headings
-		.filter((h) => Math.max(0, h.level - minLevel) < maxDepth)
+		.filter((h) => h.level - minLevel < maxDepth)
 		.map((h) => {
-			const depth = Math.max(0, h.level - minLevel);
+			const depth = h.level - minLevel;
 			let badge: string | undefined;
 
 			if (h.level === minLevel) {
@@ -95,6 +93,13 @@ export function scrollToHeading(id: string, offset = 80): void {
 
 	const targetTop =
 		element.getBoundingClientRect().top + window.scrollY - offset;
+	const nextURL = new URL(window.location.href);
+	nextURL.hash = id;
+	window.history.replaceState(
+		window.history.state,
+		"",
+		`${nextURL.pathname}${nextURL.search}${nextURL.hash}`,
+	);
 	window.scrollTo({
 		top: targetTop,
 		behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches

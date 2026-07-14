@@ -149,13 +149,25 @@ export class BackToTopHandler {
 	/**
 	 * 更新 TOC 可见性
 	 */
-	private updateTOCVisibility(_scrollTop: number, _bannerHeight: number): void {
+	private updateTOCVisibility(scrollTop: number, bannerHeight: number): void {
 		if (!this.toc) {
 			return;
 		}
 
-		// 非首页横幅已经移除，文章目录不再等待滚过横幅才出现。
-		this.toc.classList.remove("toc-hide");
+		const banner = document.getElementById(
+			SWUP_SELECTORS.bannerWrapper.slice(1),
+		);
+		const actualBannerHeight = banner?.offsetHeight || bannerHeight;
+		const bannerIsVisible =
+			document.body.classList.contains("enable-banner") &&
+			window.innerWidth >= 1280 &&
+			banner !== null &&
+			window.getComputedStyle(banner).display !== "none";
+
+		this.toc.classList.toggle(
+			"toc-hide",
+			bannerIsVisible && scrollTop <= actualBannerHeight,
+		);
 	}
 
 	/**

@@ -12,12 +12,10 @@ import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 
 import { fullscreenWallpaperConfig, siteConfig } from "../config";
-import { BANNER_HEIGHT_HOME } from "../constants/constants";
+import { BANNER_HEIGHT } from "../constants/constants";
 import {
 	calculateGridLayout,
 	getBannerImages,
-	getTransparencyClass,
-	shouldEnableTransparency,
 } from "../utils/grid-layout-utils";
 import { widgetManager } from "../utils/widget-manager";
 import Layout from "./Layout.astro";
@@ -55,12 +53,9 @@ const isHomePage = Astro.url.pathname === "/" || Astro.url.pathname === "";
 // 手机端非首页不显示banner的CSS类
 const mobileNonHomeBannerClass = !isHomePage ? "mobile-hide-banner" : "";
 
-// 计算主内容区域位置
-// Keep the content edge tied to the actual banner edge at every breakpoint.
-const finalMainPanelTop =
-	siteConfig.wallpaperMode.defaultMode === "banner"
-		? `var(--home-banner-height, ${BANNER_HEIGHT_HOME}vh)`
-		: "5.5rem";
+// Runtime wallpaper classes on body are the single source of truth. They
+// override this Banner edge in fullscreen/none mode without stale DOM classes.
+const finalMainPanelTop = `var(--current-banner-height, ${BANNER_HEIGHT}vh)`;
 
 // 计算网格布局
 const {
@@ -77,14 +72,12 @@ const {
 	widgetManager,
 });
 
-const { hasRightSidebarComponents, hasMobileDrawerComponents } =
-	sidebarPresence;
-
-// 半透明效果
-const shouldEnable = shouldEnableTransparency(
-	siteConfig.wallpaperMode.defaultMode,
-);
-const transparentClass = getTransparencyClass(shouldEnable);
+const {
+	hasLeftSidebarComponents,
+	hasRightSidebarComponents,
+	hasMobileDrawerComponents,
+	hasTabletLeftSidebarComponents,
+} = sidebarPresence;
 
 // 布局模式
 const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
@@ -103,7 +96,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 			"semi"}
 		defaultWallpaperMode={siteConfig.wallpaperMode.defaultMode}
 		defaultPostListLayout={siteConfig.postListLayout?.defaultMode || "list"}
-		BANNER_HEIGHT={BANNER_HEIGHT_HOME}
+		BANNER_HEIGHT={BANNER_HEIGHT}
 		pageScaling={siteConfig.pageScaling}
 	/>
 
@@ -138,8 +131,8 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 
 	<!-- Main content -->
 	<div
-		class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? "mobile-main-no-banner" : ""} ${siteConfig.wallpaperMode.defaultMode === "none" ? "no-banner-layout" : ""} ${transparentClass}`}
-		style={`top: ${isHomePage ? finalMainPanelTop : "5.5rem"} !important`}
+		class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? "mobile-main-no-banner" : ""}`}
+		style={`top: ${finalMainPanelTop}`}
 	>
 		<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
 		<div class="relative max-w-(--page-width) mx-auto pointer-events-auto">
@@ -155,6 +148,10 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 					},
 				]}
 				data-layout-mode={defaultPostListLayout}
+				data-has-left={String(hasLeftSidebarComponents)}
+				data-has-right={String(hasRightSidebarComponents)}
+				data-has-drawer={String(hasMobileDrawerComponents)}
+				data-has-tablet-sidebar={String(hasTabletLeftSidebarComponents)}
 			>
 				<!-- Banner image credit -->
 				{
@@ -201,17 +198,14 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 						(mobileShowSidebar ||
 							tabletShowSidebar ||
 							desktopShowSidebar) && (
-							<SideBar
-								class={`${sidebarClass} ${transparentClass}`}
-								headings={headings}
-							/>
+							<SideBar class={sidebarClass} headings={headings} />
 						)
 					}
 
 					{
 						hasRightSidebarComponents && (
 							<div
-								class={`right-sidebar-container ${rightSidebarClass} ${transparentClass}`}
+								class={`right-sidebar-container ${rightSidebarClass}`}
 							>
 								<RightSideBar headings={headings} />
 							</div>
@@ -268,11 +262,14 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 			grid-template-columns: minmax(0, 1fr) !important;
 		}
 
-		:global(#main-grid:has(> main[data-layout-minimal="true"])) #sidebar,
-		:global(#main-grid:has(> main[data-layout-minimal="true"]))
-			.right-sidebar-container,
-		:global(body:has(#main-grid > main[data-layout-minimal="true"]))
-			#toc-wrapper {
+		:global(#main-grid:has(> main[data-layout-minimal="true"]) #sidebar),
+		:global(
+			#main-grid:has(> main[data-layout-minimal="true"])
+				.right-sidebar-container
+		),
+		:global(
+			body:has(#main-grid > main[data-layout-minimal="true"]) #toc-wrapper
+		) {
 			display: none !important;
 		}
 

@@ -245,11 +245,11 @@ const fontVariables = [
 	@layer components {
 		@media (min-width: 1280px) {
 			.enable-banner.lg\:is-home #banner-wrapper {
-				height: var(--home-banner-height, var(--banner-height-home));
+				height: var(--current-banner-height, var(--banner-height-home));
 				transform: none;
 			}
 			.enable-banner #banner-wrapper {
-				height: var(--home-banner-height, var(--banner-height-home));
+				height: var(--current-banner-height, var(--banner-height));
 			}
 
 			.enable-banner.lg\:is-home #banner {
@@ -265,8 +265,7 @@ const fontVariables = [
 			}
 			.enable-banner #top-row {
 				height: calc(
-					var(--home-banner-height, var(--banner-height-home)) -
-						4.5rem
+					var(--current-banner-height, var(--banner-height)) - 4.5rem
 				);
 				@apply transition-all duration-300;
 			}

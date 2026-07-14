@@ -388,7 +388,9 @@ export interface WidgetComponentConfig {
 		hidden?: ("mobile" | "tablet" | "desktop")[]; // 在指定设备上隐藏
 		collapseThreshold?: number; // 折叠阈值
 	};
-	customProps?: Record<string, any>; // 自定义属性，用于扩展组件功能
+	// custom 支持 id/title/icon/content/html/href/linkLabel/external；html 仅用于源码内可信内容。
+	// 当前布局按 type 唯一匹配，因此同一侧栏仅支持一个 custom 定义。
+	customProps?: Record<string, any>;
 }
 
 export interface SidebarLayoutConfig {
