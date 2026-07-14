@@ -21,7 +21,11 @@ const { id, icon, ariaLabel, onclick, class: className = "" } = Astro.props;
 	]}
 	onclick={onclick}
 >
-	<button aria-label={ariaLabel} class="h-full w-full rounded-2xl">
+	<button
+		type="button"
+		aria-label={ariaLabel}
+		class="h-full w-full rounded-2xl"
+	>
 		<Icon name={icon} class="mx-auto" />
 	</button>
 </div>
@@ -91,19 +95,21 @@ const { id, icon, ariaLabel, onclick, class: className = "" } = Astro.props;
 
 @media (max-width: 480px)
 	.floating-btn
-		width: 2.5rem
-		height: 2.5rem
+		width: 2.75rem
+		height: 2.75rem
 		font-size: 1.25rem
-		border-radius: 0.5rem
+		border-radius: 0.75rem
 
 		:global(svg)
 			font-size: 1.2rem
 
 .floating-btn
-	min-width: 0
-	min-height: 0
-	padding: 0.25rem
+	min-width: 2.75rem
+	min-height: 2.75rem
+	padding: 0
 
 	&.hide
+		min-width: 0
+		min-height: 0
 		padding: 0
 </style>

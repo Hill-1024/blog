@@ -478,7 +478,7 @@ export const announcementConfig: AnnouncementConfig = {
 
 export const musicPlayerConfig: MusicPlayerConfig = {
 	enable: true, // 启用音乐播放器功能
-	showFloatingPlayer: false,
+	showFloatingPlayer: true,
 	floatingEntryMode: 'fab',
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
 	meting_api:

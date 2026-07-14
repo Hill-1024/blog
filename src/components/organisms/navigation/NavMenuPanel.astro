@@ -55,7 +55,7 @@ const processedLinks: ProcessedNavBarLink[] = (
 	aria-hidden="true"
 	inert
 	class:list={[
-		"float-panel float-panel-closed absolute transition-all fixed right-4 px-2 py-2 max-h-[80vh] overflow-y-auto",
+		"float-panel float-panel-closed fixed overflow-y-auto px-2 py-2 transition-all",
 	]}
 >
 	{
@@ -167,6 +167,25 @@ const processedLinks: ProcessedNavBarLink[] = (
 
 <style>
 	@reference "tailwindcss";
+
+	#nav-menu-panel {
+		top: calc(5.25rem + env(safe-area-inset-top));
+		right: max(1rem, env(safe-area-inset-right));
+		width: min(
+			20rem,
+			calc(
+				100vw - 2rem - env(safe-area-inset-left) -
+					env(safe-area-inset-right)
+			)
+		);
+		max-height: 80vh;
+		max-height: calc(
+			100dvh - 6.25rem - env(safe-area-inset-top) -
+				env(safe-area-inset-bottom)
+		);
+		padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+		overscroll-behavior: contain;
+	}
 
 	.mobile-submenu {
 		@apply max-h-0 overflow-hidden transition-all duration-300 ease-in-out;

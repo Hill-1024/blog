@@ -103,10 +103,6 @@
 			catalogue.hidden = false;
 			combobox.dataset.open = "true";
 			searchInput.setAttribute("aria-expanded", "true");
-			const visibleTags = getVisibleTagButtons();
-			if (!activeOption || activeOption.hidden) {
-				setActiveOption(visibleTags[0] || null);
-			}
 		}
 
 		function closeCatalogue({ restoreFocus = false } = {}) {
@@ -125,12 +121,18 @@
 
 		function appendActiveTag(group, value) {
 			const button = document.createElement("button");
+			const label = document.createElement("span");
+			const removeIcon = document.createElement("span");
 			button.type = "button";
 			button.className = "device-active-tag";
 			button.dataset.removeTag = "";
 			button.dataset.tagGroup = group;
 			button.dataset.tagValue = value;
-			button.textContent = value;
+			label.textContent = value;
+			removeIcon.className = "device-active-tag-remove";
+			removeIcon.textContent = "×";
+			removeIcon.setAttribute("aria-hidden", "true");
+			button.append(label, removeIcon);
 			button.setAttribute("aria-label", `移除筛选标签：${value}`);
 			activeTags.append(button);
 		}
@@ -218,11 +220,8 @@
 			}
 
 			if (!catalogue.hidden) {
-				const visibleTags = getVisibleTagButtons();
 				setActiveOption(
-					activeOption && !activeOption.hidden
-						? activeOption
-						: visibleTags[0] || null,
+					activeOption && !activeOption.hidden ? activeOption : null,
 				);
 			}
 		}

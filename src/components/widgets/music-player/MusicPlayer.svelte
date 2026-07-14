@@ -614,7 +614,10 @@
 		}
 
 		@media (hover: none) and (pointer: coarse) {
-			:global(.music-player button),
+			:global(.music-player button) {
+				min-width: 44px;
+				min-height: 44px;
+			}
 			:global(.playlist-item) {
 				min-height: 44px;
 			}

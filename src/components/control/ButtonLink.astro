@@ -19,6 +19,7 @@ const { badge, url, label } = Astro.props;
 	href={url}
 	aria-label={label}
 	class:list={`
+			button-link
             w-full
             h-10
             rounded-lg
@@ -57,3 +58,11 @@ const { badge, url, label } = Astro.props;
 		}
 	</div>
 </a>
+
+<style>
+	@media (pointer: coarse) {
+		.button-link {
+			min-height: 2.75rem;
+		}
+	}
+</style>

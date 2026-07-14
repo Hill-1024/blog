@@ -1,6 +1,76 @@
 @reference "tailwindcss";
 
 .custom-md {
+  --markdown-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", Arial, sans-serif;
+  --markdown-font-mono: var(--code-font-family, "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+
+  width: 100%;
+  max-width: 72ch !important;
+  margin-inline: auto;
+  font-family: var(--markdown-font-sans);
+  font-size: 1rem;
+  line-height: 1.75;
+  line-break: strict;
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+
+  :is(h1, h2, h3, h4, h5, h6) {
+    margin-block: 1.65em 0.6em;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  > section:first-child > :is(h1, h2, h3, h4, h5, h6):first-child {
+    margin-block-start: 0;
+  }
+
+  :is(p, ul, ol, blockquote, figure) {
+    margin-block: 0.85em;
+  }
+
+  li > :is(p, ul, ol) {
+    margin-block: 0.35em;
+  }
+
+  :is(p, li, dt, dd, blockquote, figcaption) {
+    overflow-wrap: anywhere;
+  }
+
+  :is(code, pre, kbd, samp) {
+    font-family: var(--markdown-font-mono);
+    line-break: auto;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-wrap: wrap;
+  }
+
+  :is(pre, .expressive-code, .table-wrapper, .katex-display, .mermaid-diagram-container) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  :is(pre, .expressive-code, .katex-display) {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :is(pre, pre code, .expressive-code code) {
+    text-wrap: nowrap;
+    white-space: pre;
+  }
+
+  :is(img, video, canvas) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  iframe {
+    max-width: 100%;
+  }
+
   h1 {
     @apply text-3xl;
   }
@@ -39,7 +109,7 @@
   code {
     @apply bg-(--inline-code-bg) text-(--inline-code-color) px-1 py-0.5 rounded-md overflow-hidden;
 
-    font-family: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: var(--markdown-font-mono);
 
     &:before,
     &:after {

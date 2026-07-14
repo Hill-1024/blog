@@ -66,7 +66,6 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
 
 <MainGridLayout title={title} description={subtitle}>
 	<script>
-		import("../scripts/right-sidebar-layout.js");
 		import { loadIconify } from "../utils/icon-loader";
 
 		loadIconify().catch((error) => {
@@ -79,7 +78,9 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
 	<div
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
-		<div class="card-base z-10 px-4 sm:px-6 md:px-8 py-5 sm:py-6 relative w-full">
+		<div
+			class="card-base z-10 px-4 sm:px-6 md:px-8 py-5 sm:py-6 relative w-full"
+		>
 			<PageHeader title={title} subtitle={subtitle} />
 
 			<div class="mb-6">
@@ -90,7 +91,13 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
 				{timelineData.map((item) => <TimelineCard item={item} />)}
 			</div>
 
-			<div id="no-results" class="hidden text-center py-12">
+			<div
+				id="no-results"
+				class:list={[
+					"text-center py-12",
+					{ hidden: timelineData.length > 0 },
+				]}
+			>
 				<iconify-icon
 					icon="material-symbols:search-off-rounded"
 					width="64"
@@ -98,7 +105,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
 					class="text-black/25 dark:text-white/25 mb-4"
 				></iconify-icon>
 				<p class="text-black/60 dark:text-white/60 text-base">
-					No matching items
+					{i18n(I18nKey.noData)}
 				</p>
 			</div>
 		</div>

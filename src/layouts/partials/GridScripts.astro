@@ -4,6 +4,8 @@
  * 包含壁纸模式管理、布局切换和 Swup 集成逻辑
  */
 
+import { siteConfig } from "../../config";
+
 interface Props {
 	navbarTransparentMode?: string;
 	defaultWallpaperMode?: string;
@@ -19,7 +21,33 @@ const {
 	BANNER_HEIGHT = 47,
 	pageScaling = { enable: false },
 } = Astro.props;
+
+const wallpaperModeSwitchHidden =
+	siteConfig.wallpaperMode?.showModeSwitchOnMobile === "off";
 ---
+
+<script
+	is:inline
+	define:vars={{ defaultWallpaperMode, wallpaperModeSwitchHidden }}
+>
+	(() => {
+		const migrationKey = "mizuki:wallpaper-mode:hidden-switch-reset-v1";
+		if (
+			!wallpaperModeSwitchHidden ||
+			localStorage.getItem(migrationKey) === "done"
+		) {
+			return;
+		}
+
+		// 旧版本允许保存 fullscreen / none，但当前配置隐藏了切换入口。
+		// 仅迁移一次到站点默认值；以后重新开放入口时不再覆盖用户选择。
+		const storedMode = localStorage.getItem("wallpaperMode");
+		if (storedMode && storedMode !== defaultWallpaperMode) {
+			localStorage.setItem("wallpaperMode", defaultWallpaperMode);
+		}
+		localStorage.setItem(migrationKey, "done");
+	})();
+</script>
 
 <script
 	type="module"

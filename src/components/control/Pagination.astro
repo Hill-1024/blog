@@ -69,14 +69,19 @@ const getPageUrl = (p: number) => {
 ---
 
 <div
-	class:list={[className, "flex flex-row gap-3 justify-center"]}
+	class:list={[
+		className,
+		"flex w-full min-w-0 flex-row justify-center gap-2 sm:gap-3",
+	]}
 	style={style}
 >
 	<a
 		href={page.url.prev || ""}
 		aria-label="上一页"
+		aria-disabled={page.url.prev == undefined ? "true" : undefined}
+		tabindex={page.url.prev == undefined ? -1 : undefined}
 		class:list={[
-			"btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
+			"btn-card h-11 w-11 shrink-0 overflow-hidden rounded-lg text-[var(--primary)]",
 			{ disabled: page.url.prev == undefined },
 		]}
 	>
@@ -86,7 +91,7 @@ const getPageUrl = (p: number) => {
 		/>
 	</a>
 	<div
-		class="bg-[var(--card-bg)] flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold"
+		class="hidden flex-row items-center rounded-lg bg-[var(--card-bg)] font-bold text-neutral-700 sm:flex dark:text-neutral-300"
 	>
 		{
 			pages.map((p) => {
@@ -117,11 +122,23 @@ const getPageUrl = (p: number) => {
 			})
 		}
 	</div>
+	<div
+		class="flex h-11 min-w-0 max-w-40 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[var(--card-bg)] px-3 font-bold text-neutral-700 sm:hidden dark:text-neutral-300"
+		aria-label={`第 ${page.currentPage} 页，共 ${page.lastPage} 页`}
+	>
+		<span class="text-[var(--primary)]" aria-current="page">
+			{page.currentPage}
+		</span>
+		<span aria-hidden="true" class="text-[var(--meta-divider)]">/</span>
+		<span>{page.lastPage}</span>
+	</div>
 	<a
 		href={page.url.next || ""}
 		aria-label="下一页"
+		aria-disabled={page.url.next == undefined ? "true" : undefined}
+		tabindex={page.url.next == undefined ? -1 : undefined}
 		class:list={[
-			"btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
+			"btn-card h-11 w-11 shrink-0 overflow-hidden rounded-lg text-[var(--primary)]",
 			{ disabled: page.url.next == undefined },
 		]}
 	>

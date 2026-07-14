@@ -118,4 +118,10 @@
 	:global(.dark) .chip-wrapper:hover {
 		color: var(--primary);
 	}
+
+	@media (pointer: coarse) {
+		.chip {
+			min-height: 2.75rem;
+		}
+	}
 </style>

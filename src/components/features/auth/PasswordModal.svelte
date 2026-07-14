@@ -242,6 +242,13 @@
 		cursor: not-allowed;
 	}
 
+	@media (pointer: coarse) {
+		.password-input,
+		.unlock-button {
+			min-height: 2.75rem;
+		}
+	}
+
 	.error-message {
 		margin: 0;
 		font-size: 0.75rem;

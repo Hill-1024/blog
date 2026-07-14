@@ -240,12 +240,19 @@ const archiveUrl = url("/archive/");
 			? bar.querySelector<HTMLElement>(".category-bar-inner")
 			: bar.querySelector<HTMLElement>(".category-scroll");
 		if (activePill && scroll) {
-			const scrollLeft =
-				activePill.offsetLeft -
-				scroll.offsetLeft -
-				(scroll.clientWidth - activePill.offsetWidth) / 2;
+			const scrollRect = scroll.getBoundingClientRect();
+			const pillRect = activePill.getBoundingClientRect();
+			const centeredLeft =
+				scroll.scrollLeft +
+				pillRect.left -
+				scrollRect.left -
+				(scrollRect.width - pillRect.width) / 2;
+			const maxScrollLeft = Math.max(
+				0,
+				scroll.scrollWidth - scroll.clientWidth,
+			);
 			scroll.scrollTo({
-				left: Math.max(0, scrollLeft),
+				left: Math.min(maxScrollLeft, Math.max(0, centeredLeft)),
 				behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
 					.matches
 					? "auto"

@@ -34,10 +34,6 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 	<script is:inline>
 		window.isFriendsPage = true;
 	</script>
-	<script>
-		import("../scripts/right-sidebar-layout.js");
-	</script>
-
 	<div
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
@@ -94,15 +90,18 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 			</div>
 
 			<!-- 友链卡片网格 -->
-			<div
-				id="friends-grid"
-				class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-6"
-			>
+			<div id="friends-grid" class="grid gap-4 sm:gap-5 mb-6">
 				{friendsList.map((item) => <FriendCard friend={item} />)}
 			</div>
 
 			<!-- 无结果提示 -->
-			<div id="no-results" class="hidden text-center py-12">
+			<div
+				id="no-results"
+				class:list={[
+					"text-center py-12",
+					{ hidden: friendsList.length > 0 },
+				]}
+			>
 				<svg
 					class="w-16 h-16 mx-auto mb-4 text-black/20 dark:text-white/20"
 					fill="none"
@@ -138,6 +137,10 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 </MainGridLayout>
 
 <style>
+	#friends-grid {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+	}
+
 	/* 搜索框焦点效果 */
 	#friend-search:focus {
 		box-shadow: 0 0 0 3px var(--primary) / 0.1;

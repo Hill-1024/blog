@@ -44,4 +44,10 @@
 		background-color: var(--primary);
 		color: white;
 	}
+
+	@media (pointer: coarse) {
+		.tag-chip {
+			min-height: 2.75rem;
+		}
+	}
 </style>

@@ -78,6 +78,9 @@ import "@/styles/toc.css";
 			document
 				.getElementById("main-grid")
 				?.classList.toggle("article-toc-active", hasToc);
+			document
+				.getElementById("toc-wrapper")
+				?.classList.toggle("toc-not-ready", !hasToc);
 			this.toggleAttribute("data-loaded", hasToc);
 		}
 

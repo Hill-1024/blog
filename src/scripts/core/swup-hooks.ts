@@ -105,6 +105,7 @@ export class SwupHooksManager {
 	private registerContentReplaceHook(): void {
 		window.swup!.hooks.on("content:replace", () => {
 			this.clearCache();
+			this.syncRouteShell(window.location.pathname);
 
 			// 初始化新页面的图片、公式、滚动条和 TOC
 			this.handlers.initFancybox?.();
@@ -131,6 +132,7 @@ export class SwupHooksManager {
 			// 处理页面状态
 			const isHomePage = pathsEqual(visit.to.url, url("/"));
 			this.handleBodyClass(isHomePage);
+			this.handleTopRowState(isHomePage);
 			this.handleBannerTextVisibility(isHomePage);
 			this.handleNavbarState(isHomePage);
 			this.handleMobileBannerVisibility(isHomePage);
@@ -149,6 +151,8 @@ export class SwupHooksManager {
 	 */
 	private registerPageViewHook(): void {
 		window.swup!.hooks.on("page:view", () => {
+			this.syncRouteShell(window.location.pathname);
+
 			// 扩展页面高度
 			this.extendPageHeight(false);
 
@@ -258,6 +262,30 @@ export class SwupHooksManager {
 				bodyElement.classList.remove("lg:is-home");
 			}
 		}
+	}
+
+	/**
+	 * 同步 Swup 容器之外的持久化页面外壳。
+	 * `#top-row` 不会随 `<main>` 一起替换，必须根据目标路径显式更新。
+	 */
+	private handleTopRowState(isHomePage: boolean): void {
+		const topRow = this.getCachedElement(SWUP_SELECTORS.topRow);
+		if (!topRow) {
+			return;
+		}
+
+		topRow.classList.toggle("home-top-row", isHomePage);
+		topRow.classList.toggle("content-top-row", !isHomePage);
+	}
+
+	/**
+	 * 在访问开始和内容替换后都校准外壳，兼容回退/前进与直接导航。
+	 */
+	private syncRouteShell(pathname: string): void {
+		const isHomePage = pathsEqual(pathname, url("/"));
+		this.handleBodyClass(isHomePage);
+		this.handleTopRowState(isHomePage);
+		this.handleNavbarState(isHomePage);
 	}
 
 	/**

@@ -39,7 +39,6 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 
 <MainGridLayout title={title} description={subtitle}>
 	<script>
-		import("../scripts/right-sidebar-layout.js");
 		import { loadIconify } from "../utils/icon-loader";
 
 		loadIconify().catch((error) => {
@@ -70,7 +69,10 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 								{subtitle}
 							</p>
 						</div>
-						<div class="shrink-0 text-right" aria-label={`${moments.length} ${i18n(I18nKey.diaryCount)}`}>
+						<div
+							class="shrink-0 text-right"
+							aria-label={`${moments.length} ${i18n(I18nKey.diaryCount)}`}
+						>
 							<span
 								class="block text-2xl sm:text-3xl font-bold leading-none text-[var(--primary)]"
 							>

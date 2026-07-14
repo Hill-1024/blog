@@ -30,6 +30,7 @@ export const SWUP_SELECTORS = {
 	bannerTextOverlay: ".banner-text-overlay",
 
 	// 导航相关
+	topRow: "#top-row",
 	navbar: "#navbar",
 	navbarWrapper: "#navbar-wrapper",
 

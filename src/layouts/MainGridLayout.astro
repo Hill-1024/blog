@@ -72,7 +72,6 @@ const {
 	mobileShowSidebar,
 	tabletShowSidebar,
 	desktopShowSidebar,
-	desktopShowLeftSidebar,
 } = calculateGridLayout({
 	siteConfig,
 	widgetManager,
@@ -218,37 +217,6 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 							</div>
 						)
 					}
-
-					{
-						siteConfig.toc.enable &&
-							siteConfig.toc.desktopSidebar && (
-								<aside
-									id="toc-wrapper"
-									aria-label="文章目录"
-									class:list={[
-										"article-toc-sidebar hidden lg:self-start lg:h-fit lg:mb-4 lg:max-w-[17.5rem] lg:col-span-1 lg:row-start-1",
-										desktopShowLeftSidebar
-											? "lg:col-start-3 lg:col-end-4"
-											: "lg:col-start-2 lg:col-end-3",
-									]}
-								>
-									<div
-										id="toc-inner-wrapper"
-										class="card-base sticky top-24 max-h-[calc(100vh-8rem)] overflow-x-hidden overflow-y-auto rounded-[var(--radius-large)] p-3"
-									>
-										<p class="px-2 pb-2 text-sm font-semibold text-75">
-											目录
-										</p>
-										<div
-											id="toc-container"
-											class="w-full transition-swup-fade"
-										>
-											<SidebarTOC headings={headings} />
-										</div>
-									</div>
-								</aside>
-							)
-					}
 				</div>
 
 				<main
@@ -276,30 +244,24 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 	</div>
 
 	<style>
+		:global(#top-row.content-top-row) {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			width: 100%;
+		}
+
+		:global(#top-row.content-top-row #navbar-wrapper) {
+			position: relative;
+		}
+
 		.right-sidebar-container {
 			align-self: start;
 		}
 
 		.right-sidebar-container #right-sidebar {
 			height: fit-content;
-		}
-
-		.article-toc-sidebar {
-			display: none;
-		}
-
-		:global(#main-grid.article-toc-active) .right-sidebar-container {
-			display: none !important;
-		}
-
-		:global(#main-grid.article-toc-active) .article-toc-sidebar {
-			display: none;
-		}
-
-		@media (min-width: 1280px) {
-			:global(#main-grid.article-toc-active) .article-toc-sidebar {
-				display: block;
-			}
 		}
 
 		:global(#main-grid:has(> main[data-layout-minimal="true"])) {
@@ -309,8 +271,8 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 		:global(#main-grid:has(> main[data-layout-minimal="true"])) #sidebar,
 		:global(#main-grid:has(> main[data-layout-minimal="true"]))
 			.right-sidebar-container,
-		:global(#main-grid:has(> main[data-layout-minimal="true"]))
-			.article-toc-sidebar {
+		:global(body:has(#main-grid > main[data-layout-minimal="true"]))
+			#toc-wrapper {
 			display: none !important;
 		}
 
@@ -319,6 +281,41 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 			width: 100%;
 		}
 	</style>
+
+	<!-- Desktop rail: kept outside the content grid so its fixed child can
+	     follow the article for the full page instead of stopping at a grid row. -->
+	{
+		siteConfig.toc.enable && siteConfig.toc.desktopSidebar && (
+			<div class="pointer-events-none absolute z-0 hidden w-full min-[1800px]:block">
+				<div class="relative mx-auto max-w-(--page-width)">
+					<aside
+						id="toc-wrapper"
+						aria-label="文章目录"
+						class:list={[
+							"pointer-events-auto absolute top-0 hidden w-(--toc-width) -right-(--toc-width) transition lg:block",
+							{
+								"toc-hide":
+									siteConfig.wallpaperMode.defaultMode ===
+									"banner",
+							},
+						]}
+					>
+						<div
+							id="toc-inner-wrapper"
+							class="fixed top-14 max-h-[calc(100dvh-7rem)] w-(--toc-width) overflow-x-hidden overflow-y-auto pr-2"
+						>
+							<div
+								id="toc-container"
+								class="w-full transition-swup-fade"
+							>
+								<SidebarTOC headings={headings} />
+							</div>
+						</div>
+					</aside>
+				</div>
+			</div>
+		)
+	}
 
 	<!-- 保留此元素以确保Swup正常工作 -->
 	{

@@ -17,7 +17,7 @@ const { dot, href, label }: ButtonTagProps = Astro.props;
 <a
 	href={href}
 	aria-label={label}
-	class="btn-regular h-8 text-sm px-3 rounded-lg"
+	class="button-tag btn-regular h-8 rounded-lg px-3 text-sm"
 >
 	{
 		dot && (
@@ -26,3 +26,12 @@ const { dot, href, label }: ButtonTagProps = Astro.props;
 	}
 	<slot />
 </a>
+
+<style>
+	@media (pointer: coarse) {
+		.button-tag {
+			min-width: 2.75rem;
+			min-height: 2.75rem;
+		}
+	}
+</style>

@@ -37,12 +37,9 @@ const categories = [...new Set(devices.map((device) => device.category))];
 			data-device-filters
 			aria-label="设备标签筛选"
 		>
-			<div class="device-filter-toolbar">
-				<label class="device-filter-title" for="device-tag-search">
-					按标签筛选
-				</label>
-				<span>品类与品牌可交叉组合</span>
-			</div>
+			<label class="device-filter-label" for="device-tag-search">
+				搜索或选择标签
+			</label>
 			<div class="device-filter-combobox" data-device-combobox>
 				<div class="device-tag-searchbox" data-device-searchbox>
 					<Icon
@@ -64,12 +61,13 @@ const categories = [...new Set(devices.map((device) => device.category))];
 						aria-expanded="false"
 						aria-haspopup="listbox"
 						aria-label="搜索并添加设备筛选标签"
-						placeholder="搜索标签或设备信息…"
+						placeholder="搜索设备，或选择标签"
 					/>
 					<button
 						type="button"
 						class="device-clear-filters"
 						data-device-clear
+						aria-label="清除所有筛选"
 						hidden
 					>
 						清除
@@ -137,7 +135,7 @@ const categories = [...new Set(devices.map((device) => device.category))];
 						</div>
 					</div>
 					<p class="device-tag-empty" data-device-tag-empty hidden>
-						没有匹配标签，当前文字仍会搜索设备信息。
+						没有匹配的标签
 					</p>
 				</div>
 			</div>
@@ -148,7 +146,7 @@ const categories = [...new Set(devices.map((device) => device.category))];
 			aria-live="polite"
 			data-device-result-summary
 		>
-			展示 {devices.length} 件设备
+			{devices.length} 件设备
 		</p>
 
 		<div class="device-grid" data-device-grid>
@@ -200,11 +198,9 @@ const categories = [...new Set(devices.map((device) => device.category))];
 	}
 
 	.device-tag-filter {
-		padding: 1.4rem 0 1.2rem;
-		border-bottom: 1px solid var(--line-divider);
+		padding: 1.35rem 0 0.4rem;
 	}
 
-	.device-filter-title,
 	.device-tag-group > p {
 		margin: 0;
 		color: var(--content-meta);
@@ -213,70 +209,57 @@ const categories = [...new Set(devices.map((device) => device.category))];
 		letter-spacing: 0.045em;
 	}
 
-	.device-filter-toolbar {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 1rem;
-		width: min(100%, 48rem);
-		margin-bottom: 0.7rem;
-	}
-
-	.device-filter-title {
-		color: var(--deep-text);
-		font-size: 0.88rem;
-		letter-spacing: -0.01em;
-	}
-
-	.device-filter-toolbar span {
-		color: var(--content-meta);
-		font-size: 0.75rem;
+	.device-filter-label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	.device-filter-combobox {
 		position: relative;
 		z-index: 5;
-		width: min(100%, 48rem);
+		width: min(100%, 42rem);
 	}
 
 	.device-tag-searchbox {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
-		gap: 0.4rem;
-		min-height: 3.25rem;
-		padding: 0.45rem 0.55rem;
+		gap: 0.35rem;
+		min-height: 3rem;
+		padding: 0.35rem 0.45rem 0.35rem 0.78rem;
 		border: 1px solid
-			color-mix(in oklab, var(--line-divider) 90%, transparent);
-		border-radius: 0.9rem;
-		background: color-mix(in oklab, var(--card-bg) 92%, var(--page-bg));
-		box-shadow:
-			0 1px 2px color-mix(in srgb, var(--deep-text) 7%, transparent),
-			inset 0 1px 0 color-mix(in srgb, white 36%, transparent);
+			color-mix(in oklab, var(--line-divider) 88%, var(--content-meta));
+		border-radius: 0.85rem;
+		background: var(--card-bg);
+		box-shadow: 0 1px 2px
+			color-mix(in srgb, var(--deep-text) 4%, transparent);
 		cursor: text;
 		transition:
 			border-color 150ms ease,
-			box-shadow 150ms ease,
-			background-color 150ms ease;
+			box-shadow 150ms ease;
 	}
 
 	.device-tag-searchbox:focus-within {
 		border-color: color-mix(
 			in oklab,
-			var(--primary) 52%,
+			var(--primary) 46%,
 			var(--line-divider)
 		);
-		background: var(--card-bg);
-		box-shadow:
-			0 0 0 3px color-mix(in oklab, var(--primary) 14%, transparent),
-			0 0.5rem 1.4rem color-mix(in srgb, var(--deep-text) 7%, transparent);
+		box-shadow: 0 0 0 3px
+			color-mix(in oklab, var(--primary) 10%, transparent);
 	}
 
 	:global(.device-search-icon) {
 		flex: none;
 		width: 1.15rem;
 		height: 1.15rem;
-		margin: 0 0.08rem;
+		margin: 0 0.12rem 0 0;
 		color: var(--content-meta);
 	}
 
@@ -284,7 +267,7 @@ const categories = [...new Set(devices.map((device) => device.category))];
 		flex: 1 1 12rem;
 		min-width: 7rem;
 		min-height: 2.15rem;
-		padding: 0.2rem 0.15rem;
+		padding: 0.2rem 0.12rem;
 		border: 0;
 		outline: 0;
 		background: transparent;
@@ -301,7 +284,7 @@ const categories = [...new Set(devices.map((device) => device.category))];
 	.device-tag-options {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.35rem;
 	}
 
 	.device-active-tags {
@@ -315,10 +298,14 @@ const categories = [...new Set(devices.map((device) => device.category))];
 	:global(.device-active-tag),
 	.device-tag,
 	.device-clear-filters {
-		min-height: 2.1rem;
+		min-height: 2rem;
 		border: 1px solid
-			color-mix(in oklab, var(--line-divider) 85%, transparent);
-		background: color-mix(in oklab, var(--card-bg) 84%, var(--page-bg));
+			color-mix(in oklab, var(--line-divider) 80%, transparent);
+		background: color-mix(
+			in oklab,
+			var(--btn-regular-bg) 76%,
+			var(--card-bg)
+		);
 		color: var(--content-meta);
 		cursor: pointer;
 		font: inherit;
@@ -328,8 +315,8 @@ const categories = [...new Set(devices.map((device) => device.category))];
 	}
 
 	.device-tag {
-		padding: 0.45rem 0.72rem;
-		border-radius: 0.6rem;
+		padding: 0.42rem 0.75rem;
+		border-radius: 999px;
 		box-shadow: none;
 	}
 
@@ -357,38 +344,41 @@ const categories = [...new Set(devices.map((device) => device.category))];
 
 	.device-tag.selected,
 	:global(.device-active-tag) {
-		border-color: color-mix(
-			in oklab,
-			var(--primary) 38%,
-			var(--line-divider)
-		);
-		background: color-mix(in oklab, var(--primary) 12%, var(--card-bg));
+		border-color: color-mix(in oklab, var(--primary) 28%, transparent);
+		background: color-mix(in oklab, var(--primary) 10%, var(--card-bg));
 		color: var(--btn-content);
+	}
+
+	.device-tag.selected::before {
+		content: "✓";
+		margin-right: 0.32rem;
+		color: var(--primary);
+		font-size: 0.75rem;
 	}
 
 	:global(.device-active-tag) {
 		display: inline-flex;
 		align-items: center;
 		flex: none;
-		padding: 0.4rem 0.48rem 0.4rem 0.68rem;
-		border-radius: 0.58rem;
+		gap: 0.3rem;
+		padding: 0.38rem 0.48rem 0.38rem 0.68rem;
+		border-radius: 999px;
 		box-shadow: none;
 		white-space: nowrap;
 	}
 
-	:global(.device-active-tag)::after {
-		content: "×";
-		margin-left: 0.3rem;
+	:global(.device-active-tag-remove) {
+		color: var(--content-meta);
 		font-size: 1rem;
 		font-weight: 400;
-		vertical-align: -0.04em;
+		line-height: 0.8;
 	}
 
 	.device-clear-filters {
 		flex: none;
-		padding: 0.4rem 0.5rem;
+		padding: 0.38rem 0.62rem;
 		border-color: transparent;
-		border-radius: 0.55rem;
+		border-radius: 999px;
 		background: transparent;
 		color: var(--content-meta);
 	}
@@ -400,22 +390,22 @@ const categories = [...new Set(devices.map((device) => device.category))];
 
 	.device-tag-catalogue {
 		position: absolute;
-		top: calc(100% + 0.5rem);
+		top: calc(100% + 0.4rem);
 		left: 0;
 		right: 0;
 		display: grid;
-		gap: 0.9rem;
+		gap: 0.75rem;
 		max-height: min(23rem, 55vh);
 		padding: 0.85rem;
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		border: 1px solid
 			color-mix(in oklab, var(--line-divider) 88%, transparent);
-		border-radius: 0.9rem;
+		border-radius: 0.85rem;
 		background: color-mix(in oklab, var(--card-bg) 97%, var(--page-bg));
 		box-shadow:
-			0 1.25rem 3rem color-mix(in srgb, var(--deep-text) 14%, transparent),
-			0 2px 6px color-mix(in srgb, var(--deep-text) 6%, transparent);
+			0 1rem 2.5rem color-mix(in srgb, var(--deep-text) 11%, transparent),
+			0 1px 4px color-mix(in srgb, var(--deep-text) 5%, transparent);
 		isolation: isolate;
 	}
 
@@ -462,7 +452,7 @@ const categories = [...new Set(devices.map((device) => device.category))];
 	}
 
 	.device-result-summary {
-		margin: 1rem 0;
+		margin: 0.8rem 0 1rem;
 		color: var(--content-meta);
 		font-size: 0.82rem;
 	}
@@ -500,22 +490,12 @@ const categories = [...new Set(devices.map((device) => device.category))];
 		}
 
 		.device-tag-filter {
-			padding-top: 1.25rem;
-		}
-
-		.device-filter-toolbar {
-			align-items: flex-start;
-			flex-direction: column;
-			gap: 0.2rem;
-		}
-
-		.device-filter-toolbar span {
-			font-size: 0.72rem;
+			padding-top: 1.1rem;
 		}
 
 		.device-tag-searchbox {
-			min-height: 3.5rem;
-			padding: 0.5rem;
+			min-height: 3.25rem;
+			padding: 0.35rem 0.4rem 0.35rem 0.7rem;
 			border-radius: 0.82rem;
 		}
 

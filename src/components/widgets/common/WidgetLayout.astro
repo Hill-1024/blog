@@ -46,7 +46,7 @@ const className = Astro.props.class;
 	{
 		isCollapsed && (
 			<div class="expand-btn px-4 -mb-2">
-				<button class="btn-plain rounded-lg w-full h-9">
+				<button class="widget-expand-button btn-plain h-9 w-full rounded-lg">
 					<div class="text-[var(--primary)] flex items-center justify-center gap-2 -translate-x-2">
 						<Icon
 							name="material-symbols:more-horiz"
@@ -63,6 +63,12 @@ const className = Astro.props.class;
 <style define:vars={{ collapsedHeight }}>
 	.collapsed {
 		height: var(--collapsedHeight);
+	}
+
+	@media (pointer: coarse) {
+		.widget-expand-button {
+			min-height: 2.75rem;
+		}
 	}
 </style>
 
