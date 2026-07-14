@@ -109,6 +109,7 @@ const archiveUrl = url("/archive/");
 		display: none;
 	}
 	.category-pill {
+		min-height: 44px;
 		border: 1.5px solid var(--line-divider);
 		color: var(--btn-content);
 		background: transparent;
@@ -127,6 +128,40 @@ const archiveUrl = url("/archive/");
 		background: var(--primary);
 		border-color: var(--primary);
 		opacity: 0.9;
+	}
+
+	@media (max-width: 639px) {
+		.category-bar {
+			padding: 0.5rem;
+		}
+
+		.category-bar-inner {
+			overflow-x: auto;
+			overscroll-behavior-inline: contain;
+			scrollbar-width: none;
+		}
+
+		.category-bar-inner::-webkit-scrollbar {
+			display: none;
+		}
+
+		.scroll-area {
+			flex: 0 0 auto;
+		}
+
+		.category-scroll {
+			overflow: visible;
+		}
+
+		.scroll-fade {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.category-scroll {
+			scroll-behavior: auto;
+		}
 	}
 </style>
 
@@ -173,7 +208,10 @@ const archiveUrl = url("/archive/");
 		const hasTag = params.has("tag");
 		const hasUncategorized = params.has("uncategorized");
 
-		pills.forEach((pill) => pill.removeAttribute("data-active"));
+		pills.forEach((pill) => {
+			pill.removeAttribute("data-active");
+			pill.removeAttribute("aria-current");
+		});
 
 		if (isHome || isHomePagination) {
 			bar.querySelector<HTMLAnchorElement>(
@@ -197,7 +235,10 @@ const archiveUrl = url("/archive/");
 		const activePill = bar.querySelector<HTMLAnchorElement>(
 			".category-pill[data-active]",
 		);
-		const scroll = bar.querySelector<HTMLElement>(".category-scroll");
+		activePill?.setAttribute("aria-current", "page");
+		const scroll = window.matchMedia("(max-width: 639px)").matches
+			? bar.querySelector<HTMLElement>(".category-bar-inner")
+			: bar.querySelector<HTMLElement>(".category-scroll");
 		if (activePill && scroll) {
 			const scrollLeft =
 				activePill.offsetLeft -
@@ -205,7 +246,10 @@ const archiveUrl = url("/archive/");
 				(scroll.clientWidth - activePill.offsetWidth) / 2;
 			scroll.scrollTo({
 				left: Math.max(0, scrollLeft),
-				behavior: "smooth",
+				behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+					.matches
+					? "auto"
+					: "smooth",
 			});
 		}
 
@@ -230,6 +274,11 @@ const archiveUrl = url("/archive/");
 		if (!scroll) {
 			return;
 		}
+		if (scroll.dataset.scrollInitialized === "true") {
+			updateScrollHint();
+			return;
+		}
+		scroll.dataset.scrollInitialized = "true";
 
 		// 鼠标滚轮横向滚动
 		scroll.addEventListener(

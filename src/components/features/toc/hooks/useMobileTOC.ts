@@ -7,6 +7,7 @@ export interface TOCItem {
 	id: string;
 	text: string;
 	level: number;
+	depth: number;
 	badge?: string;
 }
 
@@ -49,9 +50,20 @@ export function generateTOCItems(config: TOCConfig): TOCItem[] {
 		"ト",
 	];
 
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+	const content = document.querySelector(
+		"#post-container .markdown-content, #post-container .custom-md, .markdown-content, .custom-md, .prose",
+	);
+	const headings = Array.from(
+		content?.querySelectorAll<HTMLElement>(
+			"h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]",
+		) || [],
+	);
 	const items: TOCItem[] = [];
-	let h1Count = 0;
+	const levels = Array.from(headings).map((heading) =>
+		parseInt(heading.tagName.charAt(1), 10),
+	);
+	const minLevel = levels[0] ?? 1;
+	let topLevelCount = 0;
 
 	headings.forEach((heading) => {
 		if (!heading.id) {
@@ -60,28 +72,28 @@ export function generateTOCItems(config: TOCConfig): TOCItem[] {
 
 		const level = parseInt(heading.tagName.charAt(1), 10);
 
-		// 根据 depth 配置过滤标题
-		if (level > config.depth) {
+		const depth = Math.max(0, level - minLevel);
+		// depth is relative to the first heading in the article, matching desktop TOC.
+		if (depth < 0 || depth >= config.depth) {
 			return;
 		}
 
 		const text = (heading.textContent || "").replace(/#+\s*$/, "");
 		let badge = "";
 
-		// 只为 H1 标题生成 badge
-		if (level === 1) {
-			h1Count++;
+		if (depth === 0) {
+			topLevelCount++;
 			if (
 				config.useJapaneseBadge &&
-				h1Count - 1 < japaneseHiragana.length
+				topLevelCount - 1 < japaneseHiragana.length
 			) {
-				badge = japaneseHiragana[h1Count - 1];
+				badge = japaneseHiragana[topLevelCount - 1];
 			} else {
-				badge = h1Count.toString();
+				badge = topLevelCount.toString();
 			}
 		}
 
-		items.push({ id: heading.id, text, level, badge });
+		items.push({ id: heading.id, text, level, depth, badge });
 	});
 
 	return items;
@@ -131,7 +143,14 @@ export function checkIsHomePage(): boolean {
  * 更新活动标题（基于滚动位置）
  */
 export function updateActiveHeading(): string {
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+	const content = document.querySelector(
+		"#post-container .markdown-content, #post-container .custom-md, .markdown-content, .custom-md, .prose",
+	);
+	const headings = Array.from(
+		content?.querySelectorAll<HTMLElement>(
+			"h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]",
+		) || [],
+	);
 	const scrollTop = window.scrollY;
 	const offset = 100;
 
@@ -154,10 +173,13 @@ export function updateActiveHeading(): string {
 export function scrollToHeading(id: string, offset = 80): void {
 	const element = document.getElementById(id);
 	if (element) {
-		const elementPosition = element.offsetTop - offset;
+		const elementPosition =
+			element.getBoundingClientRect().top + window.scrollY - offset;
 		window.scrollTo({
 			top: elementPosition,
-			behavior: "smooth",
+			behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+				? "auto"
+				: "smooth",
 		});
 	}
 }

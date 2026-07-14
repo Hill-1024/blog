@@ -53,32 +53,31 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
 		<div class="card-base z-10 relative w-full overflow-hidden">
-			<!-- Gradient Banner -->
-			<div class="px-6 sm:px-9 py-6">
+			<div class="px-4 sm:px-6 md:px-8 pt-5 sm:pt-6">
 				<div
-					class="rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-dark,var(--primary))] p-5 sm:p-6"
+					class="rounded-xl border border-[var(--primary)]/15 bg-[var(--primary)]/[0.06] p-4 sm:p-5"
 				>
-					<div class="flex items-center justify-between gap-4">
+					<div class="flex items-start justify-between gap-4">
 						<div class="min-w-0">
 							<h1
-								class="text-2xl sm:text-3xl font-bold text-white mb-1 drop-shadow-sm truncate"
+								class="text-2xl sm:text-3xl font-bold leading-tight text-black/90 dark:text-white/90 mb-1"
 							>
 								{title}
 							</h1>
 							<p
-								class="text-sm sm:text-base text-white/80 truncate"
+								class="text-sm sm:text-base leading-relaxed text-black/60 dark:text-white/60"
 							>
 								{subtitle}
 							</p>
 						</div>
-						<div class="shrink-0 text-center">
+						<div class="shrink-0 text-right" aria-label={`${moments.length} ${i18n(I18nKey.diaryCount)}`}>
 							<span
-								class="block text-2xl sm:text-3xl font-bold text-white drop-shadow-sm"
+								class="block text-2xl sm:text-3xl font-bold leading-none text-[var(--primary)]"
 							>
 								{moments.length}
 							</span>
 							<span
-								class="block text-xs sm:text-sm text-white/70"
+								class="block mt-1 text-xs sm:text-sm text-black/55 dark:text-white/55"
 							>
 								{i18n(I18nKey.diaryCount)}
 							</span>
@@ -87,11 +86,10 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 				</div>
 			</div>
 
-			<!-- Content -->
-			<div class="px-6 sm:px-9 pt-2 pb-6">
+			<div class="px-4 sm:px-6 md:px-8 pt-5 pb-6">
 				{
 					moments.length > 0 && allTags.length > 0 && (
-						<div class="mb-8">
+						<div class="mb-6">
 							<FilterTabs tabs={filterTabs} dataAttr="tags" />
 						</div>
 					)
@@ -111,26 +109,26 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 					}
 				</div>
 
-				<div id="no-results" class="hidden text-center py-16">
+				<div id="no-results" class="hidden text-center py-12">
 					<iconify-icon
 						icon="material-symbols:edit-note"
 						width="64"
 						height="64"
-						class="text-black/15 dark:text-white/15 mb-4"
+						class="text-black/25 dark:text-white/25 mb-4"
 					></iconify-icon>
-					<p class="text-black/40 dark:text-white/40 text-lg">
+					<p class="text-black/60 dark:text-white/60 text-base">
 						{i18n(I18nKey.diaryNoResults)}
 					</p>
 				</div>
 
 				{
 					moments.length === 0 && (
-						<div class="text-center py-16">
+						<div class="text-center py-12">
 							<iconify-icon
 								icon="material-symbols:edit-note"
 								width="64"
 								height="64"
-								class="text-black/15 dark:text-white/15 mb-4"
+								class="text-black/25 dark:text-white/25 mb-4"
 							/>
 							<h3 class="text-lg font-medium text-black/90 dark:text-white/90 mb-2">
 								{i18n(I18nKey.diaryNoResults)}
@@ -140,7 +138,7 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 				}
 
 				<div
-					class="text-center mt-8 text-black/50 dark:text-white/50 text-sm italic"
+					class="text-center mt-8 text-black/60 dark:text-white/60 text-sm"
 				>
 					{i18n(I18nKey.diaryTips)}
 				</div>

@@ -5,6 +5,7 @@
 
 import {
 	BANNER_HEIGHT,
+	BANNER_HEIGHT_EXTEND,
 	BANNER_HEIGHT_HOME,
 	SCROLL_CONFIG,
 	SWUP_SELECTORS,
@@ -21,6 +22,9 @@ export class BackToTopHandler {
 	private navbar: HTMLElement | null = null;
 	private bannerEnabled: boolean;
 	private scrollHandler: () => void;
+	private eventsBound = false;
+	private readonly resizeHandler = this.handleResize.bind(this);
+	private readonly clickHandler = this.scrollToTop.bind(this);
 
 	constructor(bannerEnabled: boolean) {
 		this.bannerEnabled = bannerEnabled;
@@ -36,6 +40,7 @@ export class BackToTopHandler {
 	init(): void {
 		this.cacheElements();
 		this.bindEvents();
+		this.handleScroll();
 	}
 
 	/**
@@ -55,13 +60,26 @@ export class BackToTopHandler {
 	 * 绑定事件监听
 	 */
 	private bindEvents(): void {
+		if (this.eventsBound) {
+			return;
+		}
+
 		// 使用 passive 事件监听器提升滚动性能
 		window.addEventListener("scroll", this.scrollHandler, {
 			passive: true,
 		});
-		window.addEventListener("resize", this.handleResize.bind(this), {
+		window.addEventListener("resize", this.resizeHandler, {
 			passive: true,
 		});
+		this.backToTopBtn?.addEventListener("click", this.clickHandler);
+		this.eventsBound = true;
+	}
+
+	private scrollToTop(): void {
+		const reduceMotion = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		).matches;
+		window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
 	}
 
 	/**
@@ -112,31 +130,32 @@ export class BackToTopHandler {
 
 		if (scrollTop > threshold) {
 			this.backToTopBtn.classList.remove("hide");
+			this.setButtonAccessibility(false);
 		} else {
 			this.backToTopBtn.classList.add("hide");
+			this.setButtonAccessibility(true);
 		}
+	}
+
+	private setButtonAccessibility(hidden: boolean): void {
+		const button = this.backToTopBtn?.querySelector("button");
+		if (!button) {
+			return;
+		}
+		button.tabIndex = hidden ? -1 : 0;
+		button.setAttribute("aria-hidden", String(hidden));
 	}
 
 	/**
 	 * 更新 TOC 可见性
 	 */
-	private updateTOCVisibility(scrollTop: number, bannerHeight: number): void {
-		if (!this.bannerEnabled || !this.toc) {
+	private updateTOCVisibility(_scrollTop: number, _bannerHeight: number): void {
+		if (!this.toc) {
 			return;
 		}
 
-		const isBannerMode = document.body.classList.contains("enable-banner");
-
-		if (isBannerMode) {
-			if (scrollTop > bannerHeight) {
-				this.toc.classList.remove("toc-hide");
-			} else {
-				this.toc.classList.add("toc-hide");
-			}
-		} else {
-			// Fullscreen 或 None 模式下始终显示 TOC
-			this.toc.classList.remove("toc-hide");
-		}
+		// 非首页横幅已经移除，文章目录不再等待滚过横幅才出现。
+		this.toc.classList.remove("toc-hide");
 	}
 
 	/**
@@ -170,7 +189,7 @@ export class BackToTopHandler {
 		// 计算 --banner-height-extend
 		// 需要是 4 的倍数以避免模糊文本
 		let offset = Math.floor(
-			window.innerHeight * (30 / 100), // BANNER_HEIGHT_EXTEND
+			window.innerHeight * (BANNER_HEIGHT_EXTEND / 100),
 		);
 		offset = offset - (offset % 4);
 		document.documentElement.style.setProperty(
@@ -184,7 +203,9 @@ export class BackToTopHandler {
 	 */
 	destroy(): void {
 		window.removeEventListener("scroll", this.scrollHandler);
-		window.removeEventListener("resize", this.handleResize.bind(this));
+		window.removeEventListener("resize", this.resizeHandler);
+		this.backToTopBtn?.removeEventListener("click", this.clickHandler);
+		this.eventsBound = false;
 		this.backToTopBtn = null;
 		this.toc = null;
 		this.navbar = null;

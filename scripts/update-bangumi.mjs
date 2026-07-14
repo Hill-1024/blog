@@ -179,7 +179,9 @@ async function processData(items, status) {
 				item.subject?.name_cn || item.subject?.name || "Unknown Title",
 			status: status,
 			rating: rating,
-			cover: item.subject?.images?.medium || "/assets/anime/default.webp",
+			cover:
+				item.subject?.images?.medium ||
+				"/assets/home/default-logo.webp",
 			description: description,
 			episodes: `${totalEpisodes} episodes`,
 			year: year,

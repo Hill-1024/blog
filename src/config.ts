@@ -64,7 +64,7 @@ export const siteConfig: SiteConfig = {
 
   // 页面自动缩放配置
   pageScaling: {
-    enable: true, // 是否开启自动缩放
+    enable: false, // 使用真实响应式布局，避免窄屏被整体缩放
     targetWidth: 2000, // 目标宽度，低于此宽度时开始缩放
   },
 
@@ -118,7 +118,7 @@ export const siteConfig: SiteConfig = {
     // "mobile" = 仅在移动端显示
     // "desktop" = 仅在桌面端显示
     // "both" = 在所有设备上显示
-    showModeSwitchOnMobile: "desktop",
+    showModeSwitchOnMobile: "off",
   },
 
   banner: {
@@ -150,14 +150,14 @@ export const siteConfig: SiteConfig = {
     position: "center", // 等同于 object-position，仅支持 'top', 'center', 'bottom'。默认为 'center'
 
     carousel: {
-      enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
-      interval: 3, // 轮播间隔时间（秒）
+      enable: false, // 静态横幅可降低首屏动态干扰
+      interval: 8, // 重新启用轮播时使用更从容的切换节奏
     },
 
     waves: {
       enable: true, // 是否启用水波纹效果（注意：此功能性能开销较大）
-      performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
-      mobileDisable: false, // 移动端禁用
+      performanceMode: true, // 性能模式：减少动画复杂度(性能提升40%)
+      mobileDisable: true, // 移动端禁用
     },
 
     // PicFlow API支持(智能图片API)
@@ -175,7 +175,7 @@ export const siteConfig: SiteConfig = {
 
       subtitle: ["Personal Blog Site"],
       typewriter: {
-        enable: true, // 启用副标题打字机效果
+        enable: false, // 保持首屏文案稳定，减少感官负载
 
         speed: 100, // 打字速度（毫秒）
         deleteSpeed: 100, // 删除速度（毫秒）
@@ -191,7 +191,7 @@ export const siteConfig: SiteConfig = {
     },
 
     navbar: {
-      transparentMode: "full", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明
+      transparentMode: "semi", // 始终保证横幅上的导航可读性
     },
   },
   toc: {
@@ -199,8 +199,8 @@ export const siteConfig: SiteConfig = {
     mobileTop: true, // 手机端顶部 TOC 按钮
     desktopSidebar: true, // 电脑端右侧边栏 TOC
     floating: true, // 悬浮 TOC 按钮
-    depth: 2, // 目录深度，1-6，1 表示只显示 h1 标题，2 表示显示 h1 和 h2 标题，依此类推
-    useJapaneseBadge: true, // 使用日语假名标记（あいうえお...）代替数字，开启后会将 1、2、3... 改为 あ、い、う...
+    depth: 3, // 展示相对三级层级，兼容从 h1 或 h2 开始的文章
+    useJapaneseBadge: false, // 使用清晰的数字序号，降低理解成本
   },
   showCoverInContent: true, // 在文章内容页显示文章封面
   generateOgImages: false, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
@@ -595,9 +595,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
   // 侧栏组件布局配置
   components: {
-    left: ["calendar","music-sidebar"],
+    left: [],
     right: ["profile", "tags"],
-    drawer: ["profile",  "music-sidebar", "tags"],
+    drawer: [],
   },
 
   // 默认动画配置

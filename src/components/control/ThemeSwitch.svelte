@@ -88,7 +88,7 @@
 
 <button
 	aria-label="Light/Dark Mode"
-	class="relative btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 theme-switch-btn z-50"
+	class="relative btn-plain scale-animation rounded-lg h-[44px] w-[44px] active:scale-90 theme-switch-btn z-50"
 	id="scheme-switch"
 	onclick={toggleScheme}
 	data-mode={mode}

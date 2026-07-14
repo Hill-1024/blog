@@ -12,11 +12,10 @@ import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 
 import { fullscreenWallpaperConfig, siteConfig } from "../config";
-import { BANNER_HEIGHT } from "../constants/constants";
+import { BANNER_HEIGHT_HOME } from "../constants/constants";
 import {
 	calculateGridLayout,
 	getBannerImages,
-	getMainPanelTop,
 	getTransparencyClass,
 	shouldEnableTransparency,
 } from "../utils/grid-layout-utils";
@@ -32,6 +31,7 @@ interface Props {
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
 	headings?: MarkdownHeading[];
+	minimal?: boolean;
 }
 
 // 获取 banner 图片
@@ -45,6 +45,7 @@ const {
 	setOGTypeArticle,
 	postSlug,
 	headings = [],
+	minimal = false,
 } = Astro.props;
 const hasBannerCredit = siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
@@ -55,10 +56,11 @@ const isHomePage = Astro.url.pathname === "/" || Astro.url.pathname === "";
 const mobileNonHomeBannerClass = !isHomePage ? "mobile-hide-banner" : "";
 
 // 计算主内容区域位置
-const finalMainPanelTop = getMainPanelTop(
-	siteConfig.wallpaperMode.defaultMode,
-	BANNER_HEIGHT,
-);
+// Keep the content edge tied to the actual banner edge at every breakpoint.
+const finalMainPanelTop =
+	siteConfig.wallpaperMode.defaultMode === "banner"
+		? `var(--home-banner-height, ${BANNER_HEIGHT_HOME}vh)`
+		: "5.5rem";
 
 // 计算网格布局
 const {
@@ -70,6 +72,7 @@ const {
 	mobileShowSidebar,
 	tabletShowSidebar,
 	desktopShowSidebar,
+	desktopShowLeftSidebar,
 } = calculateGridLayout({
 	siteConfig,
 	widgetManager,
@@ -101,7 +104,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 			"semi"}
 		defaultWallpaperMode={siteConfig.wallpaperMode.defaultMode}
 		defaultPostListLayout={siteConfig.postListLayout?.defaultMode || "list"}
-		BANNER_HEIGHT={BANNER_HEIGHT}
+		BANNER_HEIGHT={BANNER_HEIGHT_HOME}
 		pageScaling={siteConfig.pageScaling}
 	/>
 
@@ -113,10 +116,10 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 
 	<!-- Navbar -->
 	<slot slot="head" name="head" />
-	<div
+	<header
 		id="top-row"
 		class="z-50 pointer-events-none relative transition-all duration-700 max-w-(--page-width) px-0 md:px-4 mx-auto"
-		class:list={[""]}
+		class:list={[isHomePage ? "home-top-row" : "content-top-row"]}
 	>
 		<div
 			id="navbar-wrapper"
@@ -124,7 +127,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 		>
 			<Navbar />
 		</div>
-	</div>
+	</header>
 
 	<!-- Banner 组件 -->
 	<Banner
@@ -137,13 +140,21 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 	<!-- Main content -->
 	<div
 		class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? "mobile-main-no-banner" : ""} ${siteConfig.wallpaperMode.defaultMode === "none" ? "no-banner-layout" : ""} ${transparentClass}`}
-		style={`top: ${finalMainPanelTop}`}
+		style={`top: ${isHomePage ? finalMainPanelTop : "5.5rem"} !important`}
 	>
 		<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
 		<div class="relative max-w-(--page-width) mx-auto pointer-events-auto">
 			<div
 				id="main-grid"
-				class={`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? "mobile-no-sidebar" : ""} ${hasRightSidebarComponents ? "mobile-both-sidebar" : ""}`}
+				class:list={[
+					`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4`,
+					{
+						"mobile-no-sidebar":
+							!mobileShowSidebar || !hasMobileDrawerComponents,
+						"mobile-both-sidebar": hasRightSidebarComponents,
+						"article-toc-active": headings.length > 0,
+					},
+				]}
 				data-layout-mode={defaultPostListLayout}
 			>
 				<!-- Banner image credit -->
@@ -207,10 +218,42 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 							</div>
 						)
 					}
+
+					{
+						siteConfig.toc.enable &&
+							siteConfig.toc.desktopSidebar && (
+								<aside
+									id="toc-wrapper"
+									aria-label="文章目录"
+									class:list={[
+										"article-toc-sidebar hidden lg:self-start lg:h-fit lg:mb-4 lg:max-w-[17.5rem] lg:col-span-1 lg:row-start-1",
+										desktopShowLeftSidebar
+											? "lg:col-start-3 lg:col-end-4"
+											: "lg:col-start-2 lg:col-end-3",
+									]}
+								>
+									<div
+										id="toc-inner-wrapper"
+										class="card-base sticky top-24 max-h-[calc(100vh-8rem)] overflow-x-hidden overflow-y-auto rounded-[var(--radius-large)] p-3"
+									>
+										<p class="px-2 pb-2 text-sm font-semibold text-75">
+											目录
+										</p>
+										<div
+											id="toc-container"
+											class="w-full transition-swup-fade"
+										>
+											<SidebarTOC headings={headings} />
+										</div>
+									</div>
+								</aside>
+							)
+					}
 				</div>
 
 				<main
 					id="swup-container"
+					data-layout-minimal={String(minimal)}
 					class={`${mainContentClass} transition-main`}
 				>
 					<div
@@ -220,17 +263,10 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 						<!-- the overflow-hidden here prevent long text break the layout-->
 						<!-- make id different from windows.swup global property -->
 						<slot />
-						<div
-							class="footer col-span-full onload-animation hidden lg:block"
-						>
-							<Footer />
-						</div>
 					</div>
 				</main>
 
-				<div
-					class="footer col-span-full onload-animation block lg:hidden"
-				>
+				<div class="footer col-span-full onload-animation">
 					<Footer />
 				</div>
 			</div>
@@ -242,47 +278,47 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 	<style>
 		.right-sidebar-container {
 			align-self: start;
-			display: contents;
 		}
 
 		.right-sidebar-container #right-sidebar {
 			height: fit-content;
 		}
-	</style>
 
-	<!-- 侧边栏TOC模式 -->
-	{
-		siteConfig.toc.enable && siteConfig.toc.desktopSidebar && (
-			<div class="absolute w-full z-0 hidden 2xl:block">
-				<div class="relative max-w-(--page-width) mx-auto">
-					<div
-						id="toc-wrapper"
-						class:list={[
-							"hidden lg:block transition absolute top-0 w-(--toc-width) items-center",
-							"-right-(--toc-width)",
-							{
-								"toc-hide":
-									siteConfig.wallpaperMode.defaultMode ===
-									"banner",
-							},
-						]}
-					>
-						<div
-							id="toc-inner-wrapper"
-							class="fixed top-14 w-(--toc-width) max-h-[calc(100vh-10rem)] overflow-x-hidden overflow-y-auto"
-						>
-							<div
-								id="toc-container"
-								class="w-full transition-swup-fade"
-							>
-								<SidebarTOC headings={headings} />
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		)
-	}
+		.article-toc-sidebar {
+			display: none;
+		}
+
+		:global(#main-grid.article-toc-active) .right-sidebar-container {
+			display: none !important;
+		}
+
+		:global(#main-grid.article-toc-active) .article-toc-sidebar {
+			display: none;
+		}
+
+		@media (min-width: 1280px) {
+			:global(#main-grid.article-toc-active) .article-toc-sidebar {
+				display: block;
+			}
+		}
+
+		:global(#main-grid:has(> main[data-layout-minimal="true"])) {
+			grid-template-columns: minmax(0, 1fr) !important;
+		}
+
+		:global(#main-grid:has(> main[data-layout-minimal="true"])) #sidebar,
+		:global(#main-grid:has(> main[data-layout-minimal="true"]))
+			.right-sidebar-container,
+		:global(#main-grid:has(> main[data-layout-minimal="true"]))
+			.article-toc-sidebar {
+			display: none !important;
+		}
+
+		:global(#main-grid:has(> main[data-layout-minimal="true"])) > main {
+			grid-column: 1 / -1 !important;
+			width: 100%;
+		}
+	</style>
 
 	<!-- 保留此元素以确保Swup正常工作 -->
 	{

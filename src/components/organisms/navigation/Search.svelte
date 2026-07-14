@@ -3,6 +3,10 @@
 	import { i18n } from "@i18n/translation";
 	import Icon from "@iconify/svelte";
 	import { navigateToPage } from "@utils/navigation-utils";
+	import {
+		panelManager,
+		type PanelStateChangeDetail,
+	} from "@utils/panel-manager.js";
 	import { url } from "@utils/url-utils";
 	import { onDestroy, onMount } from "svelte";
 
@@ -14,6 +18,7 @@
 	let pagefindLoaded = false;
 	let initialized = $state(false);
 	let isDesktopSearchExpanded = $state(false);
+	let isMobilePanelOpen = $state(false);
 	let debounceTimer: NodeJS.Timeout;
 	let windowJustFocused = false;
 	let focusTimer: NodeJS.Timeout;
@@ -38,15 +43,16 @@
 		},
 	];
 
-	const togglePanel = () => {
-		const panel = document.getElementById("search-panel");
-		panel?.classList.toggle("float-panel-closed");
-		if (
-			!panel?.classList.contains("float-panel-closed") &&
-			typeof window.loadPagefind === "function"
-		) {
-			window.loadPagefind();
+	const togglePanel = async () => {
+		isMobilePanelOpen = await panelManager.togglePanel("search-panel");
+		if (!isMobilePanelOpen) return;
+
+		if (typeof window.loadPagefind === "function") {
+			void window.loadPagefind();
 		}
+		requestAnimationFrame(() => {
+			document.getElementById("search-input-mobile")?.focus();
+		});
 	};
 
 	const toggleDesktopSearch = () => {
@@ -84,22 +90,13 @@
 	};
 
 	const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
-		const panel = document.getElementById("search-panel");
-		if (!panel || !isDesktop) {
-			return;
-		}
-		if (show) {
-			panel.classList.remove("float-panel-closed");
-		} else {
-			panel.classList.add("float-panel-closed");
-		}
+		if (!isDesktop) return;
+		void panelManager.togglePanel("search-panel", show);
 	};
 
 	const closeSearchPanel = (): void => {
-		const panel = document.getElementById("search-panel");
-		if (panel) {
-			panel.classList.add("float-panel-closed");
-		}
+		void panelManager.closePanel("search-panel");
+		isMobilePanelOpen = false;
 		// 清空搜索关键词和结果
 		keywordDesktop = "";
 		keywordMobile = "";
@@ -149,6 +146,23 @@
 	};
 
 	onMount(() => {
+		const handlePanelStateChange = (event: Event) => {
+			const { detail } = event as CustomEvent<PanelStateChangeDetail>;
+			if (detail.panelId === "search-panel") {
+				isMobilePanelOpen = detail.isOpen;
+			}
+		};
+		const handleKeydown = (event: KeyboardEvent) => {
+			if (event.key === "Escape" && isMobilePanelOpen) {
+				event.preventDefault();
+				void panelManager.closePanel("search-panel");
+				document.getElementById("search-switch")?.focus();
+			}
+		};
+
+		document.addEventListener("panel-state-change", handlePanelStateChange);
+		document.addEventListener("keydown", handleKeydown);
+
 		const initializeSearch = () => {
 			initialized = true;
 			pagefindLoaded =
@@ -195,6 +209,11 @@
 
 		return () => {
 			window.removeEventListener("focus", handleFocus);
+			document.removeEventListener(
+				"panel-state-change",
+				handlePanelStateChange,
+			);
+			document.removeEventListener("keydown", handleKeydown);
 		};
 	});
 
@@ -233,6 +252,7 @@
 		}
 		clearTimeout(debounceTimer);
 		clearTimeout(focusTimer);
+		clearTimeout(blurTimer);
 	});
 </script>
 
@@ -240,26 +260,19 @@
 <div class="hidden lg:block relative w-11 h-11 shrink-0">
 	<div
 		id="search-bar"
+		role="search"
+		aria-label={i18n(I18nKey.search)}
 		class="flex transition-all items-center h-11 rounded-lg absolute right-0 top-0 shrink-0
             {isDesktopSearchExpanded
 			? 'bg-black/[0.04] hover:bg-black/[0.06] focus-within:bg-black/[0.06] dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10'
 			: 'btn-plain active:scale-90'}
-            {isDesktopSearchExpanded ? 'w-48' : 'w-11'}"
-		role="button"
-		tabindex="0"
-		aria-label="Search"
+			{isDesktopSearchExpanded ? 'w-48' : 'w-11'}"
 		onmouseenter={() => {
 			if (!isDesktopSearchExpanded) {
 				toggleDesktopSearch();
 			}
 		}}
 		onmouseleave={collapseDesktopSearch}
-		onclick={() => {
-			const input = document.getElementById(
-				"search-input-desktop",
-			) as HTMLInputElement;
-			input?.focus();
-		}}
 	>
 		<Icon
 			icon="material-symbols:search"
@@ -271,6 +284,8 @@
 		></Icon>
 		<input
 			id="search-input-desktop"
+			type="search"
+			aria-label={i18n(I18nKey.search)}
 			placeholder={i18n(I18nKey.search)}
 			bind:value={keywordDesktop}
 			onfocus={() => {
@@ -291,10 +306,13 @@
 
 <!-- toggle btn for phone/tablet view -->
 <button
+	type="button"
 	onclick={togglePanel}
-	aria-label="Search Panel"
+	aria-label={i18n(I18nKey.search)}
+	aria-controls="search-panel"
+	aria-expanded={isMobilePanelOpen}
 	id="search-switch"
-	class="btn-plain scale-animation lg:!hidden rounded-lg w-11 h-11 active:scale-90"
+	class="btn-plain scale-animation lg:!hidden rounded-lg w-[44px] h-[44px] active:scale-90"
 >
 	<Icon icon="material-symbols:search" class="text-[1.25rem]"></Icon>
 </button>
@@ -302,6 +320,10 @@
 <!-- search panel -->
 <div
 	id="search-panel"
+	role="search"
+	aria-label={i18n(I18nKey.search)}
+	aria-hidden={!isMobilePanelOpen}
+	inert={!isMobilePanelOpen}
 	class="float-panel float-panel-closed absolute md:w-[30rem] top-20 left-4 md:left-[unset] right-4 z-50 search-panel shadow-2xl rounded-2xl p-2"
 >
 	<!-- search bar inside panel for phone/tablet -->
@@ -317,6 +339,9 @@
 			class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"
 		></Icon>
 		<input
+			id="search-input-mobile"
+			type="search"
+			aria-label={i18n(I18nKey.search)}
 			placeholder={i18n(I18nKey.search)}
 			bind:value={keywordMobile}
 			class="pl-10 absolute inset-0 text-sm bg-transparent outline-0

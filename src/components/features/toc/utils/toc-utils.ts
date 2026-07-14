@@ -11,7 +11,7 @@ import { getKatakanaBadge } from "./japanese-katakana";
  * @returns 标题数据数组
  */
 export function extractHeadings(
-	containerSelector = "#post-container",
+	containerSelector = "#post-container .markdown-content, #post-container .custom-md, .markdown-content, .custom-md, .prose",
 ): HeadingData[] {
 	const container = document.querySelector(containerSelector);
 	if (!container) {
@@ -23,7 +23,7 @@ export function extractHeadings(
 	);
 	return Array.from(headings).map((h) => ({
 		id: h.id,
-		text: (h.textContent || "").replace(/#+\s*$/, ""),
+		text: (h.textContent || "").replace(/#+\s*$/, "").trim(),
 		level: parseInt(h.tagName[1]),
 	}));
 }
@@ -37,7 +37,9 @@ export function getMinLevel(headings: HeadingData[]): number {
 	if (headings.length === 0) {
 		return 1;
 	}
-	return Math.min(...headings.map((h) => h.level));
+	// 以文章的第一个标题作为层级基准；后文偶发的更浅标题不应
+	// 反向改变前面所有目录项的缩进。
+	return headings[0].level;
 }
 
 /**
@@ -60,9 +62,9 @@ export function generateTOCItems(
 	let h1Count = 0;
 
 	return headings
-		.filter((h) => h.level < minLevel + maxDepth)
+		.filter((h) => Math.max(0, h.level - minLevel) < maxDepth)
 		.map((h) => {
-			const depth = h.level - minLevel;
+			const depth = Math.max(0, h.level - minLevel);
 			let badge: string | undefined;
 
 			if (h.level === minLevel) {
@@ -95,7 +97,9 @@ export function scrollToHeading(id: string, offset = 80): void {
 		element.getBoundingClientRect().top + window.scrollY - offset;
 	window.scrollTo({
 		top: targetTop,
-		behavior: "smooth",
+		behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+			? "auto"
+			: "smooth",
 	});
 }
 

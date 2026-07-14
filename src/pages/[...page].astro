@@ -6,6 +6,8 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import type { GetStaticPaths } from "astro";
 
 import { siteConfig } from "../config";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
 import { PAGE_SIZE } from "../constants/constants";
 import { getSortedPosts } from "../utils/content-utils";
 import { initPostIdMap } from "../utils/permalink-utils";
@@ -26,6 +28,16 @@ const len = page.data.length;
 ---
 
 <MainGridLayout>
+	<h1
+		class="sr-only"
+		aria-hidden={page.currentPage === 1 ? "true" : undefined}
+	>
+		{
+			page.currentPage === 1
+				? siteConfig.title
+				: `${i18n(I18nKey.archive)} · ${page.currentPage}`
+		}
+	</h1>
 	{showCategoryBar && <CategoryBar />}
 	<PostPage page={page} />
 	<Pagination

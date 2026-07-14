@@ -9,7 +9,7 @@ const { album } = Astro.props as AlbumCardProps;
 <a
 	href={`/albums/${album.id}/`}
 	data-tags={album.tags?.join(",") || ""}
-	class="album-card group relative block overflow-hidden rounded-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+	class="album-card group relative block h-full overflow-hidden rounded-xl border border-black/10 dark:border-white/10 transition-colors duration-200 hover:border-[var(--primary)]/35"
 >
 	<!-- Cover Image -->
 	<div class="aspect-4/3 relative overflow-hidden">
@@ -18,7 +18,7 @@ const { album } = Astro.props as AlbumCardProps;
 				<img
 					src={album.cover}
 					alt={album.title}
-					class="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover:scale-105"
+					class="w-full h-full object-cover pointer-events-none"
 					loading="lazy"
 					decoding="async"
 				/>
@@ -44,10 +44,10 @@ const { album } = Astro.props as AlbumCardProps;
 
 		<!-- Gradient overlay + info -->
 		<div
-			class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+			class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"
 		>
 		</div>
-		<div class="absolute bottom-0 left-0 right-0 p-4">
+		<div class="absolute bottom-0 left-0 right-0 p-3.5 sm:p-4">
 			<h3
 				class="font-bold text-base text-white line-clamp-1 drop-shadow-lg"
 			>
@@ -57,7 +57,7 @@ const { album } = Astro.props as AlbumCardProps;
 			{
 				album.description && (
 					<p
-						class="text-xs text-white/75 line-clamp-1 mt-1 leading-relaxed"
+						class="text-xs text-white/85 line-clamp-1 mt-1 leading-relaxed"
 						title={album.description}
 					>
 						{album.description}
@@ -66,7 +66,7 @@ const { album } = Astro.props as AlbumCardProps;
 			}
 
 			<div
-				class="flex items-center gap-3 text-xs text-white/70 mt-1.5 flex-wrap"
+				class="flex items-center gap-x-3 gap-y-1 text-xs text-white/80 mt-1.5 flex-wrap"
 			>
 				{
 					album.date && (
@@ -94,8 +94,8 @@ const { album } = Astro.props as AlbumCardProps;
 			{
 				album.tags && album.tags.length > 0 && (
 					<div class="flex flex-wrap gap-1 mt-2">
-						{album.tags.slice(0, 4).map((tag: string) => (
-							<span class="text-[0.6rem] px-1.5 py-0.5 rounded bg-white/20 text-white/90 backdrop-blur-sm">
+						{album.tags.slice(0, 3).map((tag: string) => (
+							<span class="text-[0.6875rem] px-1.5 py-0.5 rounded bg-white/20 text-white/90 backdrop-blur-sm">
 								{tag}
 							</span>
 						))}
@@ -107,61 +107,8 @@ const { album } = Astro.props as AlbumCardProps;
 </a>
 
 <style>
-	.album-card {
-		animation: fadeInUp 0.5s ease-out forwards;
-		opacity: 0;
-	}
-
 	.album-card.filtered-out {
 		display: none;
-	}
-
-	@keyframes fadeInUp {
-		from {
-			opacity: 0;
-			transform: translateY(20px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.album-card:nth-child(1) {
-		animation-delay: 0.03s;
-	}
-	.album-card:nth-child(2) {
-		animation-delay: 0.06s;
-	}
-	.album-card:nth-child(3) {
-		animation-delay: 0.09s;
-	}
-	.album-card:nth-child(4) {
-		animation-delay: 0.12s;
-	}
-	.album-card:nth-child(5) {
-		animation-delay: 0.15s;
-	}
-	.album-card:nth-child(6) {
-		animation-delay: 0.18s;
-	}
-	.album-card:nth-child(7) {
-		animation-delay: 0.21s;
-	}
-	.album-card:nth-child(8) {
-		animation-delay: 0.24s;
-	}
-	.album-card:nth-child(9) {
-		animation-delay: 0.27s;
-	}
-	.album-card:nth-child(10) {
-		animation-delay: 0.3s;
-	}
-	.album-card:nth-child(11) {
-		animation-delay: 0.33s;
-	}
-	.album-card:nth-child(12) {
-		animation-delay: 0.36s;
 	}
 
 	.line-clamp-1 {

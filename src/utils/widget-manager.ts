@@ -57,15 +57,12 @@ export class WidgetManager {
 		if (deviceType === "mobile") {
 			activeSidebar = "drawer";
 		}
-		// 平板端逻辑：在左侧有配置组件的情况下仅保留左侧组件，左侧没有配置组件时则将右侧的组件移到左侧
+		// 平板端保持单列阅读；右侧辅助组件只在桌面显示。
 		else if (deviceType === "tablet") {
 			if (sidebar === "right") {
 				return [];
 			}
-			if (sidebar === "left") {
-				activeSidebar =
-					this.config.components.left.length > 0 ? "left" : "right";
-			}
+			activeSidebar = "left";
 		}
 
 		const componentTypes = this.config.components[activeSidebar] || [];

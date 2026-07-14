@@ -16,7 +16,7 @@ const {
 	navbarTransparentMode = "semi",
 	defaultWallpaperMode = "banner",
 	defaultPostListLayout = "list",
-	BANNER_HEIGHT = 35,
+	BANNER_HEIGHT = 47,
 	pageScaling = { enable: false },
 } = Astro.props;
 ---
@@ -32,6 +32,23 @@ const {
 		pageScaling,
 	}}
 >
+	function syncLayoutShell(layout) {
+		const mainGrid = document.getElementById("main-grid");
+		const postListContainer = document.getElementById(
+			"post-list-container",
+		);
+		const effectiveLayout = postListContainer ? layout : "list";
+		const rightSidebar = document.querySelector(".right-sidebar-container");
+
+		mainGrid?.setAttribute("data-layout-mode", effectiveLayout);
+		rightSidebar?.classList.toggle(
+			"hidden-in-grid-mode",
+			Boolean(postListContainer && effectiveLayout === "grid"),
+		);
+
+		return { mainGrid, postListContainer, effectiveLayout };
+	}
+
 	// 立即执行，在页面渲染前应用壁纸模式和布局模式，避免闪烁
 	(function () {
 		const wallpaperMode =
@@ -64,12 +81,19 @@ const {
 				".absolute.w-full.z-30.pointer-events-none",
 			);
 			if (mainContent) {
-				if (wallpaperMode === "banner") {
-					// 让主内容区域从banner顶部开始，这样波浪线会自然覆盖内容上部
-					mainContent.style.top = `${BANNER_HEIGHT}vh`;
+				const isContentPage = mainContent.classList.contains(
+					"mobile-main-no-banner",
+				);
+				if (wallpaperMode === "banner" && !isContentPage) {
+					// 始终与实际 Banner 底边共用同一个响应式高度变量。
+					mainContent.style.setProperty(
+						"top",
+						`var(--home-banner-height, ${BANNER_HEIGHT}vh)`,
+						"important",
+					);
 				} else {
-					// fullscreen 或 none 模式
-					mainContent.style.top = "5.5rem";
+					// 非首页，以及 fullscreen / none 模式，保持正文靠近导航栏。
+					mainContent.style.setProperty("top", "5.5rem", "important");
 				}
 			}
 
@@ -78,31 +102,15 @@ const {
 			if (mainGrid) {
 				const savedLayout = localStorage.getItem("postListLayout");
 				const currentLayout = savedLayout || defaultPostListLayout;
-				mainGrid.setAttribute("data-layout-mode", currentLayout);
-
-				// 根据布局模式显示或隐藏右侧边栏
-				const rightSidebar = document.querySelector(
-					".right-sidebar-container",
-				);
-				if (rightSidebar) {
-					if (currentLayout === "grid") {
-						rightSidebar.classList.add("hidden-in-grid-mode");
-					} else {
-						rightSidebar.classList.remove("hidden-in-grid-mode");
-					}
-				}
-
-				// 同时更新文章列表容器的CSS类
-				const postListContainer = document.getElementById(
-					"post-list-container",
-				);
+				const { postListContainer, effectiveLayout } =
+					syncLayoutShell(currentLayout);
 				if (postListContainer) {
 					postListContainer.classList.remove(
 						"list-mode",
 						"grid-mode",
 					);
 
-					if (currentLayout === "grid") {
+					if (effectiveLayout === "grid") {
 						postListContainer.classList.add("grid-mode");
 						postListContainer.classList.add(
 							"grid",
@@ -155,15 +163,8 @@ const {
 				if (fullscreenWallpaper) {
 					fullscreenWallpaper.style.display = "none";
 				}
-				// 恢复 TOC 在 banner 模式下的隐藏状态，让滚动逻辑接管
-				if (tocWrapper) {
-					const scrollTop = document.documentElement.scrollTop;
-					const bannerHeight =
-						window.innerHeight * (BANNER_HEIGHT / 100);
-					if (scrollTop <= bannerHeight) {
-						tocWrapper.classList.add("toc-hide");
-					}
-				}
+				// 文章页不再展示横幅，目录应从首屏起保持可见。
+				tocWrapper?.classList.remove("toc-hide");
 				// 先移除body类，避免CSS冲突
 				body.classList.remove("wallpaper-transparent");
 				body.classList.remove("no-banner-mode");
@@ -300,25 +301,8 @@ const {
 						window.__pendingLayoutMode ||
 						localStorage.getItem("postListLayout") ||
 						defaultPostListLayout;
-					mainGrid.setAttribute("data-layout-mode", currentLayout);
-
-					const rightSidebar = document.querySelector(
-						".right-sidebar-container",
-					);
-					if (rightSidebar) {
-						if (currentLayout === "grid") {
-							rightSidebar.classList.add("hidden-in-grid-mode");
-						} else {
-							rightSidebar.classList.remove(
-								"hidden-in-grid-mode",
-							);
-						}
-					}
-
-					// 关键：同时更新文章列表容器的CSS类
-					const postListContainer = document.getElementById(
-						"post-list-container",
-					);
+					const { postListContainer, effectiveLayout } =
+						syncLayoutShell(currentLayout);
 					if (postListContainer) {
 						// 移除现有布局类
 						postListContainer.classList.remove(
@@ -326,7 +310,7 @@ const {
 							"grid-mode",
 						);
 
-						if (currentLayout === "grid") {
+						if (effectiveLayout === "grid") {
 							postListContainer.classList.add("grid-mode");
 							postListContainer.classList.add(
 								"grid",
@@ -380,49 +364,18 @@ const {
 
 		// 在Swup页面切换时也要重新应用布局模式
 		requestAnimationFrame(function () {
-			const mainGrid = document.getElementById("main-grid");
-			if (mainGrid) {
-				const savedLayout = localStorage.getItem("postListLayout");
-				const currentLayout = savedLayout || defaultPostListLayout;
-				mainGrid.setAttribute("data-layout-mode", currentLayout);
-
-				if (currentLayout === "grid") {
-					const rightSidebar = document.querySelector(
-						".right-sidebar-container",
-					);
-					if (rightSidebar) {
-						rightSidebar.classList.add("hidden-in-grid-mode");
-					}
-				} else {
-					const rightSidebar = document.querySelector(
-						".right-sidebar-container",
-					);
-					if (rightSidebar) {
-						rightSidebar.classList.remove("hidden-in-grid-mode");
-					}
-				}
-			}
+			const savedLayout = localStorage.getItem("postListLayout");
+			const currentLayout = savedLayout || defaultPostListLayout;
+			syncLayoutShell(currentLayout);
 		});
 	});
 
 	// 在页面完全加载后，再次确认布局模式是否正确
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", function () {
-			const mainGrid = document.getElementById("main-grid");
-			if (mainGrid) {
-				const savedLayout = localStorage.getItem("postListLayout");
-				const currentLayout = savedLayout || defaultPostListLayout;
-				mainGrid.setAttribute("data-layout-mode", currentLayout);
-
-				if (currentLayout === "grid") {
-					const rightSidebar = document.querySelector(
-						".right-sidebar-container",
-					);
-					if (rightSidebar) {
-						rightSidebar.classList.add("hidden-in-grid-mode");
-					}
-				}
-			}
+			const savedLayout = localStorage.getItem("postListLayout");
+			const currentLayout = savedLayout || defaultPostListLayout;
+			syncLayoutShell(currentLayout);
 		});
 	}
 </script>

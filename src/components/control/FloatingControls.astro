@@ -3,7 +3,6 @@ import type { MarkdownHeading } from "astro";
 
 import { musicPlayerConfig, siteConfig } from "../../config";
 import FloatingTOC from "../features/toc/FloatingTOC.astro";
-import BackToHome from "./BackToHome.astro";
 import BackToTop from "./BackToTop.astro";
 import MusicFabButton from "./MusicFabButton.svelte";
 
@@ -12,6 +11,8 @@ interface Props {
 }
 
 const { headings = [] } = Astro.props;
+const hasPersistentToc =
+	siteConfig.toc.mobileTop && siteConfig.toc.desktopSidebar;
 ---
 
 <div class="floating-controls-container">
@@ -25,15 +26,15 @@ const { headings = [] } = Astro.props;
 			)
 	}
 	{
-		siteConfig.toc.enable && siteConfig.toc.floating && (
+			siteConfig.toc.enable &&
+				siteConfig.toc.floating &&
+				headings.length > 0 &&
+				!hasPersistentToc && (
 			<div class="floating-control-item" data-control-key="toc">
 				<FloatingTOC headings={headings} />
 			</div>
 		)
 	}
-	<div class="floating-control-item" data-control-key="home">
-		<BackToHome />
-	</div>
 	<div class="floating-control-item" data-control-key="top">
 		<BackToTop />
 	</div>

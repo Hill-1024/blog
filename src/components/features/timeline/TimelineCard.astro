@@ -93,10 +93,10 @@ const hasLinks = item.links && item.links.length > 0;
 	</div>
 
 	<div
-		class="timeline-card group relative rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-300 hover:shadow-lg"
+		class="timeline-card group relative rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-colors duration-200 hover:border-[var(--primary)]/35"
 	>
-		<div class="p-5 sm:p-6">
-			<div class="flex items-start gap-3 mb-3">
+		<div class="p-4 sm:p-5 md:p-6">
+			<div class="flex flex-wrap items-start gap-3 mb-3">
 				<div
 					class="w-10 h-10 flex-shrink-0 rounded-lg flex items-center justify-center bg-[var(--btn-regular-bg)]"
 				>
@@ -108,7 +108,7 @@ const hasLinks = item.links && item.links.length > 0;
 					></iconify-icon>
 				</div>
 
-				<div class="flex-1 min-w-0">
+				<div class="flex-1 min-w-0 basis-[calc(100%_-_3.25rem)] sm:basis-auto">
 					<div class="flex items-center gap-2 mb-0.5">
 						<h3
 							class="text-lg font-bold text-black/90 dark:text-white/90 group-hover:text-[var(--primary)] transition-colors duration-200"
@@ -136,7 +136,7 @@ const hasLinks = item.links && item.links.length > 0;
 					}
 				</div>
 
-				<div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
+				<div class="flex w-full items-center gap-1.5 pl-[3.25rem] sm:w-auto sm:pl-0 sm:ml-2">
 					{
 						isCurrent && (
 							<span class="px-2 py-0.5 text-xs rounded-md bg-green-500/10 text-green-600 dark:text-green-400 font-medium">
@@ -194,7 +194,7 @@ const hasLinks = item.links && item.links.length > 0;
 			}
 
 			<div
-				class="flex items-center gap-4 text-xs text-black/50 dark:text-white/50 mb-1 pt-3 border-t border-black/5 dark:border-white/5"
+				class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-black/60 dark:text-white/60 mb-1 pt-3 border-t border-black/10 dark:border-white/10"
 			>
 				<span class="flex items-center gap-1">
 					<iconify-icon
@@ -232,7 +232,7 @@ const hasLinks = item.links && item.links.length > 0;
 								href={link.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="btn-regular flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+								class="btn-regular min-h-11 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium"
 							>
 								<iconify-icon
 									icon={getLinkIcon(link.type)}
@@ -247,20 +247,14 @@ const hasLinks = item.links && item.links.length > 0;
 			}
 		</div>
 
-		<div
-			class="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"
-		>
-		</div>
 	</div>
 </div>
 
 <style>
 	.timeline-entry {
 		position: relative;
-		padding-left: 2.5rem;
-		padding-bottom: 2rem;
-		animation: fadeInUp 0.5s ease-out forwards;
-		opacity: 0;
+		padding-left: 2rem;
+		padding-bottom: 1.5rem;
 	}
 
 	.timeline-entry:last-child {
@@ -284,70 +278,6 @@ const hasLinks = item.links && item.links.length > 0;
 		align-items: center;
 		justify-content: center;
 		z-index: 2;
-		transition:
-			transform 0.2s ease,
-			box-shadow 0.2s ease;
-	}
-
-	.timeline-entry:hover .timeline-node {
-		transform: scale(1.15);
-		box-shadow:
-			0 0 0 2px var(--primary),
-			0 0 12px rgba(0, 0, 0, 0.1);
-	}
-
-	.timeline-entry.is-current .timeline-node {
-		animation: pulse 2s ease-in-out infinite;
-	}
-
-	@keyframes pulse {
-		0%,
-		100% {
-			box-shadow: 0 0 0 2px var(--line-divider);
-		}
-		50% {
-			box-shadow:
-				0 0 0 2px #22c55e,
-				0 0 8px rgba(34, 197, 94, 0.3);
-		}
-	}
-
-	@keyframes fadeInUp {
-		from {
-			opacity: 0;
-			transform: translateY(16px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.timeline-entry:nth-child(1) {
-		animation-delay: 0.05s;
-	}
-	.timeline-entry:nth-child(2) {
-		animation-delay: 0.1s;
-	}
-	.timeline-entry:nth-child(3) {
-		animation-delay: 0.15s;
-	}
-	.timeline-entry:nth-child(4) {
-		animation-delay: 0.2s;
-	}
-	.timeline-entry:nth-child(5) {
-		animation-delay: 0.25s;
-	}
-	.timeline-entry:nth-child(6) {
-		animation-delay: 0.3s;
-	}
-	.timeline-entry:nth-child(7) {
-		animation-delay: 0.35s;
-	}
-	.timeline-entry:nth-child(8) {
-		animation-delay: 0.4s;
-	}
-	.timeline-entry:nth-child(9) {
-		animation-delay: 0.45s;
+		transition: box-shadow 0.2s ease;
 	}
 </style>

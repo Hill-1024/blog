@@ -5,18 +5,20 @@ const { src, alt = "", albumId } = Astro.props as PhotoCardProps;
 ---
 
 <div class="gallery-photo-card break-inside-avoid mb-3">
-	<div
+	<a
+		href={src}
 		data-fancybox={`gallery-${albumId}`}
 		data-src={src}
 		data-type="image"
-		class="block rounded-xl overflow-hidden group cursor-pointer"
+		class="block rounded-xl overflow-hidden group cursor-zoom-in"
+		aria-label={alt ? `查看大图：${alt}` : "查看大图"}
 	>
 		<img
 			src={src}
 			alt={alt}
 			loading="lazy"
 			decoding="async"
-			class="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+			class="w-full h-auto object-cover"
 		/>
-	</div>
+	</a>
 </div>

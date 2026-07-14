@@ -4,305 +4,263 @@
 
 	import I18nKey from "../../../i18n/i18nKey";
 	import { i18n } from "../../../i18n/translation";
-	import { navigateToPage } from "../../../utils/navigation-utils";
-	import { panelManager } from "../../../utils/panel-manager.js";
+	import {
+		panelManager,
+		type PanelStateChangeDetail,
+	} from "../../../utils/panel-manager.js";
 	import {
 		checkIsHomePage,
-		generatePostItems,
 		generateTOCItems,
 		getTOCConfig,
-		type PostItem,
 		scrollToHeading as scrollToHeadingUtil,
 		type TOCItem,
 	} from "./hooks/useMobileTOC";
 
 	let tocItems: TOCItem[] = $state([]);
-	let postItems: PostItem[] = $state([]);
 	let activeId = $state("");
-	let isHomePage = $state(false);
+	let isOpen = $state(false);
 
 	let observer: IntersectionObserver | undefined;
-	let swupListenersRegistered = $state(false);
+	let activeFrame: number | undefined;
+	let refreshTimer: number | undefined;
+	let registeredSwup: Swup | undefined;
 
 	const togglePanel = async () => {
-		await panelManager.togglePanel("mobile-toc-panel");
+		isOpen = await panelManager.togglePanel("mobile-toc-panel");
 	};
 
-	const setPanelVisibility = async (show: boolean): Promise<void> => {
-		await panelManager.togglePanel("mobile-toc-panel", show);
+	const closePanel = async (restoreFocus = false): Promise<void> => {
+		await panelManager.closePanel("mobile-toc-panel");
+		isOpen = false;
+		if (restoreFocus) {
+			requestAnimationFrame(() => {
+				document.getElementById("mobile-toc-switch")?.focus();
+			});
+		}
 	};
 
 	const scrollToHeading = (id: string) => {
-		setPanelVisibility(false);
+		void closePanel();
 		scrollToHeadingUtil(id);
 	};
 
-	const navigateToPost = (url: string) => {
-		setPanelVisibility(false);
-		navigateToPage(url);
+	const getContent = (): Element | null => {
+		return document.querySelector(
+			"#post-container .markdown-content, #post-container .custom-md, .markdown-content, .custom-md, .prose",
+		);
 	};
 
 	const updateActiveHeading = () => {
-		const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-		const scrollTop = window.scrollY;
-		const offset = 100;
+		const headings = tocItems
+			.map((item) => document.getElementById(item.id))
+			.filter((heading): heading is HTMLElement => heading !== null);
 
-		let currentActiveId = "";
-		headings.forEach((heading) => {
-			if (heading.id) {
-				const elementTop = (heading as HTMLElement).offsetTop - offset;
-				if (scrollTop >= elementTop) {
-					currentActiveId = heading.id;
-				}
+		// Keep the first item active at the top of the article instead of
+		// presenting a TOC with no current location.
+		let currentActiveId = headings[0]?.id ?? "";
+		for (const heading of headings) {
+			if (heading.getBoundingClientRect().top <= 112) {
+				currentActiveId = heading.id;
+			} else {
+				break;
 			}
-		});
+		}
 
 		activeId = currentActiveId;
 	};
 
-	const setupIntersectionObserver = () => {
-		const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-
-		if (observer) {
-			observer.disconnect();
-		}
-
-		observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						activeId = entry.target.id;
-					}
-				});
-			},
-			{
-				rootMargin: "-80px 0px -80% 0px",
-				threshold: 0,
-			},
-		);
-
-		headings.forEach((heading) => {
-			if (heading.id) {
-				observer?.observe(heading);
-			}
+	const scheduleActiveUpdate = () => {
+		if (activeFrame !== undefined) return;
+		activeFrame = requestAnimationFrame(() => {
+			activeFrame = undefined;
+			updateActiveHeading();
 		});
 	};
 
-	const setupSwupListeners = () => {
-		if (
-			typeof window !== "undefined" &&
-			(
-				window as unknown as {
-					swup?: {
-						hooks: {
-							on: (event: string, cb: () => void) => void;
-							off: (event: string) => void;
-						};
-					};
-				}
-			).swup &&
-			!swupListenersRegistered
-		) {
-			const swup = (
-				window as unknown as {
-					swup: {
-						hooks: { on: (event: string, cb: () => void) => void };
-					};
-				}
-			).swup;
+	const setupIntersectionObserver = () => {
+		observer?.disconnect();
 
-			swup.hooks.on("page:view", () => {
-				setTimeout(() => init(), 200);
-			});
+		observer = new IntersectionObserver(scheduleActiveUpdate, {
+			rootMargin: "-80px 0px -75% 0px",
+			threshold: 0,
+		});
 
-			swupListenersRegistered = true;
-		} else if (!swupListenersRegistered) {
-			window.addEventListener("popstate", () => {
-				setTimeout(init, 200);
-			});
-			swupListenersRegistered = true;
-		}
+		tocItems.forEach((item) => {
+			const heading = document.getElementById(item.id);
+			if (heading) observer?.observe(heading);
+		});
 	};
 
-	const checkSwupAvailability = () => {
-		if (typeof window !== "undefined") {
-			const w = window as unknown as {
-				swup?: {
-					hooks: {
-						on: (event: string, cb: () => void) => void;
-						off: (event: string) => void;
-					};
-				};
-			};
-			if (w.swup) {
-				setupSwupListeners();
-			} else {
-				const checkSwup = () => {
-					if (w.swup) {
-						setupSwupListeners();
-						document.removeEventListener("swup:enable", checkSwup);
-					}
-				};
+	const init = async () => {
+		await closePanel();
+		observer?.disconnect();
 
-				document.addEventListener("swup:enable", checkSwup);
-				setTimeout(() => {
-					if (w.swup) {
-						setupSwupListeners();
-						document.removeEventListener("swup:enable", checkSwup);
-					}
-				}, 1000);
-			}
-		}
-	};
-
-	const init = () => {
-		isHomePage = checkIsHomePage();
-		checkSwupAvailability();
-
-		if (isHomePage) {
+		if (checkIsHomePage()) {
 			tocItems = [];
-			postItems = generatePostItems();
-		} else {
-			const config = getTOCConfig();
-			tocItems = generateTOCItems(config);
-			postItems = [];
-			setupIntersectionObserver();
-			updateActiveHeading();
+			activeId = "";
+			return;
+		}
+
+		const content = getContent();
+		if (!content) {
+			tocItems = [];
+			activeId = "";
+			return;
+		}
+
+		tocItems = generateTOCItems(getTOCConfig());
+		if (tocItems.length === 0) {
+			activeId = "";
+			return;
+		}
+
+		setupIntersectionObserver();
+		updateActiveHeading();
+	};
+
+	const scheduleRefresh = (delay = 80) => {
+		if (refreshTimer !== undefined) window.clearTimeout(refreshTimer);
+		refreshTimer = window.setTimeout(() => {
+			refreshTimer = undefined;
+			void init();
+		}, delay);
+	};
+
+	const handlePageView = (..._args: unknown[]) => scheduleRefresh();
+
+	const registerSwupListener = () => {
+		const swup = window.swup;
+		if (!swup || swup === registeredSwup) return;
+
+		registeredSwup?.hooks.off("page:view", handlePageView);
+		swup.hooks.on("page:view", handlePageView);
+		registeredSwup = swup;
+	};
+
+	const handlePanelStateChange = (event: Event) => {
+		const { detail } = event as CustomEvent<PanelStateChangeDetail>;
+		if (detail.panelId === "mobile-toc-panel") {
+			isOpen = detail.isOpen;
 		}
 	};
 
 	onMount(() => {
-		setTimeout(init, 100);
-		window.addEventListener("scroll", updateActiveHeading, {
+		const exposedInit = () => scheduleRefresh(0);
+		window.mobileTOCInit = exposedInit;
+
+		registerSwupListener();
+		scheduleRefresh(0);
+
+		window.addEventListener("scroll", scheduleActiveUpdate, {
 			passive: true,
 		});
+		window.addEventListener("resize", scheduleActiveUpdate, {
+			passive: true,
+		});
+		window.addEventListener("popstate", handlePageView);
+		document.addEventListener("swup:enable", registerSwupListener);
+		document.addEventListener("panel-state-change", handlePanelStateChange);
 
 		return () => {
 			observer?.disconnect();
-			window.removeEventListener("scroll", updateActiveHeading);
+			if (activeFrame !== undefined) cancelAnimationFrame(activeFrame);
+			if (refreshTimer !== undefined) window.clearTimeout(refreshTimer);
 
-			const w = window as unknown as {
-				swup?: {
-					hooks: {
-						on: (event: string, cb: () => void) => void;
-						off: (event: string) => void;
-					};
-				};
-			};
-			if (w.swup) {
-				w.swup.hooks.off("page:view");
+			window.removeEventListener("scroll", scheduleActiveUpdate);
+			window.removeEventListener("resize", scheduleActiveUpdate);
+			window.removeEventListener("popstate", handlePageView);
+			document.removeEventListener("swup:enable", registerSwupListener);
+			document.removeEventListener(
+				"panel-state-change",
+				handlePanelStateChange,
+			);
+			registeredSwup?.hooks.off("page:view", handlePageView);
+
+			if (window.mobileTOCInit === exposedInit) {
+				delete window.mobileTOCInit;
 			}
-
-			swupListenersRegistered = false;
 		};
 	});
 
-	if (typeof window !== "undefined") {
-		(window as unknown as { mobileTOCInit?: () => void }).mobileTOCInit =
-			init;
-	}
-
-	const getLevelPadding = (level: number): string => {
+	const getLevelPadding = (depth: number): string => {
 		const base = "12px";
 		const levelPadding: Record<number, string> = {
-			1: "12px",
-			2: "28px",
-			3: "36px",
-			4: "44px",
-			5: "52px",
-			6: "52px",
+			0: "12px",
+			1: "28px",
+			2: "40px",
+			3: "48px",
 		};
-		return levelPadding[level] || base;
+		return levelPadding[depth] || base;
 	};
 
-	const getActivePadding = (level: number): string => {
+	const getActivePadding = (depth: number): string => {
 		const activePadding: Record<number, string> = {
-			1: "9px",
-			2: "25px",
-			3: "33px",
-			4: "41px",
-			5: "49px",
-			6: "49px",
+			0: "9px",
+			1: "25px",
+			2: "37px",
+			3: "45px",
 		};
-		return activePadding[level] || "9px";
+		return activePadding[depth] || "9px";
 	};
 </script>
 
-<button
-	on:click={togglePanel}
-	aria-label="Table of Contents"
-	id="mobile-toc-switch"
-	class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 lg:!hidden theme-switch-btn"
->
-	<Icon icon="material-symbols:format-list-bulleted" class="text-[1.25rem]" />
-</button>
+{#if tocItems.length > 0}
+	<button
+		type="button"
+		onclick={togglePanel}
+		aria-label={i18n(I18nKey.tableOfContents)}
+		aria-controls="mobile-toc-panel"
+		aria-expanded={isOpen}
+		id="mobile-toc-switch"
+		class="btn-plain scale-animation rounded-lg h-[44px] w-[44px] active:scale-90 lg:!hidden theme-switch-btn"
+	>
+		<Icon
+			icon="material-symbols:format-list-bulleted"
+			class="text-[1.25rem]"
+			aria-hidden="true"
+		/>
+	</button>
 
-<div
-	id="mobile-toc-panel"
-	class="float-panel float-panel-closed mobile-toc-panel absolute md:w-[20rem] w-[calc(100vw-2rem)] top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
->
-	<div class="flex items-center justify-between mb-4">
-		<h3 class="text-lg font-bold text-[var(--primary)]">
-			{isHomePage
-				? i18n(I18nKey.postList)
-				: i18n(I18nKey.tableOfContents)}
-		</h3>
-		<button
-			on:click={togglePanel}
-			aria-label="Close TOC"
-			class="btn-plain rounded-lg h-8 w-8 active:scale-90 theme-switch-btn"
-		>
-			<Icon icon="material-symbols:close" class="text-[1rem]" />
-		</button>
-	</div>
-
-	{#if isHomePage}
-		{#if postItems.length === 0}
-			<div class="text-center py-8 text-black/50 dark:text-white/50">
+	<nav
+		id="mobile-toc-panel"
+		aria-label={i18n(I18nKey.tableOfContents)}
+		aria-hidden={!isOpen}
+		inert={!isOpen}
+		class="float-panel float-panel-closed mobile-toc-panel absolute md:w-[20rem] w-[calc(100vw-2rem)] top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
+	>
+		<div class="flex items-center justify-between mb-4">
+			<p class="text-lg font-bold text-[var(--primary)]">
+				{i18n(I18nKey.tableOfContents)}
+			</p>
+			<button
+				type="button"
+				onclick={() => closePanel(true)}
+				aria-label="关闭目录"
+				class="btn-plain rounded-lg h-[44px] w-[44px] active:scale-90 theme-switch-btn"
+			>
 				<Icon
-					icon="material-symbols:article-outline"
-					class="text-2xl mb-2"
+					icon="material-symbols:close"
+					class="text-[1rem]"
+					aria-hidden="true"
 				/>
-				<p>暂无文章</p>
-			</div>
-		{:else}
-			<div class="post-content">
-				{#each postItems as post}
-					<button
-						on:click={() => navigateToPost(post.url)}
-						class="post-item"
-					>
-						<div class="post-title">
-							{#if post.pinned}
-								<Icon icon="mdi:pin" class="pinned-icon" />
-							{/if}
-							{post.title}
-						</div>
-						{#if post.category}
-							<div class="post-category">{post.category}</div>
-						{/if}
-					</button>
-				{/each}
-			</div>
-		{/if}
-	{:else if tocItems.length === 0}
-		<div class="text-center py-8 text-black/50 dark:text-white/50">
-			<p>{i18n(I18nKey.tocEmpty)}</p>
+			</button>
 		</div>
-	{:else}
+
 		<div class="toc-content">
 			{#each tocItems as item}
 				<button
-					on:click={() => scrollToHeading(item.id)}
-					class="toc-item level-{item.level}"
+					type="button"
+					onclick={() => scrollToHeading(item.id)}
+					class="toc-item depth-{item.depth}"
 					class:active={activeId === item.id}
+					aria-current={activeId === item.id ? "location" : undefined}
 					style="padding-left: {activeId === item.id
-						? getActivePadding(item.level)
-						: getLevelPadding(item.level)}"
+						? getActivePadding(item.depth)
+						: getLevelPadding(item.depth)}"
 				>
-					{#if item.level === 1}
+					{#if item.depth === 0}
 						<span class="badge">{item.badge}</span>
-					{:else if item.level === 2}
+					{:else if item.depth === 1}
 						<span class="dot-square"></span>
 					{:else}
 						<span class="dot-small"></span>
@@ -311,8 +269,8 @@
 				</button>
 			{/each}
 		</div>
-	{/if}
-</div>
+	</nav>
+{/if}
 
 <style>
 	.mobile-toc-panel {
@@ -344,6 +302,7 @@
 		display: flex;
 		align-items: center;
 		width: 100%;
+		min-height: 44px;
 		text-align: left;
 		padding: 8px 12px;
 		border-radius: 8px;
@@ -372,35 +331,35 @@
 		border-left: 3px solid var(--primary);
 	}
 
-	.toc-item.level-1 {
+	.toc-item.depth-0 {
 		font-weight: 600;
 		font-size: 1rem;
 		gap: 8px;
 	}
 
-	.toc-item.level-2 {
+	.toc-item.depth-1 {
 		gap: 6px;
 	}
 
-	.toc-item.level-3,
-	.toc-item.level-4 {
+	.toc-item.depth-2,
+	.toc-item.depth-3 {
 		font-size: 0.85rem;
 		gap: 6px;
 	}
 
-	.toc-item.level-4 {
+	.toc-item.depth-3 {
 		font-size: 0.8rem;
 	}
 
-	.toc-item.level-5,
-	.toc-item.level-6 {
+	.toc-item.depth-4,
+	.toc-item.depth-5 {
 		font-size: 0.75rem;
 		color: rgba(0, 0, 0, 0.5);
 		gap: 6px;
 	}
 
-	:global(.dark) .toc-item.level-5,
-	:global(.dark) .toc-item.level-6 {
+	:global(.dark) .toc-item.depth-4,
+	:global(.dark) .toc-item.depth-5 {
 		color: rgba(255, 255, 255, 0.5);
 	}
 
@@ -450,52 +409,6 @@
 		flex: 1;
 	}
 
-	.post-item {
-		display: block;
-		width: 100%;
-		text-align: left;
-		padding: 12px;
-		border-radius: 8px;
-		transition: all 0.2s ease;
-		border: 1px solid var(--line-color);
-		background: transparent;
-		cursor: pointer;
-	}
-
-	.post-item:hover {
-		background: var(--btn-plain-bg-hover);
-		border-color: var(--primary);
-		transform: translateY(-1px);
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.post-title {
-		font-size: 0.9rem;
-		font-weight: 600;
-		color: rgba(0, 0, 0, 0.75);
-		margin-bottom: 4px;
-		line-height: 1.4;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	:global(.dark) .post-title {
-		color: rgba(255, 255, 255, 0.75);
-	}
-
-	.post-category {
-		font-size: 0.75rem;
-		color: rgba(0, 0, 0, 0.5);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	:global(.dark) .post-category {
-		color: rgba(255, 255, 255, 0.5);
-	}
-
 	:global(.pinned-icon) {
 		display: inline;
 		color: var(--primary);
@@ -503,18 +416,6 @@
 		margin-right: 0.5rem;
 		transform: translateY(-0.125rem);
 		vertical-align: middle;
-	}
-
-	.post-item:hover .post-title {
-		color: var(--primary);
-	}
-
-	.post-item:hover .post-category {
-		color: rgba(0, 0, 0, 0.75);
-	}
-
-	:global(.dark) .post-item:hover .post-category {
-		color: rgba(255, 255, 255, 0.75);
 	}
 
 	.mobile-toc-panel::-webkit-scrollbar {

@@ -268,10 +268,26 @@ export class SwupHooksManager {
 			SWUP_SELECTORS.bannerTextOverlay,
 		);
 		if (bannerTextOverlay) {
+			const bannerTitle = bannerTextOverlay.querySelector<HTMLElement>(
+				"[data-banner-title]",
+			);
+
 			if (isHomePage) {
 				bannerTextOverlay.classList.remove("hidden");
+				bannerTextOverlay.setAttribute("aria-hidden", "false");
+				if (bannerTextOverlay instanceof HTMLElement) {
+					bannerTextOverlay.inert = false;
+				}
+				bannerTitle?.setAttribute("role", "heading");
+				bannerTitle?.setAttribute("aria-level", "1");
 			} else {
 				bannerTextOverlay.classList.add("hidden");
+				bannerTextOverlay.setAttribute("aria-hidden", "true");
+				if (bannerTextOverlay instanceof HTMLElement) {
+					bannerTextOverlay.inert = true;
+				}
+				bannerTitle?.removeAttribute("role");
+				bannerTitle?.removeAttribute("aria-level");
 			}
 		}
 	}

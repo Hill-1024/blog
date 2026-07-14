@@ -96,7 +96,7 @@
 	});
 </script>
 
-<div class="card-base px-8 py-6">
+<div class="card-base px-4 py-5 sm:px-6 md:px-8 sm:py-6">
 	{#each groups as group}
 		<div>
 			<div class="flex flex-row w-full items-center h-[3.75rem]">
@@ -125,10 +125,10 @@
 				<a
 					href={post.url || `/posts/${post.id}/`}
 					aria-label={post.data.title}
-					class="group btn-plain !block h-10 w-full rounded-lg hover:text-[initial]"
+					class="group btn-plain !block min-h-11 w-full rounded-lg hover:text-[initial]"
 				>
 					<div
-						class="flex flex-row justify-start items-center h-full"
+						class="flex min-h-11 flex-row justify-start items-center"
 					>
 						<!-- date -->
 						<div
@@ -155,14 +155,14 @@
 						<div
 							class="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
                      group-hover:translate-x-1 transition-all group-hover:text-[var(--primary)]
-                     text-75 pr-8 whitespace-nowrap overflow-ellipsis overflow-hidden"
+									 text-75 pr-2 sm:pr-4 whitespace-nowrap overflow-ellipsis overflow-hidden"
 						>
 							{post.data.title}
 						</div>
 
 						<!-- tag list -->
 						<div
-							class="hidden md:block md:w-[15%] text-left text-sm transition
+							class="hidden lg:block lg:w-[15%] text-left text-sm transition
                      whitespace-nowrap overflow-ellipsis overflow-hidden text-30"
 						>
 							{formatTag(post.data.tags)}

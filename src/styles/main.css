@@ -50,6 +50,11 @@ html {
   scrollbar-gutter: stable;
 }
 
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
 /* 页面顶部渐变高光效果 */
 .top-gradient-highlight {
   position: fixed;
@@ -322,7 +327,7 @@ html {
     @apply top-[5.25rem] rounded-(--radius-large) overflow-hidden bg-(--float-panel-bg) transition-colors duration-150 shadow-xl dark:shadow-none;
   }
   .float-panel-closed {
-    @apply -translate-y-1 opacity-0 pointer-events-none;
+    @apply invisible -translate-y-1 opacity-0 pointer-events-none;
   }
   .search-panel mark {
     @apply bg-transparent text-(--primary);
@@ -379,13 +384,13 @@ html {
     @apply text-black/75 dark:text-white/75;
   }
   .text-50 {
-    @apply text-black/50 dark:text-white/50;
+    @apply text-black/65 dark:text-white/65;
   }
   .text-30 {
-    @apply text-black/30 dark:text-white/30;
+    @apply text-black/55 dark:text-white/55;
   }
   .text-25 {
-    @apply text-black/25 dark:text-white/25;
+    @apply text-black/50 dark:text-white/50;
   }
 
   /* 悬浮TOC样式 */
@@ -481,14 +486,6 @@ html {
   /* 无障碍支持 */
   .dropdown-container:focus-within .dropdown-menu {
     @apply opacity-100 visible pointer-events-auto translate-y-0;
-  }
-
-  .dropdown-item:focus {
-    @apply outline-none;
-  }
-
-  .mobile-dropdown button:focus {
-    @apply outline-none;
   }
 
   .meta-icon {

@@ -43,6 +43,7 @@
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
+  z-index: 1;
   padding: 0.48rem 0.62rem;
   min-height: 2.2rem;
 }
@@ -54,6 +55,11 @@
 
 .toc-item:active {
   background: color-mix(in oklab, var(--toc-btn-active) 88%, transparent);
+}
+
+.toc-item[aria-current="location"] {
+  background: color-mix(in oklab, var(--toc-btn-active) 82%, transparent);
+  color: var(--primary);
 }
 
 .toc-item.toc-level-1 {
@@ -134,7 +140,8 @@
     opacity 0.14s ease,
     background 0.14s ease,
     border-color 0.14s ease;
-  z-index: -1;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .group:hover .toc-active-indicator {

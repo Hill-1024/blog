@@ -64,7 +64,7 @@
 	<button
 		aria-label="Wallpaper Mode"
 		role="menuitem"
-		class="relative btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 theme-switch-btn"
+		class="relative btn-plain scale-animation rounded-lg h-[44px] w-[44px] active:scale-90 theme-switch-btn"
 		id="wallpaper-mode-switch"
 		onclick={togglePanel}
 	>

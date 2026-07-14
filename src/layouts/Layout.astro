@@ -5,11 +5,11 @@ import Pio from "@components/features/pio/Pio.svelte"; // 使用 Svelte 版本�
 import { PageProgressBar } from "@components/control/PageProgressBar";
 import { pioConfig, profileConfig, siteConfig } from "@/config";
 
-const BANNER_HEIGHT = 35;
-const BANNER_HEIGHT_EXTEND = 30;
-const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
-
-import { PAGE_WIDTH } from "../constants/constants";
+import {
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_HOME,
+	PAGE_WIDTH,
+} from "../constants/constants";
 import { pathsEqual, url } from "../utils/url-utils";
 import "../styles/main.css";
 import "../styles/mobile-navbar.css";
@@ -49,7 +49,8 @@ const navbarTransparentMode =
 
 // 判断是否应该显示顶部高光效果（只在full和semifull模式下显示）
 const shouldShowTopHighlight =
-	navbarTransparentMode === "full" || navbarTransparentMode === "semifull";
+	isHomePage &&
+	(navbarTransparentMode === "full" || navbarTransparentMode === "semifull");
 
 // 获取默认banner图片的辅助函数
 const getDefaultBanner = (): string => {
@@ -108,14 +109,6 @@ if (!lang) {
 	lang = `${siteConfig.lang}`;
 }
 const siteLang = lang.replace("_", "-");
-
-const bannerOffsetByPosition = {
-	top: `${BANNER_HEIGHT_EXTEND}vh`,
-	center: `${BANNER_HEIGHT_EXTEND / 2}vh`,
-	bottom: "0",
-};
-const bannerOffset =
-	bannerOffsetByPosition[siteConfig.banner.position || "center"];
 
 // 构建字体配置的 CSS 变量
 // ASCII 字体优先级最高（用于英文、数字等），CJK 字体作为回退
@@ -211,6 +204,7 @@ if (siteConfig.font) {
 		style={bodyFontFamily ? `font-family: ${bodyFontFamily};` : ""}
 		data-overlayscrollbars-initialize
 	>
+		<a class="skip-link" href="#swup-container">跳到正文</a>
 		<noscript
 			><iframe
 				src="https://www.googletagmanager.com/ns.html?id=GTM-KRX3XGVH"
@@ -243,7 +237,6 @@ if (siteConfig.font) {
 <style
 	is:global
 	define:vars={{
-		bannerOffset,
 		"banner-height-home": `${BANNER_HEIGHT_HOME}vh`,
 		"banner-height": `${BANNER_HEIGHT}vh`,
 	}}
@@ -253,27 +246,33 @@ if (siteConfig.font) {
 	@layer components {
 		@media (min-width: 1280px) {
 			.enable-banner.lg\:is-home #banner-wrapper {
-				height: var(--banner-height-home);
-				transform: translateY(var(--banner-height-extend));
+				height: var(--home-banner-height, var(--banner-height-home));
+				transform: none;
 			}
 			.enable-banner #banner-wrapper {
-				height: var(--banner-height-home);
+				height: var(--home-banner-height, var(--banner-height-home));
 			}
 
 			.enable-banner.lg\:is-home #banner {
-				height: var(--banner-height-home);
+				height: 100%;
 				transform: translateY(0);
 			}
 			.enable-banner #banner {
-				height: var(--banner-height-home);
-				transform: translateY(var(--bannerOffset));
+				height: 100%;
+				transform: none;
 			}
 			.enable-banner.lg\:is-home #main-grid {
-				transform: translateY(var(--banner-height-extend));
+				transform: none;
 			}
 			.enable-banner #top-row {
-				height: calc(var(--banner-height-home) - 4.5rem);
+				height: calc(
+					var(--home-banner-height, var(--banner-height-home)) -
+						4.5rem
+				);
 				@apply transition-all duration-300;
+			}
+			.enable-banner #top-row.content-top-row {
+				height: 4.5rem;
 			}
 		}
 
@@ -296,18 +295,38 @@ if (siteConfig.font) {
 	@layer utilities {
 		@media (min-width: 1280px) {
 			.enable-banner.lg\:is-home #sidebar-sticky {
-				top: calc(1rem - var(--banner-height-extend)) !important;
+				top: 1rem !important;
 			}
 			.enable-banner.lg\:is-home #left-sidebar-sticky {
-				top: calc(1rem - var(--banner-height-extend)) !important;
+				top: 1rem !important;
 			}
 			.enable-banner.lg\:is-home #right-sidebar-sticky {
-				top: calc(1rem - var(--banner-height-extend)) !important;
+				top: 1rem !important;
 			}
 		}
 		.navbar-hidden {
 			@apply opacity-0 -translate-y-16;
 		}
+	}
+</style>
+
+<style is:global>
+	.skip-link {
+		position: fixed;
+		top: 0.75rem;
+		left: 0.75rem;
+		z-index: 9999;
+		transform: translateY(-160%);
+		border-radius: 0.65rem;
+		background: var(--card-bg);
+		color: var(--deep-text);
+		padding: 0.65rem 0.9rem;
+		box-shadow: var(--shadow-lg);
+		font-weight: 700;
+	}
+
+	.skip-link:focus {
+		transform: translateY(0);
 	}
 </style>
 

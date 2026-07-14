@@ -26,8 +26,10 @@
 				tab.addEventListener("click", function () {
 					tabs.forEach(function (t) {
 						t.classList.remove("active");
+						t.setAttribute("aria-pressed", "false");
 					});
 					tab.classList.add("active");
+					tab.setAttribute("aria-pressed", "true");
 
 					var activeValue = tab.dataset.filterValue || "all";
 					var visibleCount = 0;
@@ -35,13 +37,18 @@
 					items.forEach(function (item) {
 						var itemValue = item.dataset[filterAttr];
 						var match =
-							activeValue === "all" || (itemValue && itemValue.split(",").indexOf(activeValue) !== -1);
+							activeValue === "all" ||
+							(itemValue &&
+								itemValue.split(",").indexOf(activeValue) !==
+									-1);
 
 						if (match) {
 							item.classList.remove("filtered-out");
+							item.removeAttribute("hidden");
 							visibleCount++;
 						} else {
 							item.classList.add("filtered-out");
+							item.setAttribute("hidden", "");
 						}
 					});
 

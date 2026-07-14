@@ -84,16 +84,16 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
 	<div
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
-		<div class="card-base z-10 px-6 sm:px-9 py-6 relative w-full">
+		<div class="card-base z-10 px-4 sm:px-6 md:px-8 py-5 sm:py-6 relative w-full">
 			<PageHeader title={title} subtitle={subtitle} />
 
-			<div class="mb-8">
+			<div class="mb-6">
 				<FilterTabs tabs={filterTabs} dataAttr="category" />
 			</div>
 
 			<div
 				id="projects-grid"
-				class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start"
+				class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-stretch"
 			>
 				{
 					projectsData.map((project) => (
@@ -102,14 +102,14 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
 				}
 			</div>
 
-			<div id="no-results" class="hidden text-center py-16">
+			<div id="no-results" class="hidden text-center py-12">
 				<iconify-icon
 					icon="material-symbols:search-off-rounded"
 					width="64"
 					height="64"
-					class="text-black/15 dark:text-white/15 mb-4"
+					class="text-black/25 dark:text-white/25 mb-4"
 				></iconify-icon>
-				<p class="text-black/40 dark:text-white/40 text-lg">
+				<p class="text-black/60 dark:text-white/60 text-base">
 					No matching projects
 				</p>
 			</div>

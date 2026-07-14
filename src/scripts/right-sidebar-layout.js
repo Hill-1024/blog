@@ -11,7 +11,10 @@ function initPageLayout(pageType) {
 		localStorage.getItem("postListLayout") || "list";
 
 	// 如果默认布局是网格模式，则隐藏右侧边栏
-	if (defaultPostListLayout === "grid") {
+	if (
+		defaultPostListLayout === "grid" &&
+		document.getElementById("post-list-container")
+	) {
 		hideRightSidebar();
 	} else {
 		showRightSidebar();
@@ -69,6 +72,11 @@ function initPageLayout(pageType) {
  * 隐藏右侧边栏
  */
 function hideRightSidebar() {
+	if (!document.getElementById("post-list-container")) {
+		showRightSidebar();
+		return;
+	}
+
 	const rightSidebar = document.querySelector(".right-sidebar-container");
 	if (rightSidebar) {
 		// 添加隐藏类
@@ -80,7 +88,7 @@ function hideRightSidebar() {
 		// 调整主网格布局
 		const mainGrid = document.getElementById("main-grid");
 		if (mainGrid) {
-			mainGrid.style.gridTemplateColumns = "17.5rem 1fr";
+			mainGrid.style.gridTemplateColumns = "";
 			mainGrid.setAttribute("data-layout-mode", "grid");
 		}
 	}

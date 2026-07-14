@@ -45,7 +45,7 @@ if (!album) {
 	<!-- Cover Banner -->
 	<div class="w-full rounded-(--radius-large) overflow-hidden relative">
 		{album.cover ? (
-			<div class="relative w-full aspect-[3/1] min-h-[200px] max-h-[360px]">
+			<div class="relative w-full aspect-[4/3] min-h-[250px] sm:aspect-[3/1] sm:min-h-[220px] max-h-[360px]">
 				<img
 					src={album.cover}
 					alt={album.title}
@@ -56,23 +56,23 @@ if (!album) {
 				<!-- Back button -->
 				<a
 					href="/albums/"
-					class="absolute top-4 left-4 inline-flex items-center gap-1.5 text-sm text-white/90 hover:text-white bg-black/30 hover:bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg transition-colors"
+					class="absolute top-3 left-3 sm:top-4 sm:left-4 min-h-11 inline-flex items-center gap-1.5 text-sm text-white/90 hover:text-white bg-black/45 hover:bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg transition-colors"
 				>
 					<Icon name="material-symbols:arrow-back" class="text-base" />
 					{i18n(I18nKey.albumsBackToList)}
 				</a>
 
 				<!-- Album info overlay -->
-				<div class="absolute bottom-0 left-0 right-0 p-6">
-					<div class="text-2xl sm:text-3xl font-bold text-white mb-2 drop-shadow-lg">
+				<div class="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+					<h1 class="text-2xl sm:text-3xl font-bold text-white mb-2 drop-shadow-lg">
 						{album.title}
-					</div>
+					</h1>
 					{album.description && (
-						<p class="text-sm text-white/75 leading-relaxed mb-2 max-w-2xl line-clamp-2">
+						<p class="hidden sm:block text-sm text-white/85 leading-relaxed mb-2 max-w-2xl line-clamp-2">
 							{album.description}
 						</p>
 					)}
-					<div class="flex items-center gap-4 text-sm text-white/80 flex-wrap">
+					<div class="flex items-center gap-x-4 gap-y-1.5 text-sm text-white/85 flex-wrap">
 						<span class="inline-flex items-center gap-1">
 							<Icon name="material-symbols:calendar-today" class="text-sm" />
 							{new Date(album.date).toLocaleDateString("zh-CN")}
@@ -89,7 +89,7 @@ if (!album) {
 						</span>
 					</div>
 					{album.tags && album.tags.length > 0 && (
-						<div class="flex flex-wrap gap-1.5 mt-2.5">
+						<div class="hidden sm:flex flex-wrap gap-1.5 mt-2.5">
 							{album.tags.map((tag: string) => (
 								<span class="text-xs px-2 py-0.5 rounded bg-white/20 text-white/90 backdrop-blur-sm">
 									{tag}
@@ -100,17 +100,17 @@ if (!album) {
 				</div>
 			</div>
 		) : (
-			<div class="card-base px-6 py-4">
+			<div class="card-base px-4 sm:px-6 py-4">
 				<a
 					href="/albums/"
-					class="inline-flex items-center gap-1 text-sm text-(--primary) hover:underline mb-3"
+					class="min-h-11 inline-flex items-center gap-1 text-sm text-(--primary) hover:underline mb-2"
 				>
 					<Icon name="material-symbols:arrow-back" class="text-base" />
 					{i18n(I18nKey.albumsBackToList)}
 				</a>
-				<div class="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+				<h1 class="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100">
 					{album.title}
-				</div>
+				</h1>
 				<div class="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400 mt-2 flex-wrap">
 					<span class="inline-flex items-center gap-1">
 						<Icon name="material-symbols:calendar-today" class="text-sm" />
@@ -130,7 +130,7 @@ if (!album) {
 
 	<!-- Photo Masonry Grid -->
 	<div class="w-full rounded-(--radius-large) overflow-hidden relative mt-4">
-		<div class="card-base z-10 px-6 py-6 relative w-full">
+		<div class="card-base z-10 px-4 sm:px-6 py-4 sm:py-6 relative w-full">
 			{album.photos.length > 0 ? (
 				<div class="gallery-masonry">
 					{album.photos.map((photo: Photo) => (

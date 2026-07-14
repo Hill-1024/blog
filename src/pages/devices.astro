@@ -1,5 +1,6 @@
 ---
 import DeviceCard from "@components/features/devices/DeviceCard.astro";
+import { Icon } from "astro-icon/components";
 
 import { siteConfig } from "../config";
 import { devicesData } from "../data/devices";
@@ -9,223 +10,541 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
 
 export const prerender = true;
 
-// 检查设备页面是否启用
 if (!siteConfig.featurePages.devices) {
 	return Astro.redirect("/404/");
 }
 
-// 设备数据
-const devices = devicesData;
-const brands = Object.keys(devices);
-const viewDetailsText = i18n(I18nKey.devicesViewDetails);
+const devices = Object.entries(devicesData).flatMap(([brand, entries]) =>
+	entries.map((device) => ({ ...device, brand })),
+);
+const brands = Object.keys(devicesData);
+const categories = [...new Set(devices.map((device) => device.category))];
 ---
 
-<MainGridLayout title={i18n(I18nKey.devices)}>
-	<!-- 引入右侧边栏布局管理器 -->
+<MainGridLayout title={i18n(I18nKey.devices)} minimal>
 	<script>
 		import("../scripts/right-sidebar-layout.js");
 	</script>
-	<div
-		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
-	>
-		<div class="card-base z-10 px-9 py-6 relative w-full">
-			<!-- 页面标题 -->
-			<div class="flex flex-col items-start justify-center mb-8">
-				<h1
-					class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative before:w-1 before:h-8 before:rounded-md before:bg-[var(--primary)] before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
-				>
-					{i18n(I18nKey.devices)}
-				</h1>
-				<p class="text-lg text-black/60 dark:text-white/60">
-					{i18n(I18nKey.devicesSubtitle)}
-				</p>
-			</div>
 
-			<!-- 过滤按钮 -->
-			<div class="mb-6">
-				<div class="filter-container flex flex-wrap gap-2">
-					{
-						brands.map((brand, index) => (
-							<button
-								data-brand={brand}
-								class={`filter-tag px-6 py-2.5 rounded-lg font-medium transition-all ${
-									index === 0 ? "active" : ""
-								}`}
-							>
-								{brand}
-							</button>
-						))
-					}
+	<section class="devices-page card-base" data-devices-page>
+		<header class="devices-heading">
+			<h1>{i18n(I18nKey.devices)}</h1>
+			<p>{i18n(I18nKey.devicesSubtitle)}</p>
+		</header>
+
+		<section
+			class="device-tag-filter"
+			data-device-filters
+			aria-label="设备标签筛选"
+		>
+			<div class="device-filter-toolbar">
+				<label class="device-filter-title" for="device-tag-search">
+					按标签筛选
+				</label>
+				<span>品类与品牌可交叉组合</span>
+			</div>
+			<div class="device-filter-combobox" data-device-combobox>
+				<div class="device-tag-searchbox" data-device-searchbox>
+					<Icon
+						name="material-symbols:search-rounded"
+						class="device-search-icon"
+						aria-hidden="true"
+					/>
+					<div class="device-active-tags" data-device-active-tags>
+					</div>
+					<input
+						id="device-tag-search"
+						data-device-search
+						type="text"
+						inputmode="search"
+						autocomplete="off"
+						role="combobox"
+						aria-autocomplete="list"
+						aria-controls="device-tag-catalogue"
+						aria-expanded="false"
+						aria-haspopup="listbox"
+						aria-label="搜索并添加设备筛选标签"
+						placeholder="搜索标签或设备信息…"
+					/>
+					<button
+						type="button"
+						class="device-clear-filters"
+						data-device-clear
+						hidden
+					>
+						清除
+					</button>
+				</div>
+
+				<div
+					id="device-tag-catalogue"
+					class="device-tag-catalogue"
+					data-device-catalogue
+					role="listbox"
+					aria-label="可用设备标签"
+					aria-multiselectable="true"
+					hidden
+				>
+					<div
+						class="device-tag-group"
+						role="group"
+						aria-labelledby="device-category-label"
+					>
+						<p id="device-category-label">品类</p>
+						<div class="device-tag-options">
+							{
+								categories.map((category) => (
+									<button
+										type="button"
+										class="device-tag"
+										data-device-tag
+										data-tag-group="category"
+										data-tag-value={category}
+										role="option"
+										aria-selected="false"
+										tabindex="-1"
+									>
+										{category}
+									</button>
+								))
+							}
+						</div>
+					</div>
+
+					<div
+						class="device-tag-group"
+						role="group"
+						aria-labelledby="device-brand-label"
+					>
+						<p id="device-brand-label">品牌</p>
+						<div class="device-tag-options">
+							{
+								brands.map((brand) => (
+									<button
+										type="button"
+										class="device-tag"
+										data-device-tag
+										data-tag-group="brand"
+										data-tag-value={brand}
+										role="option"
+										aria-selected="false"
+										tabindex="-1"
+									>
+										{brand}
+									</button>
+								))
+							}
+						</div>
+					</div>
+					<p class="device-tag-empty" data-device-tag-empty hidden>
+						没有匹配标签，当前文字仍会搜索设备信息。
+					</p>
 				</div>
 			</div>
+		</section>
 
-			<!-- 设备列表 -->
-			<div
-				id="devices-container"
-				class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-			>
-				{
-					brands.length > 0 &&
-						devices[brands[0]].map((device, index) => (
-							<DeviceCard
-								device={device}
-								index={index}
-								viewDetailsText={viewDetailsText}
-							/>
-						))
-				}
-			</div>
+		<p
+			class="device-result-summary"
+			aria-live="polite"
+			data-device-result-summary
+		>
+			展示 {devices.length} 件设备
+		</p>
 
-			<!-- 隐藏数据用于客户端渲染 -->
-			<script
-				is:inline
-				id="devices-data"
-				type="application/json"
-				set:html={JSON.stringify(devices)}
-			/>
-			<script
-				is:inline
-				id="i18n-data"
-				type="application/json"
-				set:html={JSON.stringify({ viewDetails: viewDetailsText })}
-			/>
+		<div class="device-grid" data-device-grid>
+			{
+				devices.map((device) => (
+					<DeviceCard device={device} brand={device.brand} />
+				))
+			}
 		</div>
-	</div>
 
-	<!-- 使用全局脚本，确保 swup 切换后仍能重新初始化 -->
+		<p class="device-empty-state" data-device-empty-state hidden>
+			没有符合当前筛选条件的设备。
+		</p>
+	</section>
+
 	<script is:inline src="/js/devices-page-handler.js"></script>
 </MainGridLayout>
 
 <style>
-	.filter-container {
+	.devices-page {
+		padding: clamp(1.25rem, 3vw, 2.5rem);
+		container-type: inline-size;
+	}
+
+	.devices-heading {
+		max-width: 42rem;
+		padding-bottom: 1.6rem;
+		border-bottom: 1px solid var(--line-divider);
+	}
+
+	.devices-heading h1 {
+		margin: 0;
+		color: color-mix(in oklab, var(--deep-text) 92%, var(--primary));
+		font-size: clamp(1.75rem, 4vw, 2.35rem);
+		font-weight: 750;
+		letter-spacing: -0.035em;
+		line-height: 1.15;
+	}
+
+	:global(.dark) .devices-heading h1 {
+		color: color-mix(in oklab, white 90%, var(--primary));
+	}
+
+	.devices-heading p {
+		margin: 0.65rem 0 0;
+		color: var(--content-meta);
+		font-size: 0.95rem;
+		line-height: 1.6;
+	}
+
+	.device-tag-filter {
+		padding: 1.4rem 0 1.2rem;
+		border-bottom: 1px solid var(--line-divider);
+	}
+
+	.device-filter-title,
+	.device-tag-group > p {
+		margin: 0;
+		color: var(--content-meta);
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.045em;
+	}
+
+	.device-filter-toolbar {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		width: min(100%, 48rem);
+		margin-bottom: 0.7rem;
+	}
+
+	.device-filter-title {
+		color: var(--deep-text);
+		font-size: 0.88rem;
+		letter-spacing: -0.01em;
+	}
+
+	.device-filter-toolbar span {
+		color: var(--content-meta);
+		font-size: 0.75rem;
+	}
+
+	.device-filter-combobox {
+		position: relative;
+		z-index: 5;
+		width: min(100%, 48rem);
+	}
+
+	.device-tag-searchbox {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		min-height: 3.25rem;
+		padding: 0.45rem 0.55rem;
+		border: 1px solid
+			color-mix(in oklab, var(--line-divider) 90%, transparent);
+		border-radius: 0.9rem;
+		background: color-mix(in oklab, var(--card-bg) 92%, var(--page-bg));
+		box-shadow:
+			0 1px 2px color-mix(in srgb, var(--deep-text) 7%, transparent),
+			inset 0 1px 0 color-mix(in srgb, white 36%, transparent);
+		cursor: text;
+		transition:
+			border-color 150ms ease,
+			box-shadow 150ms ease,
+			background-color 150ms ease;
+	}
+
+	.device-tag-searchbox:focus-within {
+		border-color: color-mix(
+			in oklab,
+			var(--primary) 52%,
+			var(--line-divider)
+		);
+		background: var(--card-bg);
+		box-shadow:
+			0 0 0 3px color-mix(in oklab, var(--primary) 14%, transparent),
+			0 0.5rem 1.4rem color-mix(in srgb, var(--deep-text) 7%, transparent);
+	}
+
+	:global(.device-search-icon) {
+		flex: none;
+		width: 1.15rem;
+		height: 1.15rem;
+		margin: 0 0.08rem;
+		color: var(--content-meta);
+	}
+
+	.device-tag-searchbox input {
+		flex: 1 1 12rem;
+		min-width: 7rem;
+		min-height: 2.15rem;
+		padding: 0.2rem 0.15rem;
+		border: 0;
+		outline: 0;
+		background: transparent;
+		color: var(--deep-text);
+		font: inherit;
+		font-size: 0.92rem;
+	}
+
+	.device-tag-searchbox input::placeholder {
+		color: color-mix(in oklab, var(--content-meta) 78%, transparent);
+	}
+
+	.device-active-tags,
+	.device-tag-options {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.75rem;
-		margin-bottom: 1rem;
+		gap: 0.4rem;
 	}
 
-	.filter-tag {
-		padding: 0.625rem 1.25rem;
-		border: 1px solid var(--line-divider);
-		border-radius: var(--radius-large);
-		background: var(--btn-regular-bg);
-		color: var(--btn-content);
-		font-size: 0.875rem;
-		font-weight: 500;
+	.device-active-tags {
+		display: contents;
+	}
+
+	.device-active-tags:empty {
+		display: none;
+	}
+
+	:global(.device-active-tag),
+	.device-tag,
+	.device-clear-filters {
+		min-height: 2.1rem;
+		border: 1px solid
+			color-mix(in oklab, var(--line-divider) 85%, transparent);
+		background: color-mix(in oklab, var(--card-bg) 84%, var(--page-bg));
+		color: var(--content-meta);
 		cursor: pointer;
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		white-space: nowrap;
-		position: relative;
-		overflow: hidden;
+		font: inherit;
+		font-size: 0.8rem;
+		font-weight: 600;
+		line-height: 1;
 	}
 
-	.filter-tag::before {
-		content: "";
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: var(--primary);
-		opacity: 0;
-		transition: opacity 0.3s ease;
-		z-index: -1;
+	.device-tag {
+		padding: 0.45rem 0.72rem;
+		border-radius: 0.6rem;
+		box-shadow: none;
 	}
 
-	.filter-tag:hover:not(.active) {
-		background: var(--btn-hover-bg);
-		border-color: var(--primary);
-		transform: translateY(-2px);
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.filter-tag.active {
-		background: var(--primary);
-		color: white;
-		border-color: var(--primary);
-		transform: translateY(-1px);
-		box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
-	}
-
-	.filter-tag.active:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
-	}
-
-	/* 设备卡片动画效果 */
-	@keyframes fadeInUp {
-		from {
-			opacity: 0;
-			transform: translateY(20px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.onload-animation {
-		animation: fadeInUp 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-		opacity: 0;
-	}
-
-	/* 卡片内容文本截断 */
-	.line-clamp-2 {
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	/* 设备卡片微妙的悬停效果 */
-	.device-card::after {
-		content: "";
-		position: absolute;
-		inset: 0;
-		border-radius: 0.75rem;
-		background: linear-gradient(
-			135deg,
-			rgba(var(--color-primary-rgb), 0.05),
-			transparent
+	.device-tag:hover {
+		border-color: color-mix(
+			in oklab,
+			var(--primary) 35%,
+			var(--line-divider)
 		);
-		opacity: 0;
-		transition: opacity 0.4s ease;
-		pointer-events: none;
+		background: color-mix(in oklab, var(--primary) 7%, var(--card-bg));
+		color: var(--btn-content);
 	}
 
-	.device-card:hover::after {
-		opacity: 1;
+	.device-tag.keyboard-active {
+		border-color: color-mix(
+			in oklab,
+			var(--primary) 58%,
+			var(--line-divider)
+		);
+		background: color-mix(in oklab, var(--primary) 10%, var(--card-bg));
+		box-shadow: 0 0 0 2px
+			color-mix(in oklab, var(--primary) 12%, transparent);
+		color: var(--btn-content);
 	}
 
-	/* 设备名称和规格的文本样式 */
-	.device-card h3 {
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	.device-tag.selected,
+	:global(.device-active-tag) {
+		border-color: color-mix(
+			in oklab,
+			var(--primary) 38%,
+			var(--line-divider)
+		);
+		background: color-mix(in oklab, var(--primary) 12%, var(--card-bg));
+		color: var(--btn-content);
 	}
 
-	/* 响应式调整 */
-	@media (max-width: 768px) {
-		.filter-container {
-			gap: 0.5rem;
+	:global(.device-active-tag) {
+		display: inline-flex;
+		align-items: center;
+		flex: none;
+		padding: 0.4rem 0.48rem 0.4rem 0.68rem;
+		border-radius: 0.58rem;
+		box-shadow: none;
+		white-space: nowrap;
+	}
+
+	:global(.device-active-tag)::after {
+		content: "×";
+		margin-left: 0.3rem;
+		font-size: 1rem;
+		font-weight: 400;
+		vertical-align: -0.04em;
+	}
+
+	.device-clear-filters {
+		flex: none;
+		padding: 0.4rem 0.5rem;
+		border-color: transparent;
+		border-radius: 0.55rem;
+		background: transparent;
+		color: var(--content-meta);
+	}
+
+	.device-clear-filters:hover {
+		background: color-mix(in oklab, var(--btn-regular-bg) 70%, transparent);
+		color: var(--btn-content);
+	}
+
+	.device-tag-catalogue {
+		position: absolute;
+		top: calc(100% + 0.5rem);
+		left: 0;
+		right: 0;
+		display: grid;
+		gap: 0.9rem;
+		max-height: min(23rem, 55vh);
+		padding: 0.85rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		border: 1px solid
+			color-mix(in oklab, var(--line-divider) 88%, transparent);
+		border-radius: 0.9rem;
+		background: color-mix(in oklab, var(--card-bg) 97%, var(--page-bg));
+		box-shadow:
+			0 1.25rem 3rem color-mix(in srgb, var(--deep-text) 14%, transparent),
+			0 2px 6px color-mix(in srgb, var(--deep-text) 6%, transparent);
+		isolation: isolate;
+	}
+
+	.device-tag-catalogue[hidden] {
+		display: none;
+	}
+
+	.device-tag-group {
+		display: flex;
+		align-items: baseline;
+		gap: 0.9rem;
+	}
+
+	.device-tag-group > p {
+		flex: 0 0 2.5rem;
+		padding-top: 0.55rem;
+	}
+
+	.device-tag-options {
+		flex: 1;
+	}
+
+	.device-tag[hidden] {
+		display: none;
+	}
+
+	.device-tag-empty {
+		margin: 0;
+		padding: 0.55rem 0.65rem;
+		color: var(--content-meta);
+		font-size: 0.8rem;
+		line-height: 1.5;
+	}
+
+	.device-tag-empty[hidden] {
+		display: none;
+	}
+
+	.device-tag:focus-visible,
+	:global(.device-active-tag):focus-visible,
+	.device-clear-filters:focus-visible {
+		outline: 2px solid color-mix(in oklab, var(--primary) 58%, transparent);
+		outline-offset: 2px;
+	}
+
+	.device-result-summary {
+		margin: 1rem 0;
+		color: var(--content-meta);
+		font-size: 0.82rem;
+	}
+
+	.device-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+		gap: 1rem;
+	}
+
+	.device-empty-state {
+		margin: 2.5rem 0 0;
+		padding: 2rem;
+		border: 1px dashed var(--line-divider);
+		border-radius: 0.875rem;
+		color: var(--content-meta);
+		text-align: center;
+	}
+
+	@container (max-width: 44rem) {
+		.device-tag-group {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 0.45rem;
 		}
 
-		.filter-tag {
-			padding: 0.5rem 1rem;
-			font-size: 0.8rem;
-		}
-
-		.device-card .relative.p-6\.pb-0 {
-			padding: 1rem 1rem 0;
-		}
-
-		.device-card .p-6\.pt-4 {
-			padding: 1rem;
+		.device-grid {
+			grid-template-columns: 1fr;
 		}
 	}
 
-	/* 在深色模式下微妙的阴影效果 */
-	@media (prefers-color-scheme: dark) {
-		.device-card:hover {
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	@media (max-width: 640px) {
+		.devices-page {
+			padding: 1.1rem;
+		}
+
+		.device-tag-filter {
+			padding-top: 1.25rem;
+		}
+
+		.device-filter-toolbar {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 0.2rem;
+		}
+
+		.device-filter-toolbar span {
+			font-size: 0.72rem;
+		}
+
+		.device-tag-searchbox {
+			min-height: 3.5rem;
+			padding: 0.5rem;
+			border-radius: 0.82rem;
+		}
+
+		.device-tag-searchbox input {
+			min-height: 2.4rem;
+			min-width: 6.5rem;
+		}
+
+		:global(.device-active-tag),
+		.device-tag,
+		.device-clear-filters {
+			min-height: 44px;
+		}
+
+		.device-clear-filters {
+			padding-inline: 0.65rem;
+		}
+
+		.device-tag-catalogue {
+			max-height: min(25rem, 58svh);
+			padding: 0.72rem;
+		}
+
+		.device-tag-group {
+			gap: 0.35rem;
+		}
+
+		.device-tag-options {
+			width: 100%;
 		}
 	}
 </style>

@@ -18,7 +18,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 
 <div
 	id="post-list-container"
-	class={`transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 ${initialLayoutClass}`}
+	class={`transition-all duration-300 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 ${initialLayoutClass}`}
 	data-default-layout={defaultLayout}
 	data-both-sidebars={hasRightSidebars}
 >
@@ -192,7 +192,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 
 	#post-list-container {
 		min-height: 200px;
-		transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: opacity 0.2s ease;
 	}
 
 	#post-list-container.list-mode {
@@ -200,22 +200,13 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 	}
 
 	#post-list-container.grid-mode {
-		@apply grid grid-cols-1 md:grid-cols-2 gap-6;
+		@apply grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5;
 	}
 
 	#post-list-container > :global(*) {
 		content-visibility: auto;
 		contain-intrinsic-size: 200px;
-		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-		opacity: 0;
-		animation: fadeInSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-		animation-delay: calc(
-			var(--content-delay) + var(--i) * var(--interval)
-		);
-	}
-
-	#post-list-container.grid-mode > :global(*) {
-		animation-name: fadeInScale;
+		transition: opacity 0.2s ease;
 	}
 
 	#post-list-container.layout-switching {
@@ -223,32 +214,13 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 	}
 
 	#post-list-container.layout-switching > :global(*) {
-		animation-delay: calc(var(--i) * 50ms);
-	}
-
-	#post-list-container.layout-switching > :global(*) {
 		transform: scale(0.98);
 	}
 
-	@keyframes fadeInScale {
-		from {
-			opacity: 0;
-			transform: scale(0.95);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1);
-		}
-	}
-
-	@keyframes fadeInSlide {
-		from {
-			opacity: 0;
-			transform: translateX(-10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateX(0);
+	@media (prefers-reduced-motion: reduce) {
+		#post-list-container,
+		#post-list-container > :global(*) {
+			transition: none;
 		}
 	}
 </style>

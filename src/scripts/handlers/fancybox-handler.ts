@@ -19,6 +19,7 @@ export class FancyboxHandler {
 	private Fancybox: FancyboxType | null = null;
 	private boundSelectors: string[] = [];
 	private initialized = false;
+	private loadFailed = false;
 
 	/**
 	 * 初始化 Fancybox
@@ -27,13 +28,20 @@ export class FancyboxHandler {
 	async init(): Promise<void> {
 		const hasImages = this.checkForImages();
 
-		if (!hasImages) {
+		if (!hasImages || this.loadFailed) {
 			return;
 		}
 
 		// 按需加载 Fancybox 模块
 		if (!this.Fancybox) {
-			await this.loadFancybox();
+			try {
+				await this.loadFancybox();
+			} catch {
+				// 灯箱是渐进增强；模块不可用时保留图片原生链接。
+				this.Fancybox = null;
+				this.loadFailed = true;
+				return;
+			}
 		}
 
 		// 避免重复初始化
@@ -60,9 +68,11 @@ export class FancyboxHandler {
 	 * 加载 Fancybox 模块和样式
 	 */
 	private async loadFancybox(): Promise<void> {
-		const mod = await import("@fancyapps/ui");
+		const [mod] = await Promise.all([
+			import("@fancyapps/ui"),
+			import("@fancyapps/ui/dist/fancybox/fancybox.css"),
+		]);
 		this.Fancybox = mod.Fancybox;
-		await import("@fancyapps/ui/dist/fancybox/fancybox.css");
 	}
 
 	/**
@@ -122,6 +132,7 @@ export class FancyboxHandler {
 		this.cleanup();
 		this.Fancybox = null;
 		this.initialized = false;
+		this.loadFailed = false;
 	}
 
 	/**

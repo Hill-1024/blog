@@ -12,36 +12,34 @@
 </script>
 
 {#if href}
-	<a {href} aria-label={label} class="chip-wrapper {className}">
-		<button class="chip">
-			{#if dot}
-				<div class="chip-dot"></div>
-			{/if}
-			<span class="chip-content">
-				<slot />
-			</span>
-			{#if badge !== undefined && badge !== null && badge !== ""}
-				<div class="chip-badge">{badge}</div>
-			{/if}
-		</button>
-	</a>
-{:else}
-	<button class="chip {className}">
+	<a {href} aria-label={label} class="chip chip-wrapper {className}">
 		{#if dot}
-			<div class="chip-dot"></div>
+			<span class="chip-dot"></span>
 		{/if}
 		<span class="chip-content">
 			<slot />
 		</span>
 		{#if badge !== undefined && badge !== null && badge !== ""}
-			<div class="chip-badge">{badge}</div>
+			<span class="chip-badge">{badge}</span>
+		{/if}
+	</a>
+{:else}
+	<button type="button" class="chip {className}">
+		{#if dot}
+			<span class="chip-dot"></span>
+		{/if}
+		<span class="chip-content">
+			<slot />
+		</span>
+		{#if badge !== undefined && badge !== null && badge !== ""}
+			<span class="chip-badge">{badge}</span>
 		{/if}
 	</button>
 {/if}
 
 <style>
 	.chip-wrapper {
-		display: block;
+		display: flex;
 		width: 100%;
 		text-decoration: none;
 	}
@@ -113,11 +111,11 @@
 		background-color: var(--primary);
 	}
 
-	.chip-wrapper:hover .chip {
+	.chip-wrapper:hover {
 		color: var(--primary);
 	}
 
-	:global(.dark) .chip-wrapper:hover .chip {
+	:global(.dark) .chip-wrapper:hover {
 		color: var(--primary);
 	}
 </style>

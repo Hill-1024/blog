@@ -10,10 +10,106 @@ type PanelId =
 	| "search-panel"
 	| "wallpaper-mode-panel";
 
+const panelIds: PanelId[] = [
+	"mobile-toc-panel",
+	"display-setting",
+	"nav-menu-panel",
+	"search-panel",
+	"wallpaper-mode-panel",
+];
+
+const panelTriggers: Record<PanelId, string> = {
+	"mobile-toc-panel": "mobile-toc-switch",
+	"display-setting": "display-settings-switch",
+	"nav-menu-panel": "nav-menu-switch",
+	"search-panel": "search-switch",
+	"wallpaper-mode-panel": "wallpaper-mode-switch",
+};
+
+export interface PanelStateChangeDetail {
+	panelId: PanelId;
+	isOpen: boolean;
+}
+
 class PanelManager {
 	private activePanels = new Set<PanelId>();
 	private panelStack: PanelId[] = [];
 	private readonly duration = 100;
+	private readonly mobileOnlyPanels: PanelId[] = [
+		"mobile-toc-panel",
+		"nav-menu-panel",
+		"search-panel",
+	];
+
+	private handleDocumentKeydown = (event: KeyboardEvent): void => {
+		if (event.key !== "Escape") return;
+		const panelId = this.panelStack.at(-1);
+		if (!panelId) return;
+
+		event.preventDefault();
+		void this.closePanel(panelId).then(() => {
+			document.getElementById(panelTriggers[panelId])?.focus();
+		});
+	};
+
+	private handleViewportChange = (): void => {
+		if (window.innerWidth < 1280) return;
+
+		this.mobileOnlyPanels.forEach((panelId) => {
+			const panel = document.getElementById(panelId);
+			if (panel && !panel.classList.contains("float-panel-closed")) {
+				void this.closePanel(panelId);
+			}
+		});
+	};
+
+	constructor() {
+		if (typeof document === "undefined") return;
+		document.addEventListener("keydown", this.handleDocumentKeydown);
+		window.addEventListener("resize", this.handleViewportChange, {
+			passive: true,
+		});
+
+		queueMicrotask(() => {
+			panelIds.forEach((panelId) => {
+				const panel = document.getElementById(panelId);
+				if (!panel) return;
+
+				const isOpen = !panel.classList.contains("float-panel-closed");
+				this.syncAccessibility(panelId, panel, isOpen, false);
+				if (isOpen) {
+					this.activePanels.add(panelId);
+					this.panelStack.push(panelId);
+				}
+			});
+			this.handleViewportChange();
+		});
+	}
+
+	private syncAccessibility(
+		panelId: PanelId,
+		panel: HTMLElement,
+		isOpen: boolean,
+		dispatch = true,
+	): void {
+		panel.setAttribute("aria-hidden", String(!isOpen));
+		if (isOpen) {
+			panel.removeAttribute("inert");
+		} else {
+			panel.setAttribute("inert", "");
+		}
+
+		const trigger = document.getElementById(panelTriggers[panelId]);
+		trigger?.setAttribute("aria-expanded", String(isOpen));
+
+		if (dispatch) {
+			document.dispatchEvent(
+				new CustomEvent<PanelStateChangeDetail>("panel-state-change", {
+					detail: { panelId, isOpen },
+				}),
+			);
+		}
+	}
 
 	/**
 	 * 应用动画打开浮窗
@@ -114,6 +210,7 @@ class PanelManager {
 
 		if (shouldOpen) {
 			await this.closeAllPanelsExcept(panelId);
+			this.syncAccessibility(panelId, panel, true);
 			await this.animateIn(panel);
 			this.activePanels.add(panelId);
 			this.panelStack = this.panelStack.filter((id) => id !== panelId);
@@ -130,11 +227,18 @@ class PanelManager {
 	 */
 	async closePanel(panelId: PanelId): Promise<void> {
 		const panel = document.getElementById(panelId);
-		if (panel && !panel.classList.contains("float-panel-closed")) {
-			await this.animateOut(panel);
+		if (!panel) {
 			this.activePanels.delete(panelId);
 			this.panelStack = this.panelStack.filter((id) => id !== panelId);
+			return;
 		}
+
+		this.syncAccessibility(panelId, panel, false);
+		if (!panel.classList.contains("float-panel-closed")) {
+			await this.animateOut(panel);
+		}
+		this.activePanels.delete(panelId);
+		this.panelStack = this.panelStack.filter((id) => id !== panelId);
 	}
 
 	/**
@@ -142,8 +246,9 @@ class PanelManager {
 	 * @param exceptPanelId 要保持打开的浮窗ID
 	 */
 	async closeAllPanelsExcept(exceptPanelId?: PanelId): Promise<void> {
-		const closingPromises = Array.from(this.activePanels)
+		const closingPromises = panelIds
 			.filter((panelId) => panelId !== exceptPanelId)
+			.filter((panelId) => document.getElementById(panelId) !== null)
 			.map((panelId) => this.closePanel(panelId));
 
 		await Promise.all(closingPromises);
