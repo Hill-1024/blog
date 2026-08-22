@@ -92,7 +92,7 @@ const renderGroups = [
 	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0); perspective: 1000px;`}
 	data-fullscreen-wallpaper
 >
-	<script is:inline>
+	<script is:inline data-swup-ignore-script>
 	// 立即执行脚本：防止闪烁
 	(function() {
 		const mode = localStorage.getItem('wallpaperMode') || 'banner';
@@ -121,7 +121,7 @@ const renderGroups = [
 		))
 	) : (
 		<div id="wallpaper-single-container" class="w-full h-full relative">
-			<script is:inline define:vars={{ desktopImages: imageSources.desktop, mobileImages: imageSources.mobile, positionClass, blurAmount }}>
+			<script is:inline data-swup-ignore-script define:vars={{ desktopImages: imageSources.desktop, mobileImages: imageSources.mobile, positionClass, blurAmount }}>
 				(function() {
 					const getRandomImage = (images, storageKey) => {
 						if (images.length === 0) {return null;}
@@ -138,10 +138,11 @@ const renderGroups = [
 						return images[newIndex];
 					};
 					
+					const container = document.getElementById('wallpaper-single-container');
+					if (!container || container.querySelector('img')) {return;}
+
 					const desktopSrc = getRandomImage(desktopImages, 'wallpaper_desktop_index');
 					const mobileSrc = getRandomImage(mobileImages, 'wallpaper_mobile_index');
-					
-					const container = document.getElementById('wallpaper-single-container');
 					
 					if (desktopSrc) {
 						const desktopDiv = document.createElement('div');
@@ -185,7 +186,7 @@ const renderGroups = [
 </div>
 
 {isCarouselEnabled && (
-	<script is:inline define:vars={{ carouselInterval }}>
+	<script is:inline data-swup-ignore-script define:vars={{ carouselInterval }}>
 		function initFullscreenWallpaperCarousel() {
 			const container = document.querySelector('[data-fullscreen-wallpaper]');
 			if (!container) {return;}

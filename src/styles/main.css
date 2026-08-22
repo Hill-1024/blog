@@ -279,6 +279,14 @@ body {
     @apply rounded-(--radius-large) overflow-hidden bg-(--card-bg-transparent) backdrop-blur-sm transition-colors duration-150;
   }
 
+  /* TOC surfaces opt into the card material only while fullscreen wallpaper is active. */
+  .wallpaper-transparent .toc-wallpaper-surface,
+  body.wallpaper-transparent .toc-wallpaper-surface {
+    background: var(--card-bg-transparent) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
   /* 全屏壁纸模式下的半透明效果 - 使用!important确保优先级 */
   .wallpaper-transparent .card-base {
     background: var(--card-bg-transparent) !important;
@@ -310,6 +318,36 @@ body {
 
   .wallpaper-transparent .btn-card {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
+  }
+
+  /* 全屏壁纸模式下的 TOC 半透明质感 */
+  .wallpaper-transparent #toc-inner-wrapper,
+  body.wallpaper-transparent #toc-inner-wrapper {
+    padding: 0.5rem;
+    border-radius: var(--radius-large);
+    background: var(--card-bg-transparent) !important;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+  }
+
+  .wallpaper-transparent .floating-toc-panel,
+  body.wallpaper-transparent .floating-toc-panel {
+    background: var(--card-bg-transparent) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+  }
+
+  .wallpaper-transparent .floating-toc-header,
+  body.wallpaper-transparent .floating-toc-header {
+    background: transparent !important;
+  }
+
+  .wallpaper-transparent .mobile-toc-panel,
+  body.wallpaper-transparent .mobile-toc-panel {
+    background: var(--card-bg-transparent) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
   }
 
   h1,

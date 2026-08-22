@@ -147,9 +147,15 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
     background: rgba(255, 255, 255, 0.15);
   }
 
-  /* 非首页时，移动端各个弹出面板不透明 */
-  #navbar:not([data-is-home="true"]) :is(#nav-menu-panel, #mobile-toc-panel, #search-panel, #display-setting) {
+  /* 非首页时，移动端各个弹出面板不透明（全屏壁纸模式除外） */
+  body:not(.wallpaper-transparent) #navbar:not([data-is-home="true"]) :is(#nav-menu-panel, #mobile-toc-panel, #search-panel, #display-setting) {
     background: var(--card-bg);
     backdrop-filter: none;
+  }
+
+  body.wallpaper-transparent #navbar:not([data-is-home="true"]) :is(#nav-menu-panel, #mobile-toc-panel, #search-panel, #display-setting) {
+    background: var(--card-bg-transparent) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
   }
 }

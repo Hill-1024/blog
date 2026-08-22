@@ -86,13 +86,15 @@ body.no-banner-mode #toc-inner-wrapper {
   max-height: calc(100vh - 8rem) !important;
 }
 
-body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded="true"]) {
+body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded]),
+body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded="true"]),
+.wallpaper-transparent #toc-inner-wrapper {
   padding: 0.5rem;
   border-radius: var(--radius-large);
   background: var(--card-bg-transparent) !important;
   box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
 }
 
 #toc-wrapper.toc-hide,

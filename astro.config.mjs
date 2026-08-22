@@ -48,6 +48,11 @@ export default defineConfig({
 			containers: ["main"],
 			smoothScrolling: false, // 禁用平滑滚动以提升性能，避免与锚点导航冲突
 			cache: true,
+			// 页面脚本会在目标页面按需初始化，避免首个点击落到整页刷新。
+			loadOnIdle: false,
+			// 保留页面级脚本重跑（评论、加密文章等依赖它），持久化脚本用
+			// data-swup-ignore-script 避免导航时重复注册全局监听器。
+			reloadScripts: true,
 			preload: false, // 禁用预加载以提升性能
 			accessibility: true,
 			updateHead: process.env.NODE_ENV === "production",

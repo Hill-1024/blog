@@ -81,7 +81,11 @@ import "@/styles/toc.css";
 			document
 				.getElementById("toc-wrapper")
 				?.classList.toggle("toc-not-ready", !hasToc);
-			this.toggleAttribute("data-loaded", hasToc);
+			if (hasToc) {
+				this.setAttribute("data-loaded", "true");
+			} else {
+				this.removeAttribute("data-loaded");
+			}
 		}
 
 		initialise() {

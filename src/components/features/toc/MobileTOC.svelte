@@ -238,7 +238,7 @@
 		aria-label={i18n(I18nKey.tableOfContents)}
 		aria-hidden={!isOpen}
 		inert={!isOpen}
-		class="float-panel float-panel-closed mobile-toc-panel absolute md:w-[20rem] w-[calc(100vw-2rem)] top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4 min-[1280px]:!hidden"
+		class="float-panel float-panel-closed mobile-toc-panel toc-wallpaper-surface absolute md:w-[20rem] w-[calc(100vw-2rem)] top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4 min-[1280px]:!hidden"
 	>
 		<div class="flex items-center justify-between mb-4">
 			<p class="text-lg font-bold text-[var(--primary)]">
@@ -291,6 +291,13 @@
 		background: var(--card-bg);
 		border: 1px solid var(--line-color);
 		backdrop-filter: blur(10px);
+	}
+
+	:global(body.wallpaper-transparent) .mobile-toc-panel,
+	:global(.wallpaper-transparent) .mobile-toc-panel {
+		background: var(--card-bg-transparent) !important;
+		backdrop-filter: blur(20px) !important;
+		-webkit-backdrop-filter: blur(20px) !important;
 	}
 
 	:global(.theme-switch-btn)::before {

@@ -30,7 +30,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 	/>
 	<nav
 		id="floating-toc-panel"
-		class="floating-toc-panel"
+		class="floating-toc-panel toc-wallpaper-surface"
 		aria-label={i18n(I18nKey.tableOfContents)}
 		aria-hidden="true"
 		inert
@@ -92,6 +92,18 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		padding: 0.75rem 1rem;
 		border-bottom: 1px solid var(--line-color);
 		background: var(--card-bg);
+	}
+
+	:global(body.wallpaper-transparent) .floating-toc-panel,
+	:global(.wallpaper-transparent) .floating-toc-panel {
+		background: var(--card-bg-transparent) !important;
+		backdrop-filter: blur(20px) !important;
+		-webkit-backdrop-filter: blur(20px) !important;
+	}
+
+	:global(body.wallpaper-transparent) .floating-toc-header,
+	:global(.wallpaper-transparent) .floating-toc-header {
+		background: transparent !important;
 	}
 
 	.floating-toc-panel-content {

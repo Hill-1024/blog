@@ -101,6 +101,7 @@ const favicons: Favicon[] =
 <!-- Set the theme before the page is rendered to avoid a flash -->
 <script
 	is:inline
+	data-swup-ignore-script
 	define:vars={{
 		DEFAULT_THEME,
 		LIGHT_MODE,
@@ -187,7 +188,7 @@ const favicons: Favicon[] =
 </script>
 
 <!-- Dev mode script - avoid swup replacing head styles -->
-<script is:inline define:vars={{ IS_DEV: import.meta.env.DEV }}>
+<script is:inline data-swup-ignore-script define:vars={{ IS_DEV: import.meta.env.DEV }}>
 	// Dev 模式下，避免 swup 在页面切换时反复替换 head 中的样式标签，导致偶发样式丢失
 	if (IS_DEV) {
 		document.addEventListener("swup:enable", () => {
