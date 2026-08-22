@@ -68,11 +68,35 @@ body.enable-banner #banner-wrapper {
   height: var(--current-banner-height) !important;
   min-height: 0;
   max-height: none;
+  /* Keep the hero height in lockstep with the page shell during Swup
+     navigation; otherwise the homepage and content-page heights flash. */
+  transition: height 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body.enable-banner .absolute.w-full.z-30:not(.no-banner-layout) {
   top: var(--current-banner-height) !important;
   min-height: calc(100vh - var(--current-banner-height)) !important;
+  /* The content anchor and its viewport fill follow the same curve as the
+     banner and top row, so the shell never flashes between page heights. */
+  transition:
+    top 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    min-height 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 1280px) {
+  /* Use the same curve for the header spacer so banner, content, and navbar
+     arrive at their route-specific heights as one continuous shell motion. */
+  body.enable-banner #top-row {
+    transition: height 700ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.enable-banner #banner-wrapper,
+  body.enable-banner .absolute.w-full.z-30:not(.no-banner-layout),
+  body.enable-banner #top-row {
+    transition: none !important;
+  }
 }
 
 .absolute.w-full.z-30.no-banner-layout,

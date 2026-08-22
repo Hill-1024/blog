@@ -103,6 +103,38 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/*
+ * The first child only covers the navbar's off-canvas animation edge. It is
+ * not a surface, so it must never inherit the active navbar border or blur.
+ * Otherwise a route change can expose its bottom border as a dark line at the
+ * top of the viewport while Swup interpolates the home and content states.
+ */
+#navbar > .navbar-transition-mask,
+#navbar[data-is-home="false"] > .navbar-transition-mask {
+  background: var(--card-bg) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: none !important;
+}
+
+/* Route transitions switch the border atomically (animating its shorthand
+ * produces a transient multi-pixel dark outline), while the material eases
+ * into the target route. */
+html.is-changing #navbar > .navbar-surface,
+html.is-animating #navbar > .navbar-surface,
+html.is-rendering #navbar > .navbar-surface {
+  transition:
+    background-color 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    backdrop-filter 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    -webkit-backdrop-filter 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 360ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+  will-change: background-color, box-shadow;
+}
+
 /* 子组件样式 (Sub-Components)
  * 注意：不再强制覆盖 .music-player .mini-player 的背景，
  * 让其使用自身的 card-base / 主题卡片背景，以保持与主播放器一致。
