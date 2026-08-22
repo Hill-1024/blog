@@ -255,21 +255,34 @@ body {
   .is-theme-transitioning #header-waves {
     /* 设置当前颜色为页面背景色，供SVG继承 */
     color: var(--page-bg);
-    /* 确保与页面在同一合成层 */
-    isolation: isolate;
-    /* 优化渲染性能 */
-    contain: layout style paint;
-    /* GPU层合成 */
-    transform: translateZ(0);
-    /* 确保没有背景色 */
-    background: transparent;
   }
 
-  .is-theme-transitioning #header-waves use {
+  /* GPU isolation is useful for the fallback transition, but it promotes the
+     wave above the root View Transition snapshot and creates a seam at the
+     banner/content edge. Keep the View Transitions path in the root layer. */
+  .is-theme-transitioning:not(.use-view-transition) #header-waves {
+    isolation: isolate;
+    contain: layout style paint;
+    transform: translateZ(0);
+  }
+
+  .is-theme-transitioning:not(.use-view-transition) #header-waves use {
     /* 保持动画连续性 */
     will-change: transform;
     /* GPU优化 */
     transform: translateZ(0);
+  }
+
+  /* The normal wave animation uses compositor-friendly transforms on its SVG
+     children. During a root View Transition those layers can be painted above
+     the root snapshots, so their color progress drifts from the content shell
+     in the middle of the fade. Flatten the host for this path; the fallback
+     path above keeps the GPU promotion. */
+  .is-theme-transitioning.use-view-transition #header-waves {
+    isolation: auto !important;
+    contain: none !important;
+    transform: none !important;
+    will-change: auto !important;
   }
 
   .card-base {

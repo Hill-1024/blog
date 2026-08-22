@@ -356,21 +356,16 @@ export class SwupHooksManager {
 
 		if (bannerWrapper && mainContentWrapper) {
 			if (isHomePage) {
-				// 首页：延迟移除隐藏类
-				setTimeout(() => {
-					bannerWrapper.classList.remove("mobile-hide-banner");
-				}, ANIMATION_CONFIG.mobileBannerDelay);
-				setTimeout(() => {
-					mainContentWrapper.classList.remove(
-						"mobile-main-no-banner",
-					);
-				}, ANIMATION_CONFIG.mobileContentDelay);
+				// 首页：让壁纸和内容锚点在同一帧开始回到横幅布局。
+				// Banner 本身通过 opacity 过渡，不再等待延迟后突然出现。
+				bannerWrapper.classList.remove("mobile-hide-banner");
+				mainContentWrapper.classList.remove("mobile-main-no-banner");
 			} else {
-				// 非首页：分阶段隐藏
+				// 非首页：保留 Banner 的高度与波浪，和内容锚点一起淡出/上移。
+				// 由 CSS 在过渡结束后维持不可交互的透明层，避免 display:none
+				// 把壁纸边缘从页面切换中间直接裁掉。
 				bannerWrapper.classList.add("mobile-hide-banner");
-				setTimeout(() => {
-					mainContentWrapper.classList.add("mobile-main-no-banner");
-				}, ANIMATION_CONFIG.mobileBannerDelay);
+				mainContentWrapper.classList.add("mobile-main-no-banner");
 			}
 		}
 	}

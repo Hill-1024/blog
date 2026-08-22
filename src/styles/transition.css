@@ -165,15 +165,41 @@ html.is-animating .transition-swup-fade {
 }
 
 /* View Transitions API - 主题切换动画 */
+/* Keep the group and both snapshots on one timeline. The root snapshot rules
+   in main.css live in a lower cascade layer, so this unlayered declaration is
+   the final source of truth for the actual animation clock. */
+::view-transition-group(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 ::view-transition-old(root) {
-  animation: theme-fade-out 0.25s ease-out forwards;
+  animation: theme-fade-out 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   z-index: 2;
 }
 
 ::view-transition-new(root) {
-  animation: theme-fade-in 0.25s ease-in forwards;
+  animation: theme-fade-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   z-index: 1;
 }
+
+/* Keep the live wave and MainGrid's page surface on the same clock as the root
+   fade. MainGrid normally carries Tailwind's duration-700 transition; leaving
+   that active here makes these surfaces agree only at the first and last
+   frame. */
+html.is-theme-transitioning.use-view-transition #header-waves use {
+  transition: fill 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  will-change: auto !important;
+}
+
+html.is-theme-transitioning.use-view-transition #main-grid {
+  transition-duration: 0.5s !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Do not create a second named snapshot for the translucent SVG layers. The
+   host is flattened above and the live fill is synchronized to the root clock
+   instead; independently cross-fading the layers creates an alpha seam. */
 
 @keyframes theme-fade-out {
   from {

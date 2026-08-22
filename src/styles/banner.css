@@ -73,7 +73,9 @@ body.enable-banner #banner-wrapper {
   max-height: none;
   /* Keep the hero height in lockstep with the page shell during Swup
      navigation; otherwise the homepage and content-page heights flash. */
-  transition: height 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    height 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Wallpaper mode changes reuse the route shell's geometry transition. The
@@ -83,9 +85,10 @@ body.wallpaper-mode-transition #banner-wrapper {
   display: block !important;
   height: var(--wallpaper-transition-banner-height, 0px) !important;
   opacity: var(--wallpaper-transition-banner-opacity, 1) !important;
-  /* The banner is absolutely positioned; animating its height only forces a
-     full layout pass while the content anchor is already moving separately.
-     Snap the hidden layer's height and fade its pixels instead. */
+  /* Keep the outgoing/incoming edge mounted at its measured geometry. The
+     content anchor moves independently while the hero and wave fade as one
+     composited layer, avoiding both a layout-heavy height animation and a
+     wave jump to the viewport top. */
   transition: opacity var(--wallpaper-mode-fade-duration) ease-out;
   will-change: opacity;
 }
@@ -133,7 +136,8 @@ body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
   body.wallpaper-mode-transition #banner-wrapper,
   body.wallpaper-mode-transition .absolute.w-full.z-30:not(.no-banner-layout),
   body.wallpaper-mode-transition #top-row,
-  body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
+  body.wallpaper-mode-transition [data-fullscreen-wallpaper],
+  #header-waves use {
     transition: none !important;
   }
 }
@@ -192,24 +196,29 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 
 #header-waves {
   bottom: -1px !important;
-  z-index: 5;
+  /* The title overlay has z-20 and a dark bottom gradient. The wave must be
+     above it so its --page-bg fill is not tinted differently from the page. */
+  z-index: 30;
   height: clamp(3.25rem, 8vh, 6rem) !important;
   min-height: 0 !important;
   max-height: none !important;
   margin-bottom: -1px;
-  isolation: isolate;
   overflow: visible;
+  /* Never put a translucent rectangular bridge behind the SVG: it blends the
+     wallpaper into a gray strip on wide screens. */
+  background: none;
 }
 
 #header-waves .waves {
   position: absolute !important;
+  /* Preserve the original four-layer wave geometry. */
   bottom: -1px !important;
+  z-index: 0;
   width: 100%;
   height: 100% !important;
   min-height: 0 !important;
   max-height: none !important;
   overflow: visible;
-  transform: translateZ(0);
 }
 
 #header-waves svg {
@@ -217,7 +226,16 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   width: 100%;
 }
 
+#header-waves use {
+  /* Match MainGridLayout's `duration-700` surface-color transition so the
+     layered SVG and the content background interpolate through the same color
+     at every theme-transition frame. */
+  transition: fill 700ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 #header-waves.waves-performance .parallax use:nth-child(-n + 2) {
+  /* Performance mode keeps the original two deepest layers, including the
+     opaque final wave that lands on the content background. */
   display: none;
 }
 
@@ -243,11 +261,20 @@ body.lg\:is-home .sidebar-sticky-column {
   top: 1rem;
 }
 
-@media (max-width: 767px) {
+/* Treat narrow tablets like mobile: side widgets stay in the collapsible
+   drawer instead of being squeezed into a fixed-width rail. */
+@media (max-width: 959px) {
   #main-grid[data-has-drawer="true"] {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: auto auto auto !important;
+    padding-top: 1rem !important;
+  }
+
+  /* Only Banner mode needs a page-colored landing area below the wave.
+     Fullscreen wallpaper mode must leave the grid transparent. */
+  body.enable-banner #main-grid[data-has-drawer="true"] {
+    background: var(--page-bg);
   }
 
   #main-grid[data-has-drawer="true"] #swup-container {
@@ -260,7 +287,15 @@ body.lg\:is-home .sidebar-sticky-column {
     grid-column: 1 !important;
     grid-row: 1 !important;
     max-width: none !important;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0 !important;
+  }
+
+  #main-grid[data-has-drawer="true"] .mobile-sidebar-drawer {
+    display: block !important;
+  }
+
+  #main-grid[data-has-drawer="true"] .sidebar-content {
+    display: none !important;
   }
 
   #main-grid[data-has-drawer="true"] .sidebar-sticky-column {
@@ -307,7 +342,26 @@ body.lg\:is-home .sidebar-sticky-column {
 /* Non-home routes keep the Banner on desktop and collapse it only below the
    configured desktop breakpoint. The class is persisted by Swup. */
 @media (max-width: 1279px) {
+  /* Keep the outgoing hero mounted while the content anchor moves. A hard
+     display:none here removes both the wallpaper and its wave one frame
+     before the page shell reaches the navbar offset, exposing a blank seam. */
   #banner-wrapper.mobile-hide-banner {
+    display: block !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* The non-home shell still needs the home height while the hero fades out;
+     otherwise --current-banner-height changes from the home value to the
+     content value and makes the wave move to a second, unrelated edge. */
+  body.enable-banner:not(.wallpaper-mode-transition) #banner-wrapper.mobile-hide-banner {
+    height: var(--home-banner-height) !important;
+  }
+
+  /* Fullscreen/none mode owns the Banner visibility. The persistent mobile
+     route class must not force a transparent Banner back into the stack once
+     that mode has completed. */
+  body:not(.enable-banner):not(.wallpaper-mode-transition) #banner-wrapper.mobile-hide-banner {
     display: none !important;
   }
 
@@ -316,13 +370,12 @@ body.lg\:is-home .sidebar-sticky-column {
     min-height: calc(100vh - 5.5rem) !important;
   }
 
-  .mobile-hide-banner #header-waves,
   #header-waves.waves-mobile-disabled {
     display: none !important;
   }
 }
 
-@media (min-width: 768px) and (max-width: 1279px) {
+@media (min-width: 960px) and (max-width: 1279px) {
   #main-grid[data-has-tablet-sidebar="true"] {
     grid-template-columns: clamp(14rem, 26vw, 17.5rem) minmax(0, 1fr) !important;
     grid-template-rows: auto auto !important;
@@ -372,6 +425,14 @@ body.lg\:is-home .sidebar-sticky-column {
 }
 
 @media (min-width: 1280px) {
+  /* Wide home pages place the first card directly at the Banner edge. Keep a
+     small page-background landing zone there so the wave's final bridge is
+     not immediately followed by a white card with a different surface color. */
+  body.enable-banner.lg\:is-home #main-grid {
+    padding-top: 1rem;
+    background: var(--page-bg);
+  }
+
   #main-grid[data-has-left="true"][data-has-right="true"] {
     grid-template-columns:
       clamp(14rem, 18vw, 17.5rem)

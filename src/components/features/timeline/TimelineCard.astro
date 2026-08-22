@@ -96,7 +96,7 @@ const hasLinks = item.links && item.links.length > 0;
 		class="timeline-card group relative rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-colors duration-200 hover:border-[var(--primary)]/35"
 	>
 		<div class="p-4 sm:p-5 md:p-6">
-			<div class="flex flex-wrap items-start gap-3 mb-3">
+			<div class="flex flex-wrap items-start gap-3 mb-3 min-w-0">
 				<div
 					class="w-10 h-10 flex-shrink-0 rounded-lg flex items-center justify-center bg-[var(--btn-regular-bg)]"
 				>
@@ -108,12 +108,10 @@ const hasLinks = item.links && item.links.length > 0;
 					></iconify-icon>
 				</div>
 
-				<div
-					class="flex-1 min-w-0 basis-[calc(100%_-_3.25rem)] sm:basis-auto"
-				>
-					<div class="flex items-center gap-2 mb-0.5">
+				<div class="timeline-card-title flex-1">
+					<div class="flex items-center gap-2 mb-0.5 min-w-0">
 						<h2
-							class="text-lg font-bold text-black/90 dark:text-white/90 group-hover:text-[var(--primary)] transition-colors duration-200"
+							class="min-w-0 break-words text-lg font-bold text-black/90 dark:text-white/90 group-hover:text-[var(--primary)] transition-colors duration-200"
 						>
 							{item.title}
 						</h2>
@@ -138,18 +136,16 @@ const hasLinks = item.links && item.links.length > 0;
 					}
 				</div>
 
-				<div
-					class="flex w-full items-center gap-1.5 pl-[3.25rem] sm:w-auto sm:pl-0 sm:ml-2"
-				>
+				<div class="timeline-card-badges flex items-center gap-1.5">
 					{
 						isCurrent && (
-							<span class="px-2 py-0.5 text-xs rounded-md bg-green-500/10 text-green-600 dark:text-green-400 font-medium">
+							<span class="timeline-card-badge whitespace-nowrap px-2 py-0.5 text-xs rounded-md bg-green-500/10 text-green-600 dark:text-green-400 font-medium">
 								{i18n(I18nKey.timelineCurrent)}
 							</span>
 						)
 					}
 					<span
-						class="px-2 py-0.5 text-xs rounded-md bg-[var(--primary)]/10 text-[var(--primary)] font-medium"
+						class="timeline-card-badge whitespace-nowrap px-2 py-0.5 text-xs rounded-md bg-[var(--primary)]/10 text-[var(--primary)] font-medium"
 					>
 						{typeText}
 					</span>
@@ -252,6 +248,23 @@ const hasLinks = item.links && item.links.length > 0;
 		</div>
 	</div>
 </div>
+
+<style>
+	/* Keep a readable title column before allowing the badge group to wrap. */
+	.timeline-card-title {
+		flex: 1 1 12rem;
+		min-width: min(100%, 12rem);
+	}
+
+	/* The whole group moves as one item; individual labels never compress. */
+	.timeline-card-badges {
+		flex: 0 0 auto;
+	}
+
+	.timeline-card-badge {
+		flex: 0 0 auto;
+	}
+</style>
 
 <style>
 	.timeline-entry {

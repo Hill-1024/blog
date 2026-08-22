@@ -106,25 +106,19 @@ const {
 
 	@media (max-width: 639px) {
 		.filter-tabs {
-			flex-wrap: nowrap;
+			/* Keep every filter reachable without forcing a clipped horizontal
+			   strip into the first viewport on narrow screens. */
+			flex-wrap: wrap;
 			gap: 0.5rem;
-			overflow-x: auto;
+			overflow-x: visible;
 			padding: 0.125rem 0.125rem 0.375rem;
 			margin-inline: -0.125rem;
-			scrollbar-width: none;
-			overscroll-behavior-inline: contain;
-			scroll-snap-type: inline proximity;
-		}
-
-		.filter-tabs::-webkit-scrollbar {
-			display: none;
 		}
 
 		.filter-tabs-item {
-			flex: 0 0 auto;
+			flex: 0 1 auto;
 			padding-inline: 0.875rem;
 			font-size: 0.8125rem;
-			scroll-snap-align: start;
 		}
 
 		.filter-tabs-count {

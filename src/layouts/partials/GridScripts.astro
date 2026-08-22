@@ -102,6 +102,23 @@ const {
 		const currentBannerHeight = bannerWasVisible
 			? Math.round(bannerWrapper.getBoundingClientRect().height)
 			: 0;
+		const targetBannerHeight =
+			nextMode === "banner" && bannerWrapper
+				? (() => {
+						// Resolve the responsive custom property without forcing the
+						// hidden Banner back into the document flow. This lets an
+						// incoming hero keep its final wave edge while it fades in.
+						const probe = document.createElement("div");
+						probe.style.cssText =
+							"position:absolute;visibility:hidden;pointer-events:none;height:var(--current-banner-height);";
+						document.body.appendChild(probe);
+						const height = Math.round(
+							probe.getBoundingClientRect().height,
+						);
+						probe.remove();
+						return height;
+					})()
+				: 0;
 		const fullscreenWasVisible =
 			fullscreenWallpaper &&
 			getComputedStyle(fullscreenWallpaper).display !== "none";
@@ -186,7 +203,9 @@ const {
 			);
 			body.style.setProperty(
 				"--wallpaper-transition-banner-height",
-				nextMode === "banner" ? "var(--current-banner-height)" : "0px",
+				nextMode === "banner"
+					? `${targetBannerHeight}px`
+					: `${currentBannerHeight}px`,
 			);
 			body.style.setProperty(
 				"--wallpaper-transition-banner-opacity",
