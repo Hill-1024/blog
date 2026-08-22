@@ -10,6 +10,9 @@
   --home-banner-height: var(--banner-height-home, 65vh);
   --content-banner-height: var(--banner-height, 35vh);
   --current-banner-height: var(--content-banner-height);
+  --wallpaper-mode-transition-duration: 560ms;
+  --wallpaper-mode-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --wallpaper-mode-fade-duration: 420ms;
 }
 
 body.lg\:is-home {
@@ -73,6 +76,20 @@ body.enable-banner #banner-wrapper {
   transition: height 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Wallpaper mode changes reuse the route shell's geometry transition. The
+   temporary custom properties are driven by GridScripts so each layer keeps
+   its measured starting geometry until the next mode has a paintable target. */
+body.wallpaper-mode-transition #banner-wrapper {
+  display: block !important;
+  height: var(--wallpaper-transition-banner-height, 0px) !important;
+  opacity: var(--wallpaper-transition-banner-opacity, 1) !important;
+  /* The banner is absolutely positioned; animating its height only forces a
+     full layout pass while the content anchor is already moving separately.
+     Snap the hidden layer's height and fade its pixels instead. */
+  transition: opacity var(--wallpaper-mode-fade-duration) ease-out;
+  will-change: opacity;
+}
+
 body.enable-banner .absolute.w-full.z-30:not(.no-banner-layout) {
   top: var(--current-banner-height) !important;
   min-height: calc(100vh - var(--current-banner-height)) !important;
@@ -83,18 +100,40 @@ body.enable-banner .absolute.w-full.z-30:not(.no-banner-layout) {
     min-height 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+body.wallpaper-mode-transition .absolute.w-full.z-30:not(.no-banner-layout) {
+  top: var(--wallpaper-transition-main-top, auto) !important;
+  min-height: var(--wallpaper-transition-main-min-height, auto) !important;
+  transition:
+    top var(--wallpaper-mode-transition-duration) var(--wallpaper-mode-transition-easing),
+    min-height var(--wallpaper-mode-transition-duration) var(--wallpaper-mode-transition-easing) !important;
+}
+
+body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
+  transition: opacity var(--wallpaper-mode-transition-duration) var(--wallpaper-mode-transition-easing) !important;
+  will-change: opacity;
+}
+
 @media (min-width: 1280px) {
   /* Use the same curve for the header spacer so banner, content, and navbar
      arrive at their route-specific heights as one continuous shell motion. */
   body.enable-banner #top-row {
     transition: height 700ms cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
+
+  body.wallpaper-mode-transition #top-row {
+    height: var(--wallpaper-transition-top-row-height, auto) !important;
+    transition: height var(--wallpaper-mode-transition-duration) var(--wallpaper-mode-transition-easing) !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   body.enable-banner #banner-wrapper,
   body.enable-banner .absolute.w-full.z-30:not(.no-banner-layout),
-  body.enable-banner #top-row {
+  body.enable-banner #top-row,
+  body.wallpaper-mode-transition #banner-wrapper,
+  body.wallpaper-mode-transition .absolute.w-full.z-30:not(.no-banner-layout),
+  body.wallpaper-mode-transition #top-row,
+  body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
     transition: none !important;
   }
 }

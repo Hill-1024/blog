@@ -50,11 +50,207 @@ const {
 		return { mainGrid, postListContainer, effectiveLayout };
 	}
 
+	const WALLPAPER_MODE_TRANSITION_MS = 560;
+	let activeWallpaperMode = null;
+	let wallpaperModeTransitionTimer = null;
+	let wallpaperModeTransitionGeneration = 0;
+
+	function getWallpaperOpacity(wallpaper) {
+		if (!wallpaper) {
+			return "1";
+		}
+
+		const configuredOpacity = wallpaper.dataset.baseOpacity;
+		if (configuredOpacity) {
+			return configuredOpacity;
+		}
+
+		const inlineOpacity = wallpaper.style.opacity;
+		const computedOpacity = getComputedStyle(wallpaper).opacity;
+		const opacity = inlineOpacity || computedOpacity || "1";
+		wallpaper.dataset.baseOpacity = opacity;
+		return opacity;
+	}
+
+	function prepareWallpaperModeTransition({
+		previousMode,
+		nextMode,
+		body,
+		bannerWrapper,
+		fullscreenWallpaper,
+		mainContent,
+		topRow,
+		forceReflow,
+		onComplete,
+	}) {
+		if (
+			previousMode === null ||
+			previousMode === nextMode ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		) {
+			return null;
+		}
+
+		if (wallpaperModeTransitionTimer !== null) {
+			window.clearTimeout(wallpaperModeTransitionTimer);
+			wallpaperModeTransitionTimer = null;
+		}
+		const transitionGeneration = ++wallpaperModeTransitionGeneration;
+
+		const bannerWasVisible =
+			bannerWrapper && getComputedStyle(bannerWrapper).display !== "none";
+		const currentBannerHeight = bannerWasVisible
+			? Math.round(bannerWrapper.getBoundingClientRect().height)
+			: 0;
+		const fullscreenWasVisible =
+			fullscreenWallpaper &&
+			getComputedStyle(fullscreenWallpaper).display !== "none";
+		const fullscreenOpacity = getWallpaperOpacity(fullscreenWallpaper);
+		const currentMainTop = mainContent
+			? `${Math.round(mainContent.getBoundingClientRect().top)}px`
+			: "0px";
+		const currentMainMinHeight = mainContent
+			? getComputedStyle(mainContent).minHeight
+			: "0px";
+		const currentTopRowHeight = topRow
+			? `${Math.round(topRow.getBoundingClientRect().height)}px`
+			: "0px";
+
+		// Keep both visual layers mounted while the shell moves. The previous
+		// implementation switched display immediately, which made the banner
+		// height and the content anchor jump in the same frame.
+		if (bannerWrapper) {
+			bannerWrapper.style.display = "block";
+		}
+		if (
+			fullscreenWallpaper &&
+			(fullscreenWasVisible || nextMode === "fullscreen")
+		) {
+			fullscreenWallpaper.style.display = "block";
+			if (nextMode === "fullscreen" && !fullscreenWasVisible) {
+				fullscreenWallpaper.style.opacity = "0";
+			}
+		}
+
+		body.style.setProperty(
+			"--wallpaper-transition-banner-height",
+			`${currentBannerHeight}px`,
+		);
+		body.style.setProperty(
+			"--wallpaper-transition-banner-opacity",
+			bannerWasVisible ? "1" : "0",
+		);
+		body.style.setProperty(
+			"--wallpaper-transition-main-top",
+			currentMainTop,
+		);
+		body.style.setProperty(
+			"--wallpaper-transition-main-min-height",
+			currentMainMinHeight,
+		);
+		body.style.setProperty(
+			"--wallpaper-transition-top-row-height",
+			currentTopRowHeight,
+		);
+		body.dataset.wallpaperTransitionTarget = nextMode;
+		body.classList.add("wallpaper-mode-transition");
+		forceReflow();
+
+		// The caller applies the target body classes synchronously. Starting the
+		// second leg on the next frame gives the browser real start values for
+		// geometry/opacity instead of collapsing both states into one repaint.
+		requestAnimationFrame(() => {
+			if (transitionGeneration !== wallpaperModeTransitionGeneration) {
+				return;
+			}
+
+			const mainTop =
+				nextMode === "banner" &&
+				mainContent?.classList.contains("mobile-main-no-banner") &&
+				window.innerWidth < 1280
+					? "5.5rem"
+					: nextMode === "banner"
+						? "var(--current-banner-height)"
+						: "5.5rem";
+			body.style.setProperty("--wallpaper-transition-main-top", mainTop);
+			body.style.setProperty(
+				"--wallpaper-transition-main-min-height",
+				`calc(100vh - ${mainTop})`,
+			);
+			body.style.setProperty(
+				"--wallpaper-transition-top-row-height",
+				topRow?.classList.contains("content-top-row") ||
+					nextMode !== "banner"
+					? "4.5rem"
+					: "calc(var(--current-banner-height) - 4.5rem)",
+			);
+			body.style.setProperty(
+				"--wallpaper-transition-banner-height",
+				nextMode === "banner" ? "var(--current-banner-height)" : "0px",
+			);
+			body.style.setProperty(
+				"--wallpaper-transition-banner-opacity",
+				nextMode === "banner" ? "1" : "0",
+			);
+
+			if (fullscreenWallpaper) {
+				if (nextMode === "fullscreen") {
+					fullscreenWallpaper.style.display = "block";
+					fullscreenWallpaper.style.opacity = fullscreenOpacity;
+				} else if (fullscreenWasVisible) {
+					fullscreenWallpaper.style.opacity = "0";
+				}
+			}
+		});
+
+		wallpaperModeTransitionTimer = window.setTimeout(() => {
+			if (transitionGeneration !== wallpaperModeTransitionGeneration) {
+				return;
+			}
+			wallpaperModeTransitionGeneration += 1;
+
+			body.classList.remove("wallpaper-mode-transition");
+			delete body.dataset.wallpaperTransitionTarget;
+			body.style.removeProperty("--wallpaper-transition-banner-height");
+			body.style.removeProperty("--wallpaper-transition-banner-opacity");
+			body.style.removeProperty("--wallpaper-transition-main-top");
+			body.style.removeProperty("--wallpaper-transition-main-min-height");
+			body.style.removeProperty("--wallpaper-transition-top-row-height");
+
+			if (bannerWrapper) {
+				if (nextMode === "banner") {
+					bannerWrapper.style.display = "block";
+				} else {
+					bannerWrapper.style.display = "none";
+				}
+				bannerWrapper.style.removeProperty("height");
+				bannerWrapper.style.removeProperty("opacity");
+			}
+
+			if (fullscreenWallpaper) {
+				if (nextMode === "fullscreen") {
+					fullscreenWallpaper.style.display = "block";
+					fullscreenWallpaper.style.opacity = fullscreenOpacity;
+				} else {
+					fullscreenWallpaper.style.display = "none";
+					fullscreenWallpaper.style.removeProperty("opacity");
+				}
+			}
+
+			onComplete?.(nextMode);
+
+			wallpaperModeTransitionTimer = null;
+		}, WALLPAPER_MODE_TRANSITION_MS + 40);
+
+		return true;
+	}
+
 	// 立即执行，在页面渲染前应用壁纸模式和布局模式，避免闪烁
 	(function () {
 		const wallpaperMode =
 			localStorage.getItem("wallpaperMode") || defaultWallpaperMode;
 		const body = document.body;
+		activeWallpaperMode = wallpaperMode;
 
 		// 立即应用 body 类，确保首次渲染就是正确的状态
 		switch (wallpaperMode) {
@@ -119,6 +315,13 @@ const {
 	function applyWallpaperMode() {
 		const wallpaperMode =
 			localStorage.getItem("wallpaperMode") || defaultWallpaperMode;
+		const previousWallpaperMode = activeWallpaperMode;
+		activeWallpaperMode = wallpaperMode;
+		const wallpaperModeTransitioning =
+			wallpaperModeTransitionTimer !== null ||
+			(previousWallpaperMode !== null &&
+				previousWallpaperMode !== wallpaperMode &&
+				!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 		const bannerWrapper = document.getElementById("banner-wrapper");
 		const fullscreenWallpaper = document.querySelector(
 			"[data-fullscreen-wallpaper]",
@@ -128,12 +331,41 @@ const {
 		const mainContent = document.querySelector(
 			".absolute.w-full.z-30.pointer-events-none",
 		);
+		const topRow = document.getElementById("top-row");
 		const tocWrapper = document.getElementById("toc-wrapper");
+		const syncTocVisibility = () => {
+			if (!tocWrapper) {
+				return;
+			}
+
+			const bannerHeight = bannerWrapper?.offsetHeight ?? 0;
+			const shouldHideTOC =
+				window.innerWidth >= 1280 &&
+				bannerHeight > 0 &&
+				window.scrollY <= bannerHeight;
+			tocWrapper.classList.toggle("toc-hide", shouldHideTOC);
+		};
 
 		// 强制重排以确保样式正确应用
 		const forceReflow = function () {
 			void document.body.offsetHeight;
 		};
+
+		prepareWallpaperModeTransition({
+			previousMode: previousWallpaperMode,
+			nextMode: wallpaperMode,
+			body,
+			bannerWrapper,
+			fullscreenWallpaper,
+			mainContent,
+			topRow,
+			forceReflow,
+			onComplete: (completedMode) => {
+				if (completedMode === "banner") {
+					syncTocVisibility();
+				}
+			},
+		});
 
 		switch (wallpaperMode) {
 			case "banner":
@@ -141,14 +373,17 @@ const {
 				if (bannerWrapper) {
 					bannerWrapper.style.display = "block";
 				}
-				if (fullscreenWallpaper) {
+				if (fullscreenWallpaper && !wallpaperModeTransitioning) {
 					fullscreenWallpaper.style.display = "none";
 				}
 				// 先移除body类，避免CSS冲突
 				body.classList.remove("wallpaper-transparent");
 				body.classList.remove("no-banner-mode");
-				// 强制重排
-				forceReflow();
+				// 动画基线已在 prepareWallpaperModeTransition 中建立，切换时
+				// 不再插入同步重排，避免点击后出现一帧卡顿。
+				if (!wallpaperModeTransitioning) {
+					forceReflow();
+				}
 				// 移除内联样式，让CSS完全接管
 				if (mainContent) {
 					mainContent.style.removeProperty("top");
@@ -171,23 +406,19 @@ const {
 						window.initSemifullScrollDetection();
 					}
 				}
-				// 强制重排以确保CSS变量正确更新
-				forceReflow();
+				if (!wallpaperModeTransitioning) {
+					forceReflow();
+				}
 				// 读取恢复后的真实 Banner 高度，避免从其他模式切回时
 				// 因先前的 display:none 得到 0 并错误显示目录。
-				if (tocWrapper) {
-					const bannerHeight = bannerWrapper?.offsetHeight ?? 0;
-					const shouldHideTOC =
-						window.innerWidth >= 1280 &&
-						bannerHeight > 0 &&
-						window.scrollY <= bannerHeight;
-					tocWrapper.classList.toggle("toc-hide", shouldHideTOC);
+				if (!wallpaperModeTransitioning) {
+					syncTocVisibility();
 				}
 				break;
 
 			case "fullscreen":
 				// 隐藏 banner，显示全屏壁纸
-				if (bannerWrapper) {
+				if (bannerWrapper && !wallpaperModeTransitioning) {
 					bannerWrapper.style.display = "none";
 				}
 				if (fullscreenWallpaper) {
@@ -199,8 +430,9 @@ const {
 				}
 				// 先移除body类，避免CSS冲突
 				body.classList.remove("enable-banner");
-				// 强制重排
-				forceReflow();
+				if (!wallpaperModeTransitioning) {
+					forceReflow();
+				}
 				// 移除内联样式，让CSS完全接管
 				if (mainContent) {
 					mainContent.style.removeProperty("top");
@@ -214,16 +446,17 @@ const {
 					// 强制移除 config 中的 data-transparent-mode 影响
 					navbar.removeAttribute("data-transparent-mode");
 				}
-				// 强制重排以确保CSS变量正确更新
-				forceReflow();
+				if (!wallpaperModeTransitioning) {
+					forceReflow();
+				}
 				break;
 
 			case "none":
 				// 隐藏所有壁纸
-				if (bannerWrapper) {
+				if (bannerWrapper && !wallpaperModeTransitioning) {
 					bannerWrapper.style.display = "none";
 				}
-				if (fullscreenWallpaper) {
+				if (fullscreenWallpaper && !wallpaperModeTransitioning) {
 					fullscreenWallpaper.style.display = "none";
 				}
 				// 在无壁纸模式下也始终显示 TOC
@@ -233,8 +466,9 @@ const {
 				// 先移除body类，避免CSS冲突
 				body.classList.remove("enable-banner");
 				body.classList.remove("wallpaper-transparent");
-				// 强制重排
-				forceReflow();
+				if (!wallpaperModeTransitioning) {
+					forceReflow();
+				}
 				// 移除内联样式，让CSS完全接管
 				if (mainContent) {
 					mainContent.style.removeProperty("top");
@@ -247,8 +481,9 @@ const {
 					// 强制移除 config 中的 data-transparent-mode 影响
 					navbar.removeAttribute("data-transparent-mode");
 				}
-				// 强制重排以确保CSS变量正确更新
-				forceReflow();
+				if (!wallpaperModeTransitioning) {
+					forceReflow();
+				}
 				break;
 		}
 	}
