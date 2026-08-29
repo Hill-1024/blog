@@ -37,6 +37,12 @@ export default defineConfig({
 	trailingSlash: "always",
 
 	output: "static",
+	// The shared layout emits many small component stylesheets. Inline them in
+	// the HTML so the first paint does not wait on a chain of render-blocking
+	// requests; the generated page is still minified by Astro/Vite.
+	build: {
+		inlineStylesheets: "always",
+	},
 
 	integrations: [
 		umami({
@@ -188,8 +194,6 @@ export default defineConfig({
 			// CSS 代码分割
 			cssCodeSplit: true,
 			cssMinify: "esbuild",
-			// 内联小型 CSS 文件以减少网络请求
-			inlineStylesheets: "auto",
 			// 生产环境移除 console 和 debugger
 			minify: "esbuild",
 			rollupOptions: {

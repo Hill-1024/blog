@@ -12,6 +12,10 @@ interface Props {
 	fetchpriority?: "high" | "low" | "auto";
 	widths?: number[];
 	sizes?: string;
+	srcset?: string;
+	media?: string;
+	width?: number;
+	height?: number;
 }
 
 import { Image as AstroImage } from "astro:assets";
@@ -28,6 +32,10 @@ const {
 	fetchpriority,
 	widths,
 	sizes,
+	srcset,
+	media,
+	width,
+	height,
 } = Astro.props;
 const className = Astro.props.class;
 
@@ -67,6 +75,9 @@ const imageStyle = `object-position: ${position}`;
 const isBilibiliImage = !isLocal && src.includes("hdslb.com");
 // 对于外部图片（特别是 Bilibili），需要设置 referrerpolicy 避免 403 错误
 const referrerPolicy = !isLocal && isBilibiliImage ? "no-referrer" : undefined;
+const resolvedPublicSrc = isPublic ? url(src) : src;
+const transparentPixel =
+	"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 ---
 
 <div id={id} class:list={[className, "overflow-hidden relative"]}>
@@ -90,16 +101,42 @@ const referrerPolicy = !isLocal && isBilibiliImage ? "no-referrer" : undefined;
 	}
 	{
 		!isLocal && (
-			<img
-				src={isPublic ? url(src) : src}
-				alt={alt || ""}
-				class={imageClass}
-				style={imageStyle}
-				loading={loading}
-				referrerpolicy={referrerPolicy}
-				crossorigin={isBilibiliImage ? "anonymous" : undefined}
-				fetchpriority={fetchpriority}
-			/>
+				media ? (
+					<picture>
+						<source
+							media={media}
+							srcset={srcset || resolvedPublicSrc}
+						/>
+						<img
+							src={transparentPixel}
+							alt={alt || ""}
+							class={imageClass}
+							style={imageStyle}
+							loading={loading}
+							sizes={sizes}
+							width={width}
+							height={height}
+							referrerpolicy={referrerPolicy}
+							crossorigin={isBilibiliImage ? "anonymous" : undefined}
+							fetchpriority={fetchpriority}
+						/>
+					</picture>
+				) : (
+					<img
+						src={resolvedPublicSrc}
+						srcset={srcset}
+						sizes={sizes}
+						alt={alt || ""}
+						class={imageClass}
+						style={imageStyle}
+						loading={loading}
+						width={width}
+						height={height}
+						referrerpolicy={referrerPolicy}
+						crossorigin={isBilibiliImage ? "anonymous" : undefined}
+						fetchpriority={fetchpriority}
+					/>
+				)
 		)
 	}
 </div>

@@ -252,10 +252,26 @@ const { preloadIcons = [], timeout = 10000, retryCount = 3 } = Astro.props;
 		// 创建全局实例
 		window.__iconifyLoader = new IconifyLoader();
 
-		// 立即开始加载
-		window.__iconifyLoader.load().catch((error) => {
-			console.error("Failed to initialize Iconify:", error);
-		});
+		// The homepage renders its critical icons as inline SVG. Defer the
+		// custom-element runtime until interaction (or a long idle fallback) so
+		// its third-party script and icon API requests stay out of the LCP chain.
+		let loadTriggered = false;
+		const interactionEvents = ["pointerdown", "keydown", "touchstart", "scroll"];
+		const triggerLoad = () => {
+			if (loadTriggered) return;
+			loadTriggered = true;
+			window.clearTimeout(idleFallbackId);
+			interactionEvents.forEach((event) =>
+				window.removeEventListener(event, triggerLoad),
+			);
+			window.__iconifyLoader.load().catch((error) => {
+				console.error("Failed to initialize Iconify:", error);
+			});
+		};
+		let idleFallbackId = window.setTimeout(triggerLoad, 8000);
+		interactionEvents.forEach((event) =>
+			window.addEventListener(event, triggerLoad, { once: true, passive: true }),
+		);
 
 		// 如果有预加载图标，添加到队列
 		if (preloadIcons && preloadIcons.length > 0) {

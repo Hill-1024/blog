@@ -23,6 +23,15 @@
 
 	function getAssetPath(path: string): string {
 		if (path.startsWith("http://") || path.startsWith("https://")) {
+			if (path.includes("music.126.net")) {
+				try {
+					const url = new URL(path);
+					url.searchParams.set("param", "128y128");
+					return url.toString();
+				} catch {
+					// Keep the original URL if an upstream provider returns an invalid URL.
+				}
+			}
 			return path;
 		}
 		if (path.startsWith("/")) {

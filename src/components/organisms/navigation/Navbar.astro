@@ -48,6 +48,10 @@ const hasLogoPngFallback = rawLogo?.endsWith(".png") && !isLogoExternal;
 const hasIconPngFallback = rawIcon?.endsWith(".png") && !isIconExternal;
 const logoWebpSrc = hasLogoPngFallback ? logoSrc.replace(/\.png$/i, ".webp") : logoSrc;
 const iconWebpSrc = hasIconPngFallback ? iconSrc.replace(/\.png$/i, ".webp") : iconSrc;
+const optimizedIconSrc = iconSrc.endsWith("/assets/home/avatar.webp")
+	? iconSrc.replace(/\.webp$/i, "-64.webp")
+	: iconSrc;
+const iconSrcset = optimizedIconSrc !== iconSrc ? `${optimizedIconSrc} 64w` : undefined;
 ---
 <nav id="navbar" aria-label="主导航" class="z-50 onload-animation group" data-transparent-mode={navbarTransparentMode} data-is-home={isHomePage}>
     <div class="navbar-transition-mask absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)]"></div> <!-- used for onload animation -->
@@ -70,10 +74,10 @@ const iconWebpSrc = hasIconPngFallback ? iconSrc.replace(/\.png$/i, ".webp") : i
                             {hasIconPngFallback ? (
                                 <picture>
                                     <source srcset={iconWebpSrc} type="image/webp" />
-                                    <img src={iconSrc} alt="" class="h-[1.75rem] w-[1.75rem] mr-2 object-contain" loading="lazy" />
+									<img src={optimizedIconSrc} srcset={iconSrcset} sizes="28px" width="28" height="28" alt="" class="h-[1.75rem] w-[1.75rem] mr-2 object-contain" loading="lazy" />
                                 </picture>
                             ) : (
-                                <img src={iconSrc} alt="" class="h-[1.75rem] w-[1.75rem] mr-2 object-contain" loading="lazy" />
+								<img src={optimizedIconSrc} srcset={iconSrcset} sizes="28px" width="28" height="28" alt="" class="h-[1.75rem] w-[1.75rem] mr-2 object-contain" loading="lazy" />
                             )}
                             <span class="site-brand dark:text-white text-black">{siteConfig.navbarTitle.text}</span>
                         </>

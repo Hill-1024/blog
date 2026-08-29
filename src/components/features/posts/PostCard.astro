@@ -156,8 +156,8 @@ const { remarkPluginFrontmatter } = await render(entry);
 					basePath={getFileDirFromPath(entry.filePath || "")}
 					alt="Cover Image of the Post"
 					class="w-full h-full"
-					widths={[200, 400, 800]}
-					sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+					widths={[200, 320, 480, 640]}
+					sizes="(max-width: 768px) calc(100vw - 3rem), (max-width: 1200px) 50vw, 22vw"
 				/>
 			</a>
 		)

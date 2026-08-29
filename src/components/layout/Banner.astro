@@ -65,6 +65,27 @@ const kbDurationMs = carouselIntervalMs + fadeMs;
 
 const hasBannerCredit = siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
+
+// Public banner files are intentionally kept outside `src/`, so Astro cannot
+// generate a responsive srcset for them automatically. The 480px and 768px
+// derivatives cover regular and high-DPR mobile screens while retaining the
+// original as a desktop/fallback candidate.
+const getMobileBannerSrcset = (src: string): string | undefined => {
+	if (!src.startsWith("/assets/mobile-banner/") || !src.endsWith(".webp")) {
+		return undefined;
+	}
+	const resized480 = src.replace(/\.webp$/i, "-480.webp");
+	const resized768 = src.replace(/\.webp$/i, "-768.webp");
+	return `${resized480} 480w, ${resized768} 768w, ${src} 1192w`;
+};
+
+const getDesktopBannerSrcset = (src: string): string | undefined => {
+	const match = src.match(/^\/assets\/desktop-banner\/(d[1356])\.webp$/i);
+	if (!match) return undefined;
+	const resized1024 = src.replace(/\.webp$/i, "-1024.webp");
+	const resized1400 = src.replace(/\.webp$/i, "-1400.webp");
+	return `${resized1024} 1024w, ${resized1400} 1400w, ${src} 2000w`;
+};
 ---
 
 <div
@@ -89,6 +110,8 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						alt="Mobile banner image 1"
 						class="object-cover h-full w-full"
 						src={mobileImages[0]}
+						srcset={getMobileBannerSrcset(mobileImages[0])}
+						media="(max-width: 767px)"
 						position={siteConfig.banner.position}
 						widths={[640, 1024, 1536]}
 						sizes="100vw"
@@ -103,11 +126,13 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						alt={`Mobile banner image ${i + 2}`}
 						class="object-cover h-full w-full"
 						src={src}
+						srcset={getMobileBannerSrcset(src)}
+						media="(max-width: 767px)"
 						position={siteConfig.banner.position}
 						widths={[640, 1024, 1536]}
 						sizes="100vw"
-						loading="eager"
-						fetchpriority="high"
+						loading="lazy"
+						fetchpriority="low"
 					/>
 				</template>
 			))}
@@ -120,6 +145,8 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						alt="Desktop banner image 1"
 						class="object-cover h-full w-full"
 						src={desktopImages[0]}
+						srcset={getDesktopBannerSrcset(desktopImages[0])}
+						media="(min-width: 768px)"
 						position={siteConfig.banner.position}
 						widths={[1024, 1536, 2048, 2560]}
 						sizes="100vw"
@@ -134,11 +161,13 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						alt={`Desktop banner image ${i + 2}`}
 						class="object-cover h-full w-full"
 						src={src}
+						srcset={getDesktopBannerSrcset(src)}
+						media="(min-width: 768px)"
 						position={siteConfig.banner.position}
 						widths={[1024, 1536, 2048, 2560]}
 						sizes="100vw"
-						loading="eager"
-						fetchpriority="high"
+						loading="lazy"
+						fetchpriority="low"
 					/>
 				</template>
 			))}
@@ -270,20 +299,13 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 					};
 				}
 
-				// 从 template 替换默认图片
-				function applyRandom(slotClass, tplClass, randomIndex) {
-					if (randomIndex === 0) return;
-					var slot = container.querySelector('.' + slotClass);
-					var templates = container.querySelectorAll('.' + tplClass);
-					if (!slot || !templates.length) return;
-					var tpl = templates[randomIndex - 1];
-					if (!tpl) return;
-					slot.innerHTML = '';
-					slot.appendChild(tpl.content.cloneNode(true));
-				}
-
-				applyRandom('banner-image-slot-mobile', 'banner-tpl-mobile', window.__bannerRandomIndex.mobile);
-				applyRandom('banner-image-slot-desktop', 'banner-tpl-desktop', window.__bannerRandomIndex.desktop);
+				// Keep the server-discovered first frame stable for the initial paint.
+				// The random frame is selected on the first delayed rotation instead
+				// of being cloned immediately (which used to invalidate LCP).
+				var pendingRandomIndex = {
+					mobile: window.__bannerRandomIndex.mobile,
+					desktop: window.__bannerRandomIndex.desktop
+				};
 
 				// 收集所有帧 HTML 字符串（仅首次）
 				if (!window.__bannerCarouselFrames) window.__bannerCarouselFrames = {};
@@ -310,10 +332,12 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 
 				if (typeof window.__bannerCarouselIndex === 'undefined') {
 					window.__bannerCarouselIndex = {
-						mobile: window.__bannerRandomIndex ? window.__bannerRandomIndex.mobile : 0,
-						desktop: window.__bannerRandomIndex ? window.__bannerRandomIndex.desktop : 0
+						mobile: 0,
+						desktop: 0
 					};
 				}
+				window.__bannerCarouselIndex.mobile = 0;
+				window.__bannerCarouselIndex.desktop = 0;
 
 				// 断点检测（md = 768px）
 				function isSlotHiddenByBreakpoint(slot) {
@@ -397,7 +421,20 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 					crossfadeToIndex(slotClass, totalCount, type, nextIndex);
 				}
 
+				function advanceCarousel(slotClass, totalCount, type) {
+					var randomIndex = pendingRandomIndex[type];
+					if (randomIndex > 0) {
+						pendingRandomIndex[type] = 0;
+						crossfadeToIndex(slotClass, totalCount, type, randomIndex);
+						return;
+					}
+					crossfade(slotClass, totalCount, type);
+				}
+
 				var timerId = null;
+				var startupDelayId = null;
+				var hasStartedAutoRotation = false;
+				var initialRotationDelay = Math.max(10000, interval);
 				var isPaused = false;
 
 				// 触摸手势状态
@@ -407,20 +444,37 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 
 				function startCarousel() {
 					stopCarousel();
-					if (isPaused) return;
+					if (isPaused || document.hidden) return;
 
-					applyInitialKB('banner-image-slot-mobile');
-					applyInitialKB('banner-image-slot-desktop');
+					var startTimer = function() {
+						applyInitialKB('banner-image-slot-mobile');
+						applyInitialKB('banner-image-slot-desktop');
 
-					timerId = setInterval(function() {
-						if (!isPaused) {
-							crossfade('banner-image-slot-mobile', mobileCount, 'mobile');
-							crossfade('banner-image-slot-desktop', desktopCount, 'desktop');
-						}
-					}, interval);
+						timerId = setInterval(function() {
+							if (!isPaused) {
+								advanceCarousel('banner-image-slot-mobile', mobileCount, 'mobile');
+								advanceCarousel('banner-image-slot-desktop', desktopCount, 'desktop');
+							}
+						}, interval);
+					};
+
+					if (!hasStartedAutoRotation) {
+						startupDelayId = setTimeout(function() {
+							startupDelayId = null;
+							hasStartedAutoRotation = true;
+							if (!isPaused && !document.hidden) startTimer();
+						}, initialRotationDelay);
+						return;
+					}
+
+					startTimer();
 				}
 
 				function stopCarousel() {
+					if (startupDelayId !== null) {
+						clearTimeout(startupDelayId);
+						startupDelayId = null;
+					}
 					if (timerId !== null) { clearInterval(timerId); timerId = null; }
 				}
 
@@ -471,6 +525,7 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 					var current = window.__bannerCarouselIndex[type];
 
 					if (Math.abs(diffX) > 50) {
+						pendingRandomIndex[type] = 0;
 						if (diffX > 0) {
 							var next = (current + 1) % count;
 							crossfadeToIndex(slotClass, count, type, next);

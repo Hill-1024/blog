@@ -6,6 +6,15 @@ import Image from "../../atoms/Image/Image.astro";
 import TypewriterText from "../../atoms/typewriter-text/TypewriterText.astro";
 import I18nKey from "../../../i18n/i18nKey";
 import { i18n } from "../../../i18n/translation";
+
+const avatar = profileConfig.avatar || "";
+const isDefaultAvatar = avatar.endsWith("/assets/home/avatar.webp");
+const avatarSrcset = isDefaultAvatar
+	? [128, 256, 384]
+			.map((width) => `${url(`/assets/home/avatar-${width}.webp`)} ${width}w`)
+			.concat(`${url("/assets/home/avatar.webp")} 512w`)
+			.join(", ")
+	: undefined;
 ---
 
 <div class="card-base p-3">
@@ -25,11 +34,15 @@ import { i18n } from "../../../i18n/translation";
 			/>
 		</div>
 		<Image
-			src={profileConfig.avatar || ""}
+			src={avatar}
 			alt="Profile Image of the Author"
 			class="mx-auto lg:w-full h-full lg:mt-0"
-			loading="eager"
-			fetchpriority="high"
+			loading="lazy"
+			fetchpriority="low"
+			srcset={avatarSrcset}
+			sizes={isDefaultAvatar ? "(max-width: 768px) 192px, 256px" : undefined}
+			width={512}
+			height={512}
 		/>
 	</a>
 	<div class="px-2">

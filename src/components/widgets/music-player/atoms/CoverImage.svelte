@@ -24,6 +24,15 @@
 
 	function getAssetPath(path: string): string {
 		if (path.startsWith("http://") || path.startsWith("https://")) {
+			if (path.includes("music.126.net")) {
+				try {
+					const url = new URL(path);
+					url.searchParams.set("param", "128y128");
+					return url.toString();
+				} catch {
+					// Keep the original URL if an upstream provider returns an invalid URL.
+				}
+			}
 			return path;
 		}
 		if (path.startsWith("/")) {
@@ -95,8 +104,10 @@
 		<img
 			src={getAssetPath(cover)}
 			alt={i18n(Key.musicPlayerCover)}
-			loading="eager"
-			fetchpriority="high"
+			loading="lazy"
+			fetchpriority="low"
+			width="64"
+			height="64"
 			class="w-full h-full object-cover transition-transform duration-300"
 			class:spinning={isPlaying && !isLoading}
 			class:animate-pulse={isLoading}
@@ -124,8 +135,10 @@
 		<img
 			src={getAssetPath(cover)}
 			alt={i18n(Key.musicPlayerCover)}
-			loading="eager"
-			fetchpriority="high"
+			loading="lazy"
+			fetchpriority="low"
+			width="64"
+			height="64"
 			class="w-full h-full object-cover transition-transform duration-300"
 			class:spinning={isPlaying && !isLoading}
 			class:animate-pulse={isLoading}

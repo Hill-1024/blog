@@ -112,9 +112,6 @@ const siteLang = lang.replace("_", "-");
 const quoteFontName = (font: string) => JSON.stringify(font);
 
 const brandFonts: string[] = [];
-if (siteConfig.font?.cjkFont?.fontFamily) {
-	brandFonts.push(quoteFontName(siteConfig.font.cjkFont.fontFamily));
-}
 brandFonts.push(
 	"system-ui",
 	"-apple-system",
@@ -123,6 +120,11 @@ brandFonts.push(
 	"'Microsoft YaHei'",
 	"sans-serif",
 );
+// Keep the first paint on a locally available system font. The configured
+// CJK font is a large optional fallback and should not block the navbar title.
+if (siteConfig.font?.cjkFont?.fontFamily) {
+	brandFonts.push(quoteFontName(siteConfig.font.cjkFont.fontFamily));
+}
 
 const codeFonts: string[] = [];
 if (siteConfig.font?.asciiFont?.fontFamily) {
