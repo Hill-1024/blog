@@ -3,10 +3,16 @@
  * 管理图片灯箱的初始化和清理
  */
 
+import fancyboxStylesheetUrl from "@fancyapps/ui/dist/fancybox/fancybox.css?url";
+
+import { loadStylesheet } from "../utils/load-stylesheet";
+
 import {
 	FANCYBOX_SELECTORS,
 	getDefaultFancyboxConfig,
 } from "../core/swup-config";
+
+const customStylesheetUrl = "/styles/fancybox-custom.css";
 
 // Fancybox 模块类型
 type FancyboxType = any;
@@ -70,7 +76,8 @@ export class FancyboxHandler {
 	private async loadFancybox(): Promise<void> {
 		const [mod] = await Promise.all([
 			import("@fancyapps/ui"),
-			import("@fancyapps/ui/dist/fancybox/fancybox.css"),
+			loadStylesheet(fancyboxStylesheetUrl, "fancybox"),
+			loadStylesheet(customStylesheetUrl, "fancybox-custom"),
 		]);
 		this.Fancybox = mod.Fancybox;
 	}

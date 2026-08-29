@@ -106,11 +106,7 @@ const clarityEnable =
 			});
 		});
 
-		// 备用：如果用户 10 秒内没有交互，则在 idle 时加载
-		setTimeout(function () {
-			if (!loaded) {
-				loadAnalytics();
-			}
-		}, 10000);
+		// 没有交互时不加载分析脚本。页面浏览统计由站点已有的 Umami 集成
+		// 负责；将 GTM 留到真实交互之后，可避免它进入首屏关键请求链。
 	})();
 </script>

@@ -3,6 +3,10 @@
  * 管理页面滚动相关的功能，包括自定义滚动条和滚动监听
  */
 
+import katexStylesheetUrl from "katex/dist/katex.css?url";
+
+import { loadStylesheet } from "../utils/load-stylesheet";
+
 /**
  * 滚动处理器类
  * 负责自定义滚动条初始化和滚动事件管理
@@ -80,7 +84,9 @@ export class ScrollHandler {
 	 */
 	checkKatex(): void {
 		if (document.querySelector(".katex")) {
-			import("katex/dist/katex.css");
+			void loadStylesheet(katexStylesheetUrl, "katex", {
+				preload: true,
+			}).catch(() => undefined);
 		}
 	}
 

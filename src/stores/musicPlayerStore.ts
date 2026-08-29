@@ -113,6 +113,9 @@ class MusicPlayerStore {
 		}
 
 		this.audio = new Audio();
+		// The player is idle until the visitor explicitly starts playback. Avoid
+		// downloading a multi-megabyte audio file during the initial page load.
+		this.audio.preload = "none";
 		this.setupAudioListeners();
 		this.loadVolumeFromStorage();
 		this.registerInteractionHandler();
@@ -350,18 +353,22 @@ class MusicPlayerStore {
 		if (song.url !== this.state.currentSong.url) {
 			this.state.currentSong = { ...song };
 			if (song.url) {
-				this.state.isLoading = true;
+				this.state.isLoading = autoPlay;
 			} else {
 				this.state.isLoading = false;
 			}
 		}
 		this.state.willAutoPlay = autoPlay;
 		if (this.audio) {
-			if (this.audio.src && song.url) {
-				this.audio.src = "";
+			if (autoPlay && song.url) {
+				this.audio.src = getAssetPath(song.url);
+				this.audio.load();
+			} else {
+				// Keep the selected track in state, but leave the media element
+				// source empty until the visitor presses play.
+				this.audio.removeAttribute("src");
+				this.audio.load();
 			}
-			this.audio.src = getAssetPath(song.url);
-			this.audio.load();
 		}
 		this.broadcastState();
 	}
@@ -388,6 +395,9 @@ class MusicPlayerStore {
 		if (this.state.isPlaying) {
 			this.audio.pause();
 		} else {
+			if (this.audio.src !== getAssetPath(this.state.currentSong.url)) {
+				this.audio.src = getAssetPath(this.state.currentSong.url);
+			}
 			this.audio.play().catch(() => {});
 		}
 	}
@@ -395,6 +405,9 @@ class MusicPlayerStore {
 	play(): void {
 		if (!this.audio || !this.state.currentSong.url) {
 			return;
+		}
+		if (this.audio.src !== getAssetPath(this.state.currentSong.url)) {
+			this.audio.src = getAssetPath(this.state.currentSong.url);
 		}
 		this.audio.play().catch(() => {});
 	}

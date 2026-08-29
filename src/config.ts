@@ -57,7 +57,7 @@ export const siteConfig: SiteConfig = {
     // 顶栏标题文本
     text: "Hill",
     // 顶栏标题图标路径，默认使用 public/assets/home/home.png
-    icon: "assets/home/avatar.jpg",
+    icon: "assets/home/avatar.webp",
     // 网站Logo图片路径
     logo: "assets/home/default-logo.png",
   },
@@ -125,12 +125,12 @@ export const siteConfig: SiteConfig = {
     // 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
     src: {
       desktop: [
-        "/assets/desktop-banner/d1.png",
-        "/assets/desktop-banner/d2.jpg",
-        "/assets/desktop-banner/d3.jpg",
-        "/assets/desktop-banner/d4.jpg",
-        "/assets/desktop-banner/d5.jpg",
-        "/assets/desktop-banner/d6.jpg",
+        "/assets/desktop-banner/d1.webp",
+        "/assets/desktop-banner/d2.webp",
+        "/assets/desktop-banner/d3.webp",
+        "/assets/desktop-banner/d4.webp",
+        "/assets/desktop-banner/d5.webp",
+        "/assets/desktop-banner/d6.webp",
       ], // 桌面横幅图片
       mobile: [
         "/assets/mobile-banner/m1.webp",
@@ -248,12 +248,12 @@ export const siteConfig: SiteConfig = {
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
 		desktop: [
-			"/assets/desktop-banner/d1.png",
-			"/assets/desktop-banner/d2.jpg",
-			"/assets/desktop-banner/d3.jpg",
-			"/assets/desktop-banner/d4.jpg",
-			"/assets/desktop-banner/d5.jpg",
-			"/assets/desktop-banner/d6.jpg",
+			"/assets/desktop-banner/d1.webp",
+			"/assets/desktop-banner/d2.webp",
+			"/assets/desktop-banner/d3.webp",
+			"/assets/desktop-banner/d4.webp",
+			"/assets/desktop-banner/d5.webp",
+			"/assets/desktop-banner/d6.webp",
 		], // 桌面横幅图片
 		mobile: [
 			"/assets/mobile-banner/m1.webp",
@@ -374,7 +374,7 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "/assets/home/avatar.jpg", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
+	avatar: "/assets/home/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	name: "Hill",
 	bio: "Just Forward",
 	typewriter: {
