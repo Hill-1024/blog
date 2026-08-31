@@ -81,6 +81,9 @@ const dateRange = `${formatDate(item.startDate)} - ${item.endDate ? formatDate(i
 const duration = getDuration(item.startDate, item.endDate);
 const nodeColor = isCurrent ? "#22c55e" : item.color || "var(--primary)";
 const hasLinks = item.links && item.links.length > 0;
+const achievements =
+	item.achievements?.filter((achievement) => achievement.trim().length > 0) ??
+	[];
 ---
 
 <div
@@ -171,13 +174,13 @@ const hasLinks = item.links && item.links.length > 0;
 			}
 
 			{
-				item.achievements && item.achievements.length > 0 && (
+				achievements.length > 0 && (
 					<div class="mb-4">
 						<h3 class="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-wider mb-2">
 							{i18n(I18nKey.timelineAchievements)}
 						</h3>
 						<ul class="space-y-1.5">
-							{item.achievements.map((achievement) => (
+							{achievements.map((achievement) => (
 								<li class="text-sm text-black/70 dark:text-white/70 flex items-start gap-2">
 									<iconify-icon
 										icon="material-symbols:check-circle"
