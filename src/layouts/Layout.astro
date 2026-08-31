@@ -3,6 +3,7 @@ import ConfigCarrier from "@components/misc/ConfigCarrier.astro";
 import MusicPlayer from "@components/widgets/music-player/MusicPlayer.svelte";
 import Pio from "@components/features/pio/Pio.svelte"; // 使用 Svelte 版本的 Pio 组件
 import { PageProgressBar } from "@components/control/PageProgressBar";
+import fancyboxStylesheetUrl from "@fancyapps/ui/dist/fancybox/fancybox.css?url";
 import { pioConfig, profileConfig, siteConfig } from "@/config";
 
 import {
@@ -166,6 +167,24 @@ const fontVariables = [
 			ogImageUrl={ogImageUrl}
 			setOGTypeArticle={setOGTypeArticle}
 			configHue={configHue}
+		/>
+
+		<!--
+			Fancybox is used after Swup replaces article content. Keep both the
+			vendor stylesheet and the site's skin in the document head so a
+			second article never opens an unstyled lightbox while lazy CSS loads.
+			The data attribute also lets the runtime loader reuse these links when
+			an adapter removes and rebuilds the head during navigation.
+		-->
+		<link
+			rel="stylesheet"
+			href={fancyboxStylesheetUrl}
+			data-dynamic-stylesheet="fancybox"
+		/>
+		<link
+			rel="stylesheet"
+			href="/styles/fancybox-custom.css"
+			data-dynamic-stylesheet="fancybox-custom"
 		/>
 
 		<!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->

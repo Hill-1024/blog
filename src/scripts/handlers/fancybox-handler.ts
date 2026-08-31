@@ -29,7 +29,9 @@ export class FancyboxHandler {
 
 	/**
 	 * 初始化 Fancybox
-	 * 按需加载 Fancybox 模块和样式
+	 * 模块可以按需加载，但样式必须在每次 Swup 切页后重新确认。
+	 * Swup 的 updateHead 可能移除上一页动态插入的 link，而全局实例
+	 * 仍然存在；只检查 this.Fancybox 会让下一篇文章落回无样式 DOM。
 	 */
 	async init(): Promise<void> {
 		const hasImages = this.checkForImages();
@@ -45,6 +47,14 @@ export class FancyboxHandler {
 			} catch {
 				// 灯箱是渐进增强；模块不可用时保留图片原生链接。
 				this.Fancybox = null;
+				this.loadFailed = true;
+				return;
+			}
+		} else {
+			try {
+				await this.ensureStylesheets();
+			} catch {
+				// 样式不可用时不要打开半成品灯箱，保留图片原生链接。
 				this.loadFailed = true;
 				return;
 			}
@@ -71,13 +81,23 @@ export class FancyboxHandler {
 	}
 
 	/**
+	 * 确保 Fancybox 样式存在。
+	 * 首屏的静态 link 会被直接复用；若 Swup 重建 head，则补回缺失 link。
+	 */
+	private async ensureStylesheets(): Promise<void> {
+		await Promise.all([
+			loadStylesheet(fancyboxStylesheetUrl, "fancybox"),
+			loadStylesheet(customStylesheetUrl, "fancybox-custom"),
+		]);
+	}
+
+	/**
 	 * 加载 Fancybox 模块和样式
 	 */
 	private async loadFancybox(): Promise<void> {
 		const [mod] = await Promise.all([
 			import("@fancyapps/ui"),
-			loadStylesheet(fancyboxStylesheetUrl, "fancybox"),
-			loadStylesheet(customStylesheetUrl, "fancybox-custom"),
+			this.ensureStylesheets(),
 		]);
 		this.Fancybox = mod.Fancybox;
 	}

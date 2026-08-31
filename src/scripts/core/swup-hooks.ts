@@ -18,7 +18,7 @@ export interface SwupHookHandlers {
 	fancyboxHandler?: FancyboxHandler;
 	scrollHandler?: ScrollHandler;
 	showBanner?: () => void;
-	initFancybox?: () => void;
+	initFancybox?: () => void | Promise<void>;
 	cleanupFancybox?: () => void;
 	initCustomScrollbar?: () => void;
 	checkKatex?: () => void;
@@ -103,12 +103,12 @@ export class SwupHooksManager {
 	 * 处理内容替换后的初始化
 	 */
 	private registerContentReplaceHook(): void {
-		window.swup!.hooks.on("content:replace", () => {
+		window.swup!.hooks.on("content:replace", async () => {
 			this.clearCache();
 			this.syncRouteShell(window.location.pathname);
 
 			// 初始化新页面的图片、公式、滚动条和 TOC
-			this.handlers.initFancybox?.();
+			await this.handlers.initFancybox?.();
 			this.handlers.checkKatex?.();
 			this.handlers.initCustomScrollbar?.();
 
