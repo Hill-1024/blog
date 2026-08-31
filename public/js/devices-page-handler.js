@@ -70,6 +70,20 @@
 			deviceGrid.classList.toggle("grid-mode", nextLayout === "grid");
 			deviceGrid.classList.toggle("list-mode", nextLayout === "list");
 			deviceGrid.dataset.layoutMode = nextLayout;
+
+			const mainGrid = document.getElementById("main-grid");
+			const rightSidebar = document.querySelector(
+				".right-sidebar-container",
+			);
+			mainGrid?.setAttribute("data-layout-mode", nextLayout);
+			if (rightSidebar instanceof HTMLElement) {
+				rightSidebar.classList.toggle(
+					"hidden-in-grid-mode",
+					nextLayout === "grid",
+				);
+				rightSidebar.style.display =
+					nextLayout === "grid" ? "none" : "";
+			}
 		}
 
 		function getSavedLayout() {

@@ -23,6 +23,30 @@ const defaultLayout = siteConfig.postListLayout?.defaultMode || "list";
 ---
 
 <MainGridLayout title={i18n(I18nKey.devices)}>
+	<script is:inline data-swup-ignore-script define:vars={{ defaultLayout }}>
+		(() => {
+			const savedLayout =
+				localStorage.getItem("postListLayout") ||
+				sessionStorage.getItem("postListLayout");
+			const layout =
+				savedLayout === "grid" || savedLayout === "list"
+					? savedLayout
+					: defaultLayout;
+			const mainGrid = document.getElementById("main-grid");
+			const rightSidebar = document.querySelector(
+				".right-sidebar-container",
+			);
+
+			mainGrid?.setAttribute("data-layout-mode", layout);
+			if (rightSidebar instanceof HTMLElement) {
+				rightSidebar.classList.toggle(
+					"hidden-in-grid-mode",
+					layout === "grid",
+				);
+				rightSidebar.style.display = layout === "grid" ? "none" : "";
+			}
+		})();
+	</script>
 	<script>
 		import("../scripts/right-sidebar-layout.js");
 	</script>
@@ -476,6 +500,12 @@ const defaultLayout = siteConfig.postListLayout?.defaultMode || "list";
 
 	.device-grid.grid-mode {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	@media (min-width: 641px) {
+		:global(#main-grid[data-layout-mode="grid"]) .device-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 	}
 
 	.device-empty-state {

@@ -38,13 +38,15 @@ const {
 		const postListContainer = document.getElementById(
 			"post-list-container",
 		);
-		const effectiveLayout = postListContainer ? layout : "list";
+		const deviceGrid = document.querySelector("[data-device-grid]");
+		const layoutContainer = postListContainer || deviceGrid;
+		const effectiveLayout = layoutContainer ? layout : "list";
 		const rightSidebar = document.querySelector(".right-sidebar-container");
 
 		mainGrid?.setAttribute("data-layout-mode", effectiveLayout);
 		rightSidebar?.classList.toggle(
 			"hidden-in-grid-mode",
-			Boolean(postListContainer && effectiveLayout === "grid"),
+			Boolean(layoutContainer && effectiveLayout === "grid"),
 		);
 
 		return { mainGrid, postListContainer, effectiveLayout };
