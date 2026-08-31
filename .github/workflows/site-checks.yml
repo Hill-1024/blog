@@ -1,0 +1,93 @@
+name: Site checks
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+        branches: [master]
+    workflow_dispatch:
+
+concurrency:
+    group: site-checks-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    CI: "true"
+    ENABLE_CONTENT_SYNC: "false"
+    ASTRO_TELEMETRY_DISABLED: "1"
+
+jobs:
+    validate:
+        name: Validate site
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.22.0
+                  run_install: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.12.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Prepare isolated content fixtures
+              run: node scripts/prepare-ci-content.js
+
+            - name: Check workflow formatting
+              run: pnpm exec prettier --check .github/workflows/site-checks.yml
+
+            - name: Run Astro diagnostics
+              run: pnpm run check
+
+            - name: Check whitespace errors
+              run: git diff --check
+
+    build:
+        name: Build static site
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.22.0
+                  run_install: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.12.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Prepare isolated content fixtures
+              run: node scripts/prepare-ci-content.js
+
+            - name: Build static site
+              run: pnpm run build:ci
+
+            - name: Upload build artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: site-dist-${{ github.run_id }}-${{ github.run_attempt }}
+                  path: dist
+                  if-no-files-found: error
+                  retention-days: 7

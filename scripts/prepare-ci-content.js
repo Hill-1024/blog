@@ -87,9 +87,10 @@ export default localAnimeList;
 	"data/devices.ts": `export interface Device {
 	name: string;
 	image: string;
-	specs: string;
+	category: string;
 	description: string;
 	link: string;
+	specs: { label: string; value: string; icon?: string }[];
 }
 
 export type DeviceCategory = Record<string, Device[]>;
@@ -99,9 +100,10 @@ export const devicesData: DeviceCategory = {
 		{
 			name: "CI Device",
 			image: "/assets/home/default-logo.webp",
-			specs: "Fixture",
+			category: "CI",
 			description: "CI fixture device",
 			link: "#",
+			specs: [{ label: "Status", value: "Fixture" }],
 		},
 	],
 };

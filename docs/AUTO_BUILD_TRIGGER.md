@@ -1,5 +1,9 @@
 # 内容仓库更新自动触发构建 - 快速参考
 
+> 注意：本仓库的 `.github/workflows/site-checks.yml` 只负责只读检查和构建产物验证，
+> 不负责部署，也不会读取私有内容仓库。下面的触发方案仅适用于你另外配置的部署工作流
+> 或托管平台 Deploy Hook；不要把私有凭据加入检查工作流。
+
 ## 🎯 问题
 
 启用内容分离后,内容仓库 (Mizuki-Content) 更新不会自动触发代码仓库 (Mizuki) 的重新部署。
@@ -44,7 +48,7 @@ repository: your-username/Mizuki  # 改为你的
 
 ### Step 4: 更新代码仓库工作流
 
-编辑**代码仓库**的 `.github/workflows/deploy.yml`
+编辑**代码仓库中单独的部署工作流**（例如 `.github/workflows/deployment.yml`）
 
 在 `on:` 部分添加:
 
@@ -98,7 +102,7 @@ git push
 ### 代码仓库未触发
 
 **检查**:
-- [ ] `.github/workflows/deploy.yml` 包含 `repository_dispatch`
+- [ ] 独立部署工作流包含 `repository_dispatch`
 - [ ] Event type 为 `content-updated`
 - [ ] 代码仓库 Actions 已启用
 

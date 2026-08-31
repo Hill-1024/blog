@@ -40,32 +40,30 @@ export default defineConfig({
 
 ## 📦 GitHub Pages 部署
 
-### 自动部署 (推荐)
+### 构建验证
 
-项目已配置好 GitHub Actions 工作流，推送到 `main` 分支会自动部署。
+仓库的 `.github/workflows/site-checks.yml` 会在 `master` 分支的 push、Pull Request
+和手动触发时运行 Astro 检查与静态构建，并上传 `dist` 构建产物。该工作流只读仓库，
+不会向 `pages` 分支或任何托管平台发布内容。
 
-#### 本地模式 (默认)
-
-**无需任何配置**，开箱即用：
-
-1. 推送代码到 GitHub
-2. 在仓库设置中启用 GitHub Pages
-   - Settings → Pages
-   - Source: Deploy from a branch
-   - Branch: `pages` / `root`
-3. 等待 Actions 完成部署
+如果选择 GitHub Pages，请在仓库 Settings → Pages 中选择 GitHub Actions，并另行配置
+具有发布权限的部署工作流；Vercel、Netlify 和 Cloudflare Pages 则可以直接使用各自的
+Git 集成执行 `pnpm build`。
 
 #### 内容分离模式
 
 **配置步骤**:
 
-1. **添加仓库 Secrets**:
-   - Settings → Secrets and variables → Actions → New repository secret
+1. **在部署平台添加环境变量**:
    - 添加 `CONTENT_REPO_URL`: `https://github.com/your-username/Mizuki-Content.git`
+   - 同时设置 `ENABLE_CONTENT_SYNC=true`
 
-2. **修改 `.github/workflows/deploy.yml`**:
+2. **配置构建命令**:
 
-取消注释环境变量部分:
+`site-checks.yml` 会固定关闭内容同步，以保证 Pull Request 检查不依赖外部仓库。部署
+到 Vercel、Netlify 或 Cloudflare Pages 时，再在平台的构建环境中设置以下变量：
+
+部署命令和环境变量示例:
 ```yaml
 - name: Build site
   run: pnpm run build
@@ -75,7 +73,9 @@ export default defineConfig({
     USE_SUBMODULE: true
 ```
 
-3. **私有内容仓库配置**:
+3. **如果使用 GitHub Actions 作为部署器**:
+
+下面的凭据配置仅适用于你另外创建的部署工作流；`site-checks.yml` 本身不读取私有内容仓库。
 
 **同账号私有仓库** (推荐):
 - 无需额外配置
@@ -120,13 +120,11 @@ export default defineConfig({
 
 ### 工作流说明
 
-项目包含三个工作流:
+项目当前包含一个检查工作流:
 
 | 工作流 | 触发条件 | 功能 |
 |--------|---------|------|
-| `build.yml` | Push/PR 到 main | CI 测试，检查构建 |
-| `deploy.yml` | Push 到 main | 构建并部署到 pages 分支 |
-| `format.yml` | Push/PR | 代码格式和质量检查 |
+| `site-checks.yml` | Push/PR 到 master，或手动触发 | Astro 检查、静态构建、空白字符检查，并上传 `dist` artifact |
 
 ---
 
@@ -558,7 +556,8 @@ jobs:
 
 **Step 4: 在代码仓库更新 GitHub Actions 工作流**
 
-编辑代码仓库的 `.github/workflows/deploy.yml`，添加 `repository_dispatch` 触发器:
+在代码仓库单独的部署工作流（例如 `.github/workflows/deployment.yml`）中添加
+`repository_dispatch` 触发器:
 
 ```yaml
 name: Deploy to GitHub Pages
@@ -711,7 +710,7 @@ jobs:
 
 #### GitHub Actions 配置
 
-在代码仓库的 `.github/workflows/deploy.yml` 中添加定时触发:
+在代码仓库单独的部署工作流中添加定时触发:
 
 ```yaml
 name: Deploy to GitHub Pages
@@ -763,7 +762,7 @@ jobs:
 结合多种方式，确保稳定性:
 
 ```yaml
-# 代码仓库 .github/workflows/deploy.yml
+# 代码仓库的独立部署工作流
 on:
   push:
     branches:
