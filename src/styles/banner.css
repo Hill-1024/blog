@@ -482,19 +482,19 @@ body.lg\:is-home .sidebar-sticky-column {
     grid-row: 2 !important;
   }
 
-  #main-grid[data-layout-mode="grid"]:has(#post-list-container)[data-has-left="true"] {
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container, [data-device-grid])[data-has-left="true"] {
     grid-template-columns: clamp(14rem, 18vw, 17.5rem) minmax(0, 1fr) !important;
   }
 
-  #main-grid[data-layout-mode="grid"]:has(#post-list-container)[data-has-left="false"] {
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container, [data-device-grid])[data-has-left="false"] {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
-  #main-grid[data-layout-mode="grid"]:has(#post-list-container)[data-has-left="true"] #swup-container {
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container, [data-device-grid])[data-has-left="true"] #swup-container {
     grid-column: 2 !important;
   }
 
-  #main-grid[data-layout-mode="grid"]:has(#post-list-container)[data-has-left="false"] #swup-container {
+  #main-grid[data-layout-mode="grid"]:has(#post-list-container, [data-device-grid])[data-has-left="false"] #swup-container {
     grid-column: 1 !important;
   }
 }

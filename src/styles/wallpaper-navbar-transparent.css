@@ -120,6 +120,24 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
   transition: none !important;
 }
 
+/* The fullscreen wallpaper is the backdrop for the off-canvas edge too.
+ * Keeping the mask opaque exposes a card-coloured strip during top overscroll.
+ */
+body.wallpaper-transparent #navbar > .navbar-transition-mask {
+  background: transparent !important;
+}
+
+/* Navbar visibility is toggled while scrolling. Only animate the two
+ * compositor-friendly properties involved in that toggle; `transition-all`
+ * otherwise asks the browser to track unrelated paint/layout properties.
+ */
+body.wallpaper-transparent #navbar-wrapper {
+  transition:
+    opacity 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    translate 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
 /* Route transitions switch the border atomically (animating its shorthand
  * produces a transient multi-pixel dark outline), while the material eases
  * into the target route. */

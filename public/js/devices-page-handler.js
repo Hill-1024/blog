@@ -44,6 +44,7 @@
 		const tagEmpty = root.querySelector("[data-device-tag-empty]");
 		const activeTags = root.querySelector("[data-device-active-tags]");
 		const clearButton = root.querySelector("[data-device-clear]");
+		const deviceGrid = root.querySelector("[data-device-grid]");
 		const cards = Array.from(root.querySelectorAll("[data-device-card]"));
 		const emptyState = root.querySelector("[data-device-empty-state]");
 		const resultSummary = root.querySelector(
@@ -58,10 +59,48 @@
 			!(catalogue instanceof HTMLElement) ||
 			!(activeTags instanceof HTMLElement) ||
 			!(clearButton instanceof HTMLButtonElement) ||
+			!(deviceGrid instanceof HTMLElement) ||
 			cards.length === 0
 		) {
 			return;
 		}
+
+		function updateLayout(layout) {
+			const nextLayout = layout === "grid" ? "grid" : "list";
+			deviceGrid.classList.toggle("grid-mode", nextLayout === "grid");
+			deviceGrid.classList.toggle("list-mode", nextLayout === "list");
+			deviceGrid.dataset.layoutMode = nextLayout;
+		}
+
+		function getSavedLayout() {
+			const savedLayout = window.localStorage.getItem("postListLayout");
+			if (savedLayout === "grid" || savedLayout === "list") {
+				return savedLayout;
+			}
+
+			return deviceGrid.dataset.defaultLayout === "grid"
+				? "grid"
+				: "list";
+		}
+
+		updateLayout(getSavedLayout());
+		window.addEventListener(
+			"layoutChange",
+			(event) => {
+				const layout = event.detail?.layout;
+				if (layout === "grid" || layout === "list")
+					updateLayout(layout);
+			},
+			{ signal },
+		);
+		window.addEventListener(
+			"storage",
+			(event) => {
+				if (event.key === "postListLayout")
+					updateLayout(event.newValue);
+			},
+			{ signal },
+		);
 
 		const selected = { category: new Set(), brand: new Set() };
 		let selectedOrder = [];

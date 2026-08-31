@@ -1,6 +1,13 @@
 // 右侧边栏布局管理器
 // 用于在网格模式下隐藏右侧边栏
 
+function getLayoutContainer() {
+	return (
+		document.getElementById("post-list-container") ||
+		document.querySelector("[data-device-grid]")
+	);
+}
+
 /**
  * 初始化页面布局
  * @param {string} pageType - 页面类型（projects, skills等）
@@ -13,7 +20,7 @@ function initPageLayout(pageType) {
 	// 如果默认布局是网格模式，则隐藏右侧边栏
 	if (
 		defaultPostListLayout === "grid" &&
-		document.getElementById("post-list-container")
+		getLayoutContainer()
 	) {
 		hideRightSidebar();
 	} else {
@@ -72,7 +79,7 @@ function initPageLayout(pageType) {
  * 隐藏右侧边栏
  */
 function hideRightSidebar() {
-	if (!document.getElementById("post-list-container")) {
+	if (!getLayoutContainer()) {
 		showRightSidebar();
 		return;
 	}

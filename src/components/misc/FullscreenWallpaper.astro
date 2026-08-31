@@ -54,6 +54,7 @@ if (!hasDesktopImages && !hasMobileImages) {return null;}
 const isCarouselEnabled = config.carousel?.enable && 
 	(imageSources.desktop.length > 1 || imageSources.mobile.length > 1);
 const carouselInterval = config.carousel?.interval || 5;
+const carouselFadeDuration = 420;
 
 // 样式配置
 const position = config.position || "center";
@@ -84,12 +85,12 @@ const renderGroups = [
 ];
 ---
 
-<div 
+<div
 	class:list={[
 		"fixed inset-0 w-full h-full overflow-hidden pointer-events-none",
-		className
+		className,
 	]}
-	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0); perspective: 1000px;`}
+	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0);`}
 	data-fullscreen-wallpaper
 >
 	{isCarouselEnabled ? (
@@ -98,23 +99,22 @@ const renderGroups = [
 				group.hasImages && (
 					<div
 						class={`${group.containerClass} w-full h-full relative`}
-						style="transform: translateZ(0);"
 						data-wallpaper-group={group.key}
 					>
-				{group.images.map((src, index) => (
-					<template data-wallpaper-frame>
-						<img
-							src={src}
-							alt={`${group.key} wallpaper ${index + 1}`}
-							class={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`}
-							data-carousel-item={index}
-							style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ""}; opacity: ${index === 0 ? 1 : 0};`}
-							decoding="async"
-							loading={index === 0 ? "eager" : "lazy"}
-							fetchpriority={index === 0 ? "high" : undefined}
-						/>
-					</template>
-				))}
+						{group.images.map((src, index) => (
+							<template data-wallpaper-frame>
+								<img
+									src={src}
+									alt={`${group.key} wallpaper ${index + 1}`}
+									class={`absolute inset-0 w-full h-full object-cover transition-opacity ${positionClass}`}
+									data-carousel-item={index}
+									style={`${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ""} opacity: ${index === 0 ? 1 : 0}; transition-duration: ${carouselFadeDuration}ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);`}
+									decoding="async"
+									loading={index === 0 ? "eager" : "lazy"}
+									fetchpriority={index === 0 ? "high" : undefined}
+								/>
+							</template>
+						))}
 					</div>
 				),
 		)
@@ -133,6 +133,7 @@ const renderGroups = [
 		mobileImages: imageSources.mobile,
 		positionClass,
 		blurAmount,
+		carouselFadeDuration,
 	}}
 >
 	(function initFullscreenWallpaper() {
@@ -186,15 +187,14 @@ const renderGroups = [
 				groupKey === "desktop"
 					? "hidden md:block w-full h-full relative"
 					: "block md:hidden w-full h-full relative";
-			wrapper.style.transform = "translateZ(0)";
 
 			const image = document.createElement("img");
 			image.src = src;
 			image.alt = `${groupKey} wallpaper`;
 			image.className =
-				`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`;
+				`absolute inset-0 w-full h-full object-cover transition-opacity ${positionClass}`;
 			image.style.cssText =
-				`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ""} opacity: 1;`;
+				`${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ""} opacity: 1; transition-duration: ${carouselFadeDuration}ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);`;
 			image.decoding = "async";
 			image.loading = "eager";
 			image.fetchPriority = "high";
@@ -221,38 +221,79 @@ const renderGroups = [
 				item.style.opacity = index === currentIndex ? "1" : "0";
 			});
 
+			const updateFrameHints = (activeIndex, nextIndex) => {
+				// Keep compositor promotion limited to the two frames that can fade.
+				items.forEach((item, index) => {
+					item.style.willChange =
+						index === activeIndex || index === nextIndex ? "opacity" : "auto";
+				});
+			};
+			updateFrameHints(
+				currentIndex,
+				items.length > 1 ? (currentIndex + 1) % items.length : currentIndex,
+			);
+
 			let timer = null;
+			let scrollResumeTimer = null;
+			let frameRequest = null;
+			let isScrollPaused = false;
 			const stop = () => {
 				if (timer) {
 					clearInterval(timer);
 					timer = null;
 				}
+				if (frameRequest !== null) {
+					cancelAnimationFrame(frameRequest);
+					frameRequest = null;
+				}
 			};
 			const start = () => {
-				if (items.length <= 1 || timer || document.hidden) return;
+				if (items.length <= 1 || timer || document.hidden || isScrollPaused) return;
 				timer = setInterval(() => {
+					const previousIndex = currentIndex;
 					const nextIndex = (currentIndex + 1) % items.length;
-					items[currentIndex].style.opacity = "0";
-					items[nextIndex].style.opacity = "1";
-					currentIndex = nextIndex;
-					sessionStorage.setItem(
-						"mizuki_wallpaper_index",
-						currentIndex.toString(),
-					);
+					updateFrameHints(previousIndex, nextIndex);
+					frameRequest = requestAnimationFrame(() => {
+						items[previousIndex].style.opacity = "0";
+						items[nextIndex].style.opacity = "1";
+						currentIndex = nextIndex;
+						sessionStorage.setItem(
+							"mizuki_wallpaper_index",
+							currentIndex.toString(),
+						);
+						frameRequest = null;
+					});
 				}, carouselInterval * 1000);
+			};
+			const handleScroll = () => {
+				// Do not compete with scroll and navbar work on the main thread.
+				isScrollPaused = true;
+				stop();
+				if (scrollResumeTimer !== null) clearTimeout(scrollResumeTimer);
+				scrollResumeTimer = window.setTimeout(() => {
+					scrollResumeTimer = null;
+					isScrollPaused = false;
+					start();
+				}, 180);
 			};
 			const handleVisibilityChange = () => {
 				if (document.hidden) stop();
-				else start();
+				else if (!isScrollPaused) start();
 			};
 			document.addEventListener("visibilitychange", handleVisibilityChange);
+			window.addEventListener("scroll", handleScroll, { passive: true });
 			start();
 			cleanupCarousel = () => {
 				stop();
+				if (scrollResumeTimer !== null) {
+					clearTimeout(scrollResumeTimer);
+					scrollResumeTimer = null;
+				}
 				document.removeEventListener(
 					"visibilitychange",
 					handleVisibilityChange,
 				);
+				window.removeEventListener("scroll", handleScroll);
 			};
 		}
 
