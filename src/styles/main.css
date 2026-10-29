@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* content/ 被 .gitignore 忽略，Tailwind v4 默认不会扫描其中的 Markdown。
+   页面内联 HTML（如友链名片）依赖这里的工具类，需显式声明扫描源。 */
+@source "../../content/spec";
+
 /* 导入相册样式 */
 @import "./albums.css";
 /* 导入追番页面样式 */

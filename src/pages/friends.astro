@@ -134,7 +134,9 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 	</div>
 
 	<!-- 评论区 -->
-	<Comment path="/friends" />
+	<div class="mt-4">
+		<Comment path="/friends" />
+	</div>
 
 	<!-- 引用全局脚本 -->
 	<script is:inline src="/js/friends-page-handler.js"></script>
