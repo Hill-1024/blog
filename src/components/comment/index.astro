@@ -8,13 +8,16 @@ import Giscus from "./Giscus.astro";
 import Twikoo from "./Twikoo.astro";
 
 interface Props {
-	post: CollectionEntry<"posts">;
+	post?: CollectionEntry<"posts">;
+	// 用于非文章页面（如友链页）指定评论对应的路径
+	path?: string;
 }
 
-const { id, data } = Astro.props.post;
+const { post } = Astro.props;
 
-const slug = removeFileExtension(id);
-const path = `/posts/${slug}`;
+const path =
+	Astro.props.path ??
+	(post ? `/posts/${removeFileExtension(post.id)}` : undefined);
 // const url = `${Astro.site?.href}${path}`;
 
 let commentService = "";
@@ -26,11 +29,11 @@ if (commentConfig?.enable) {
 	}
 }
 
-const commentEnabled = data.comment ?? true;
+const commentEnabled = post ? (post.data.comment ?? true) : true;
 ---
 
 {
-	commentConfig?.enable && commentEnabled && (
+	commentConfig?.enable && commentEnabled && path && (
 		<div class="card-base p-6 mb-4">
 			{commentService === "twikoo" && <Twikoo path={path} />}
 			{commentService === "giscus" && <Giscus path={path} />}
