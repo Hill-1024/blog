@@ -354,4 +354,43 @@ for (const [relativePath, content] of Object.entries(files)) {
 
 await fs.mkdir(path.join(contentDir, "images", "albums"), { recursive: true });
 
+// 仓库不再跟踪 src/data、src/content、public/images 这几个指向 content/ 的
+// 符号链接（见 .gitignore），因此 CI 检出后需要在这里重新建立，供源码引用。
+const contentMappings = [
+	["content/posts", "src/content/posts"],
+	["content/spec", "src/content/spec"],
+	["content/data", "src/data"],
+	["content/images", "public/images"],
+];
+
+for (const [sourceRelative, destRelative] of contentMappings) {
+	const srcPath = path.join(rootDir, sourceRelative);
+	const destPath = path.join(rootDir, destRelative);
+
+	await fs.mkdir(path.dirname(destPath), { recursive: true });
+
+	try {
+		if ((await fs.lstat(destPath)).isSymbolicLink()) {
+			await fs.unlink(destPath);
+		}
+	} catch {
+		// destPath 不存在时无需清理
+	}
+
+	try {
+		const linkTarget = path.relative(path.dirname(destPath), srcPath);
+		await fs.symlink(
+			linkTarget,
+			destPath,
+			process.platform === "win32" ? "junction" : "dir",
+		);
+		console.log(`已创建符号链接：${destRelative} -> ${sourceRelative}`);
+	} catch (error) {
+		await fs.cp(srcPath, destPath, { recursive: true });
+		console.log(
+			`符号链接失败，改为复制：${sourceRelative} -> ${destRelative}（${error.message}）`,
+		);
+	}
+}
+
 console.log(`Prepared CI content fixtures in ${contentDir}`);
