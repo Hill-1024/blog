@@ -308,8 +308,8 @@
 	:global(body.wallpaper-transparent) .mobile-toc-panel,
 	:global(.wallpaper-transparent) .mobile-toc-panel {
 		background: var(--card-bg-transparent) !important;
-		backdrop-filter: blur(20px) !important;
-		-webkit-backdrop-filter: blur(20px) !important;
+		backdrop-filter: blur(12px) !important;
+		-webkit-backdrop-filter: blur(12px) !important;
 	}
 
 	:global(.theme-switch-btn)::before {

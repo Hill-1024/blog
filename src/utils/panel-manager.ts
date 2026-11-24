@@ -34,7 +34,8 @@ export interface PanelStateChangeDetail {
 class PanelManager {
 	private activePanels = new Set<PanelId>();
 	private panelStack: PanelId[] = [];
-	private readonly duration = 100;
+	private readonly duration = 180;
+	private readonly easing = "cubic-bezier(0.22, 1, 0.36, 1)";
 	private readonly mobileOnlyPanels: PanelId[] = [
 		"mobile-toc-panel",
 		"nav-menu-panel",
@@ -133,11 +134,11 @@ class PanelManager {
 
 			panel.classList.remove("float-panel-closed");
 			panel.style.opacity = "0";
-			panel.style.transform = "scale(0.95) translateY(-10px)";
+			panel.style.transform = "scale(0.96) translateY(-6px)";
 			panel.style.pointerEvents = "none";
 
 			requestAnimationFrame(() => {
-				panel.style.transition = `opacity ${this.duration}ms ease-out, transform ${this.duration}ms ease-out`;
+				panel.style.transition = `opacity ${this.duration}ms ${this.easing}, transform ${this.duration}ms ${this.easing}`;
 
 				requestAnimationFrame(() => {
 					panel.style.opacity = "1";
@@ -173,10 +174,10 @@ class PanelManager {
 				return;
 			}
 
-			panel.style.transition = `opacity ${this.duration}ms ease-out, transform ${this.duration}ms ease-out`;
+			panel.style.transition = `opacity ${this.duration}ms ${this.easing}, transform ${this.duration}ms ${this.easing}`;
 			panel.style.pointerEvents = "none";
 			panel.style.opacity = "0";
-			panel.style.transform = "scale(0.95) translateY(-10px)";
+			panel.style.transform = "scale(0.96) translateY(-6px)";
 
 			setTimeout(() => {
 				panel.classList.add("float-panel-closed");

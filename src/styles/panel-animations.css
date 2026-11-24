@@ -1,83 +1,37 @@
 /* 
  * 浮层面板动画增强样式
- * 为所有浮层面板提供统一、流畅的动画效果
+ * 为所有浮层面板提供统一、流畅的 GPU 合成动画效果
  */
 
 .float-panel {
   z-index: 50;
   backface-visibility: hidden;
-
-  /* 为动画做准备 */
   transform-origin: top center;
 }
 
 /* 面板打开时的默认状态 */
 .float-panel:not(.float-panel-closed) {
-  transform: scaleY(1) scaleX(1);
+  transform: scale(1) translateY(0);
   pointer-events: auto;
   will-change: transform, opacity;
 }
 
-/* 面板关闭时的状态 */
+/* 面板关闭时的状态（与 PanelManager 内联起止帧一致，避免形变冲突） */
 .float-panel-closed {
-  transform: scaleY(0) scaleX(0.8);
+  transform: scale(0.96) translateY(-6px);
   pointer-events: none;
 }
 
-/* 特定面板的动画调整 */
-#mobile-toc-panel {
-  transform-origin: top right;
-}
-
-#mobile-toc-panel.float-panel-closed {
-  transform: scaleY(0) scaleX(0.7);
-}
-
-#display-setting {
-  transform-origin: top right;
-}
-
-#display-setting.float-panel-closed {
-  transform: scaleY(0) scaleX(0.6);
-}
-
-#search-panel {
-  transform-origin: top center;
-}
-
-#search-panel.float-panel-closed {
-  transform: scaleY(0) scaleX(0.8);
-}
-
-#nav-menu-panel {
-  transform-origin: top right;
-}
-
-#nav-menu-panel.float-panel-closed {
-  transform: scaleY(0) scaleX(0.65);
-}
-
+/* 特定面板的动画锚点 */
+#mobile-toc-panel,
+#display-setting,
+#nav-menu-panel,
 #wallpaper-mode-panel {
   transform-origin: top right;
 }
 
-#wallpaper-mode-panel.float-panel-closed {
-  transform: scaleY(0) scaleX(0.5);
-}
-
-/* 移动端 */
-@media (max-width: 768px) {
-  .float-panel-closed {
-    transform: scaleY(0) scaleX(0.85);
-  }
-
-  #mobile-toc-panel.float-panel-closed {
-    transform: scaleY(0) scaleX(0.8);
-  }
-
-  #wallpaper-mode-panel.float-panel-closed {
-    transform: scaleY(0) scaleX(0.7);
-  }
+#search-panel {
+  transform-origin: top center;
 }
 
 /* 移动设备触摸优化 */

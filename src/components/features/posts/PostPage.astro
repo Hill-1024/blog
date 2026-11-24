@@ -18,7 +18,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 
 <div
 	id="post-list-container"
-	class={`transition-all duration-300 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 ${initialLayoutClass}`}
+	class={`transition-opacity duration-200 ease-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 ${initialLayoutClass}`}
 	data-default-layout={defaultLayout}
 	data-both-sidebars={hasRightSidebars}
 >
@@ -204,9 +204,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 	}
 
 	#post-list-container > :global(*) {
-		content-visibility: auto;
-		contain-intrinsic-size: auto 200px;
-		transition: opacity 0.2s ease;
+		transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
 	#post-list-container.layout-switching {
