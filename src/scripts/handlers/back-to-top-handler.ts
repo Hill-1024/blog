@@ -1,6 +1,6 @@
 /**
- * 返回顶部处理器
- * 管理返回顶部按钮和滚动监听
+ * 返回顶部与全局滚动状态处理器
+ * 统一管理返回顶部按钮、文章目录显隐以及全站导航栏区域化 Alpha 渐变
  */
 
 import {
@@ -12,36 +12,37 @@ import {
 } from "../core/swup-config";
 
 /**
- * 返回顶部处理器类
- * 负责返回顶部按钮的显示/隐藏和滚动位置监听
+ * 返回顶部及导航栏区域滚动状态处理器类
  */
 export class BackToTopHandler {
 	private backToTopBtn: HTMLElement | null = null;
 	private backToTopInnerBtn: HTMLButtonElement | null = null;
 	private toc: HTMLElement | null = null;
-	private navbar: HTMLElement | null = null;
+	private navbarEl: HTMLElement | null = null;
 	private bannerEl: HTMLElement | null = null;
-	private bannerEnabled: boolean;
 	private scrollRafId: number | null = null;
+	private postTransitionTimerId: number | null = null;
 	private eventsBound = false;
 	private cachedContentTop: number | null = null;
 	private cachedBannerHeight = 0;
+	private cachedNavbarHeight = 72;
 	private cachedBannerVisible = false;
+	private cachedHasVisibleBanner = false;
 	private lastBackToTopHidden: boolean | null = null;
 	private lastTocHidden: boolean | null = null;
-	private lastNavbarHidden: boolean | null = null;
+	private lastNavbarScrolled: boolean | null = null;
+	private lastNavAlpha: number | null = null;
+	private lastNavInBanner: boolean | null = null;
 	private readonly scrollHandler = this.scheduleScrollUpdate.bind(this);
 	private readonly resizeHandler = this.handleResize.bind(this);
 	private readonly clickHandler = this.scrollToTop.bind(this);
 	private readonly layoutInvalidateHandler =
 		this.invalidateMetricsAndUpdate.bind(this);
 
-	constructor(bannerEnabled: boolean) {
-		this.bannerEnabled = bannerEnabled;
-	}
+	constructor(_bannerEnabled: boolean) {}
 
 	/**
-	 * 初始化返回顶部处理器
+	 * 初始化滚动状态处理器
 	 */
 	init(): void {
 		this.cacheElements();
@@ -60,9 +61,7 @@ export class BackToTopHandler {
 		this.backToTopInnerBtn =
 			this.backToTopBtn?.querySelector("button") ?? null;
 		this.toc = document.getElementById(SWUP_SELECTORS.tocWrapper.slice(1));
-		this.navbar = document.getElementById(
-			SWUP_SELECTORS.navbarWrapper.slice(1),
-		);
+		this.navbarEl = document.getElementById(SWUP_SELECTORS.navbar.slice(1));
 		this.bannerEl = document.getElementById(
 			SWUP_SELECTORS.bannerWrapper.slice(1),
 		);
@@ -87,6 +86,7 @@ export class BackToTopHandler {
 			"wallpaper-mode-change",
 			this.layoutInvalidateHandler,
 		);
+		window.addEventListener("navbar:sync", this.layoutInvalidateHandler);
 		document.addEventListener(
 			"swup:page:view",
 			this.layoutInvalidateHandler,
@@ -113,10 +113,25 @@ export class BackToTopHandler {
 	}
 
 	private invalidateMetricsAndUpdate(): void {
+		if (this.postTransitionTimerId !== null) {
+			window.clearTimeout(this.postTransitionTimerId);
+			this.postTransitionTimerId = null;
+		}
+
 		requestAnimationFrame(() => {
 			this.cacheElements();
+			this.lastNavbarScrolled = null;
+			this.lastNavAlpha = null;
+			this.lastNavInBanner = null;
 			this.measureLayoutMetrics();
 			this.handleScroll();
+
+			// 路由或壁纸模式过渡结束后再校准一次内容与横幅几何高度
+			this.postTransitionTimerId = window.setTimeout(() => {
+				this.postTransitionTimerId = null;
+				this.measureLayoutMetrics();
+				this.handleScroll();
+			}, 420);
 		});
 	}
 
@@ -125,6 +140,9 @@ export class BackToTopHandler {
 	 */
 	private measureLayoutMetrics(): void {
 		const scrollTop = window.scrollY || document.documentElement.scrollTop;
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+
 		const contentWrapper = document.getElementById(
 			SWUP_SELECTORS.contentWrapper.slice(1),
 		);
@@ -135,31 +153,56 @@ export class BackToTopHandler {
 			this.cachedContentTop = null;
 		}
 
+		this.cachedNavbarHeight = this.navbarEl?.offsetHeight || 72;
+
 		const banner = this.bannerEl;
-		const fallbackBannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
-		if (banner && document.body.classList.contains("enable-banner")) {
-			const rectHeight = banner.offsetHeight;
-			this.cachedBannerHeight = rectHeight || fallbackBannerHeight;
+		const enableBannerMode =
+			document.body.classList.contains("enable-banner");
+		const isHome = document.body.classList.contains("lg:is-home");
+		const isBannerHiddenOnMobile =
+			viewportWidth < 1280 &&
+			(banner?.classList.contains("mobile-hide-banner") || !isHome);
+
+		if (enableBannerMode && banner && !isBannerHiddenOnMobile) {
+			if (viewportWidth >= 1280) {
+				// 桌面端横幅目标高度由模式类精确决定，避免在 380ms 切页高度过渡中间采样失真
+				const targetVh = isHome ? BANNER_HEIGHT_HOME : BANNER_HEIGHT;
+				this.cachedBannerHeight = viewportHeight * (targetVh / 100);
+			} else {
+				this.cachedBannerHeight =
+					banner.offsetHeight ||
+					viewportHeight * (BANNER_HEIGHT / 100);
+			}
+			this.cachedHasVisibleBanner = this.cachedBannerHeight > 0;
 			this.cachedBannerVisible =
-				window.innerWidth >= 1280 && rectHeight > 0;
+				viewportWidth >= 1280 && this.cachedBannerHeight > 0;
 		} else {
-			this.cachedBannerHeight = fallbackBannerHeight;
+			this.cachedBannerHeight = 0;
+			this.cachedHasVisibleBanner = false;
 			this.cachedBannerVisible = false;
 		}
 	}
 
 	/**
 	 * 处理滚动事件（所有读取在前，仅在状态变化时写入 DOM）
+	 *
+	 * 导航栏区域规则（全站所有页面统一）：
+	 * - 横幅模式下且当前视口存在可见横幅：
+	 *   - 顶部（scrollTop = 0）：透明（full/semifull 为 0，semi 为 0.65）
+	 *   - 离开横幅区域前（0 < scrollTop < bannerHeight - navbarHeight）：alpha 跟随滚动连续平滑递增
+	 *   - 离开横幅区域后（scrollTop >= bannerHeight - navbarHeight）：固定为 1（毛玻璃背板），不再随滚动变化
+	 * - 无横幅区域（移动端非首页、fullscreen、none 模式）：固定为 1
 	 */
 	private handleScroll(): void {
 		// 1. Read phase
-		const scrollTop = window.scrollY || document.documentElement.scrollTop;
+		const scrollTop = Math.max(
+			0,
+			window.scrollY || document.documentElement.scrollTop,
+		);
 		const viewportHeight = window.innerHeight;
 		const viewportWidth = window.innerWidth;
-		const isHome =
-			document.body.classList.contains("lg:is-home") &&
-			viewportWidth >= 1280;
-		const enableBannerClass = document.body.classList.contains("enable-banner");
+		const enableBannerClass =
+			document.body.classList.contains("enable-banner");
 
 		if (this.cachedContentTop === null) {
 			this.measureLayoutMetrics();
@@ -178,14 +221,53 @@ export class BackToTopHandler {
 			this.cachedBannerVisible &&
 			scrollTop <= this.cachedBannerHeight;
 
-		const currentBannerHeight = isHome ? BANNER_HEIGHT_HOME : BANNER_HEIGHT;
-		const navbarHideThreshold =
-			viewportHeight * (currentBannerHeight / 100) -
-			SCROLL_CONFIG.navbarHideOffset;
-		const shouldHideNavbar = scrollTop >= navbarHideThreshold;
+		let targetAlpha = 1;
+		let inBannerZone = false;
+		let isScrolledBeyondBanner = true;
+
+		if (this.navbarEl) {
+			const dynamicMode = this.navbarEl.getAttribute(
+				"data-dynamic-transparent",
+			);
+			const transparentMode = this.navbarEl.getAttribute(
+				"data-transparent-mode",
+			);
+
+			if (
+				this.cachedHasVisibleBanner &&
+				dynamicMode !== "none" &&
+				dynamicMode !== "semi"
+			) {
+				const leaveDistance = Math.max(
+					64,
+					this.cachedBannerHeight - this.cachedNavbarHeight,
+				);
+				const progress = Math.min(
+					1,
+					Math.max(0, scrollTop / leaveDistance),
+				);
+
+				targetAlpha =
+					transparentMode === "semi"
+						? 0.65 + 0.35 * progress
+						: progress;
+				inBannerZone = progress > 0 && progress < 1;
+				isScrolledBeyondBanner = progress >= 1;
+			}
+		}
+
+		const roundedAlpha =
+			targetAlpha <= 0.002
+				? 0
+				: targetAlpha >= 0.998
+					? 1
+					: Number(targetAlpha.toFixed(3));
 
 		// 2. Write phase (diffed - skip DOM writes when state is unchanged)
-		if (this.backToTopBtn && this.lastBackToTopHidden !== shouldHideBackToTop) {
+		if (
+			this.backToTopBtn &&
+			this.lastBackToTopHidden !== shouldHideBackToTop
+		) {
 			this.lastBackToTopHidden = shouldHideBackToTop;
 			this.backToTopBtn.classList.toggle("hide", shouldHideBackToTop);
 			this.setButtonAccessibility(shouldHideBackToTop);
@@ -196,13 +278,30 @@ export class BackToTopHandler {
 			this.toc.classList.toggle("toc-hide", shouldHideTOC);
 		}
 
-		if (
-			this.bannerEnabled &&
-			this.navbar &&
-			this.lastNavbarHidden !== shouldHideNavbar
-		) {
-			this.lastNavbarHidden = shouldHideNavbar;
-			this.navbar.classList.toggle("navbar-hidden", shouldHideNavbar);
+		if (this.navbarEl) {
+			if (this.lastNavAlpha !== roundedAlpha) {
+				this.lastNavAlpha = roundedAlpha;
+				this.navbarEl.style.setProperty(
+					"--nav-alpha",
+					String(roundedAlpha),
+				);
+			}
+
+			if (this.lastNavInBanner !== inBannerZone) {
+				this.lastNavInBanner = inBannerZone;
+				this.navbarEl.setAttribute(
+					"data-nav-in-banner",
+					String(inBannerZone),
+				);
+			}
+
+			if (this.lastNavbarScrolled !== isScrolledBeyondBanner) {
+				this.lastNavbarScrolled = isScrolledBeyondBanner;
+				this.navbarEl.classList.toggle(
+					"scrolled",
+					isScrolledBeyondBanner,
+				);
+			}
 		}
 	}
 
@@ -242,12 +341,17 @@ export class BackToTopHandler {
 			cancelAnimationFrame(this.scrollRafId);
 			this.scrollRafId = null;
 		}
+		if (this.postTransitionTimerId !== null) {
+			window.clearTimeout(this.postTransitionTimerId);
+			this.postTransitionTimerId = null;
+		}
 		window.removeEventListener("scroll", this.scrollHandler);
 		window.removeEventListener("resize", this.resizeHandler);
 		window.removeEventListener(
 			"wallpaper-mode-change",
 			this.layoutInvalidateHandler,
 		);
+		window.removeEventListener("navbar:sync", this.layoutInvalidateHandler);
 		document.removeEventListener(
 			"swup:page:view",
 			this.layoutInvalidateHandler,
@@ -257,19 +361,21 @@ export class BackToTopHandler {
 		this.backToTopBtn = null;
 		this.backToTopInnerBtn = null;
 		this.toc = null;
-		this.navbar = null;
+		this.navbarEl = null;
 		this.bannerEl = null;
 		this.cachedContentTop = null;
 		this.lastBackToTopHidden = null;
 		this.lastTocHidden = null;
-		this.lastNavbarHidden = null;
+		this.lastNavbarScrolled = null;
+		this.lastNavAlpha = null;
+		this.lastNavInBanner = null;
 	}
 
 	/**
-	 * 更新 Banner 启用状态
+	 * 更新 Banner 启用状态（保留接口兼容）
 	 */
-	setBannerEnabled(enabled: boolean): void {
-		this.bannerEnabled = enabled;
+	setBannerEnabled(_enabled: boolean): void {
+		this.invalidateMetricsAndUpdate();
 	}
 }
 

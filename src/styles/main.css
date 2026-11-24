@@ -77,24 +77,6 @@ body {
   outline-offset: 3px;
 }
 
-/* 页面顶部渐变高光效果 */
-.top-gradient-highlight {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 180px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0.15) 60%, rgba(255, 255, 255, 0.05) 80%, transparent 100%);
-  pointer-events: none;
-  z-index: 20;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 暗色主题下的渐变高光效果 */
-:root.dark .top-gradient-highlight {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 30%, rgba(0, 0, 0, 0.15) 60%, rgba(0, 0, 0, 0.05) 80%, transparent 100%);
-}
-
 @utility expand-animation {
   @apply relative before:ease-out before:duration-75 before:transition-all active:bg-none hover:before:bg-(--btn-plain-bg-hover) active:before:bg-(--btn-plain-bg-active) z-0
       before:absolute before:rounded-[inherit] before:inset-0 before:scale-[0.85] hover:before:scale-100 before:-z-10;
@@ -151,13 +133,12 @@ body {
     }
   }
 
-  /* 确保边框和分隔线元素在主题切换时有更明确的过渡时长 */
-  .transition,
-  [class*="border"],
-  [class*="transition"] {
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 0.15s;
+  /* 仅对显式声明 .transition 的元素保留轻量颜色过渡，避免 [class*="border"]/[class*="transition"]
+     拦截 Tailwind 的 transform/opacity 工具类或给上千个静态节点挂载 transition */
+  .transition {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, transform;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    transition-duration: 0.18s;
   }
 
   /* 主题过渡保护类 - 仅在非 View Transitions 模式下使用 */
@@ -221,18 +202,11 @@ body {
   }
 
   /* 导航栏主题切换保护 - 仅在非 View Transitions 模式下禁用过渡 */
-  .is-theme-transitioning:not(.use-view-transition) #navbar > div,
-  .is-theme-transitioning:not(.use-view-transition) #navbar[data-transparent-mode] > div,
-  .is-theme-transitioning:not(.use-view-transition) #navbar[data-transparent-mode].scrolled > div,
-  .is-theme-transitioning:not(.use-view-transition) body.wallpaper-transparent #navbar > div,
-  .is-theme-transitioning:not(.use-view-transition) body.wallpaper-transparent #navbar[data-transparent-mode] > div,
-  .is-theme-transitioning:not(.use-view-transition) body.wallpaper-transparent #navbar[data-transparent-mode].scrolled > div,
-  .is-theme-transitioning:not(.use-view-transition) #banner-wrapper ~ * #navbar > div,
-  .is-theme-transitioning:not(.use-view-transition) #banner-wrapper ~ * #navbar[data-transparent-mode] > div,
-  .is-theme-transitioning:not(.use-view-transition) body:has(#banner-wrapper) #navbar > div,
-  .is-theme-transitioning:not(.use-view-transition) body:has(#banner-wrapper) #navbar[data-transparent-mode] > div {
+  .is-theme-transitioning:not(.use-view-transition) #navbar > .navbar-surface,
+  .is-theme-transitioning:not(.use-view-transition) #navbar > .navbar-surface::before {
     transition: none !important;
     backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   /* 导航栏相关浮动面板的过渡禁用 */
@@ -321,10 +295,6 @@ body {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
   }
 
-  .wallpaper-transparent #navbar > div {
-    @apply bg-(--card-bg-transparent) backdrop-blur-sm;
-  }
-
   .wallpaper-transparent .btn-card {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
   }
@@ -336,15 +306,15 @@ body {
     border-radius: var(--radius-large);
     background: var(--card-bg-transparent) !important;
     box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
   }
 
   .wallpaper-transparent .floating-toc-panel,
   body.wallpaper-transparent .floating-toc-panel {
     background: var(--card-bg-transparent) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
   }
 
   .wallpaper-transparent .floating-toc-header,
@@ -355,29 +325,13 @@ body {
   .wallpaper-transparent .mobile-toc-panel,
   body.wallpaper-transparent .mobile-toc-panel {
     background: var(--card-bg-transparent) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
+  /* 仅交互元素保留颜色过渡，避免给全页数千个静态正文节点（p/span/li/code 等）挂载 transition 导致样式重算卡顿 */
   a,
-  span,
-  li,
-  ul,
-  ol,
-  blockquote,
-  code,
-  pre,
-  table,
-  th,
-  td,
-  strong {
+  button {
     @apply transition-colors duration-150;
   }
   .card-shadow {

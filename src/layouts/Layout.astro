@@ -42,15 +42,6 @@ const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
 
-// 获取导航栏透明模式配置
-const navbarTransparentMode =
-	siteConfig.banner?.navbar?.transparentMode || "semi";
-
-// 判断是否应该显示顶部高光效果（只在full和semifull模式下显示）
-const shouldShowTopHighlight =
-	isHomePage &&
-	(navbarTransparentMode === "full" || navbarTransparentMode === "semifull");
-
 // 获取默认banner图片的辅助函数
 const getDefaultBanner = (): string => {
 	const src = siteConfig.banner.src;
@@ -238,9 +229,6 @@ const fontVariables = [
 				width="0"
 				style="display:none;visibility:hidden"></iframe></noscript
 		>
-		<!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
-		{shouldShowTopHighlight && <div class="top-gradient-highlight" />}
-
 		<ConfigCarrier />
 		<PageProgressBar
 			enable={siteConfig.pageProgressBar?.enable ?? false}
@@ -290,15 +278,6 @@ const fontVariables = [
 			.enable-banner.lg\:is-home #main-grid {
 				transform: none;
 			}
-			.enable-banner #top-row {
-				height: calc(
-					var(--current-banner-height, var(--banner-height)) - 4.5rem
-				);
-				@apply transition-all duration-300;
-			}
-			.enable-banner #top-row.content-top-row {
-				height: 4.5rem;
-			}
 		}
 
 		/* Water waves animation - GPU 加速优化 */
@@ -318,19 +297,8 @@ const fontVariables = [
 		}
 	}
 	@layer utilities {
-		@media (min-width: 1280px) {
-			.enable-banner.lg\:is-home #sidebar-sticky {
-				top: 1rem !important;
-			}
-			.enable-banner.lg\:is-home #left-sidebar-sticky {
-				top: 1rem !important;
-			}
-			.enable-banner.lg\:is-home #right-sidebar-sticky {
-				top: 1rem !important;
-			}
-		}
-		.navbar-hidden {
-			@apply opacity-0 -translate-y-16;
+		#navbar-wrapper {
+			will-change: auto;
 		}
 	}
 </style>

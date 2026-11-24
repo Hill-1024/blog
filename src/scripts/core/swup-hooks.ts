@@ -8,7 +8,6 @@ import type { FancyboxHandler } from "../handlers/fancybox-handler";
 import type { ScrollHandler } from "../handlers/scroll-handler";
 import {
 	ANIMATION_CONFIG,
-	BANNER_HEIGHT,
 	SWUP_SELECTORS,
 	THEME_CONFIG,
 } from "./swup-config";
@@ -36,13 +35,11 @@ interface VisitObject {
  * 负责注册和管理所有 Swup 页面过渡钩子
  */
 export class SwupHooksManager {
-	private bannerEnabled: boolean;
 	private handlers: SwupHookHandlers;
 
 	private cachedElements: Map<string, Element | null> = new Map();
 
-	constructor(bannerEnabled: boolean, handlers: SwupHookHandlers = {}) {
-		this.bannerEnabled = bannerEnabled;
+	constructor(_bannerEnabled: boolean, handlers: SwupHookHandlers = {}) {
 		this.handlers = handlers;
 	}
 
@@ -90,11 +87,6 @@ export class SwupHooksManager {
 				"--content-delay",
 				"0ms",
 			);
-
-			// 处理 navbar 隐藏
-			if (this.bannerEnabled) {
-				this.handleNavbarHideOnLinkClick();
-			}
 		});
 	}
 
@@ -125,7 +117,8 @@ export class SwupHooksManager {
 	 * 处理页面访问开始时的状态
 	 */
 	private registerVisitStartHook(): void {
-		window.swup!.hooks.on("visit:start", (visit: VisitObject) => {
+		window.swup!.hooks.on("visit:start", (arg: unknown) => {
+			const visit = arg as VisitObject;
 			// 清理上一页的 Fancybox
 			this.handlers.cleanupFancybox?.();
 
@@ -134,8 +127,8 @@ export class SwupHooksManager {
 			this.handleBodyClass(isHomePage);
 			this.handleTopRowState(isHomePage);
 			this.handleBannerTextVisibility(isHomePage);
-			this.handleNavbarState(isHomePage);
 			this.handleMobileBannerVisibility(isHomePage);
+			this.handleNavbarState(isHomePage);
 
 			// 扩展页面高度防止滚动动画跳跃
 			this.extendPageHeight(false);
@@ -156,11 +149,12 @@ export class SwupHooksManager {
 			// 扩展页面高度
 			this.extendPageHeight(false);
 
-			// 滚动到页面顶部
+			// 滚动到页面顶部并同步导航栏区域状态
 			window.scrollTo({
 				top: 0,
 				behavior: "instant",
 			});
+			window.dispatchEvent(new Event("navbar:sync"));
 
 			// 同步主题状态
 			this.syncThemeState();
@@ -175,7 +169,7 @@ export class SwupHooksManager {
 	 * 处理页面访问结束时的清理
 	 */
 	private registerVisitEndHook(): void {
-		window.swup!.hooks.on("visit:end", (_visit: VisitObject) => {
+		window.swup!.hooks.on("visit:end", (_visit: unknown) => {
 			setTimeout(() => {
 				// 隐藏高度扩展元素
 				this.extendPageHeight(true);
@@ -187,19 +181,6 @@ export class SwupHooksManager {
 	}
 
 	// ==================== 私有辅助方法 ====================
-
-	/**
-	 * 处理链接点击时的 navbar 隐藏
-	 */
-	private handleNavbarHideOnLinkClick(): void {
-		const navbar = this.getCachedElement(SWUP_SELECTORS.navbarWrapper);
-		if (navbar && document.body.classList.contains("lg:is-home")) {
-			const threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 88;
-			if (document.documentElement.scrollTop >= threshold) {
-				navbar.classList.add("navbar-hidden");
-			}
-		}
-	}
 
 	/**
 	 * 处理 TOC 重新初始化
@@ -231,22 +212,11 @@ export class SwupHooksManager {
 	}
 
 	/**
-	 * 重新初始化 semifull 模式滚动检测
+	 * 同步导航栏滚动材质状态
 	 */
 	private reinitSemifullScrollDetection(): void {
-		const navbar = this.getCachedElement(SWUP_SELECTORS.navbar);
-		if (navbar) {
-			const transparentMode = navbar.getAttribute(
-				"data-transparent-mode",
-			);
-			if (transparentMode === "semifull") {
-				if (
-					typeof (window as any).initSemifullScrollDetection ===
-					"function"
-				) {
-					(window as any).initSemifullScrollDetection();
-				}
-			}
+		if (typeof window.initSemifullScrollDetection === "function") {
+			window.initSemifullScrollDetection();
 		}
 	}
 
@@ -328,17 +298,8 @@ export class SwupHooksManager {
 		if (navbar) {
 			navbar.setAttribute("data-is-home", isHomePage.toString());
 
-			// 重新初始化 semifull 模式滚动检测
-			const transparentMode = navbar.getAttribute(
-				"data-transparent-mode",
-			);
-			if (transparentMode === "semifull") {
-				if (
-					typeof (window as any).initSemifullScrollDetection ===
-					"function"
-				) {
-					(window as any).initSemifullScrollDetection();
-				}
+			if (typeof window.initSemifullScrollDetection === "function") {
+				window.initSemifullScrollDetection();
 			}
 		}
 	}

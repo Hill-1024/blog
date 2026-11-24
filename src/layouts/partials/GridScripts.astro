@@ -422,11 +422,8 @@ const {
 						"data-transparent-mode",
 						navbarTransparentMode,
 					);
-					// 如果是 semifull 模式，重新初始化滚动检测
-					if (
-						navbarTransparentMode === "semifull" &&
-						window.initSemifullScrollDetection
-					) {
+					// 同步导航栏区域透明状态
+					if (window.initSemifullScrollDetection) {
 						window.initSemifullScrollDetection();
 					}
 				}

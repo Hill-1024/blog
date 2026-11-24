@@ -110,12 +110,12 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 	<slot slot="head" name="head" />
 	<header
 		id="top-row"
-		class="z-50 pointer-events-none relative transition-all duration-700 max-w-(--page-width) px-0 md:px-4 mx-auto"
+		class="fixed top-0 left-0 right-0 w-full z-50 pointer-events-none max-w-(--page-width) px-0 md:px-4 mx-auto"
 		class:list={[isHomePage ? "home-top-row" : "content-top-row"]}
 	>
 		<div
 			id="navbar-wrapper"
-			class="pointer-events-auto sticky top-0 transition-all"
+			class="pointer-events-auto relative"
 		>
 			<Navbar />
 		</div>
@@ -139,7 +139,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 			<div
 				id="main-grid"
 				class:list={[
-					`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4`,
+					`transition-colors duration-200 w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4`,
 					{
 						"mobile-no-sidebar":
 							!mobileShowSidebar || !hasMobileDrawerComponents,
@@ -238,18 +238,6 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 	</div>
 
 	<style>
-		:global(#top-row.content-top-row) {
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
-			width: 100%;
-		}
-
-		:global(#top-row.content-top-row #navbar-wrapper) {
-			position: relative;
-		}
-
 		.right-sidebar-container {
 			align-self: start;
 		}
@@ -299,7 +287,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 					>
 						<div
 							id="toc-inner-wrapper"
-							class="toc-wallpaper-surface fixed top-14 max-h-[calc(100dvh-7rem)] w-(--toc-width) overflow-x-hidden overflow-y-auto pr-2"
+							class="toc-wallpaper-surface fixed top-[5.5rem] max-h-[calc(100dvh-7rem)] w-(--toc-width) overflow-x-hidden overflow-y-auto pr-2"
 						>
 							<div
 								id="toc-container"

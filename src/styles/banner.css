@@ -20,8 +20,36 @@ body.lg\:is-home {
 }
 
 /* --------------------------------------------------------------------------
-   Banner typography
+   Banner typography & top contrast protection
    -------------------------------------------------------------------------- */
+.banner-top-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.28) 35%,
+    rgba(255, 255, 255, 0.12) 68%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 15;
+  transition: background 0.25s ease;
+}
+
+:root.dark .banner-top-highlight {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.28) 35%,
+    rgba(0, 0, 0, 0.12) 68%,
+    transparent 100%
+  );
+}
+
 .banner-text-overlay {
   padding: clamp(1rem, 4vw, 2.5rem);
   text-align: center;
@@ -74,8 +102,8 @@ body.enable-banner #banner-wrapper {
   /* Keep the hero height in lockstep with the page shell during Swup
      navigation; otherwise the homepage and content-page heights flash. */
   transition:
-    height 700ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    height 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Wallpaper mode changes reuse the route shell's geometry transition. The
@@ -96,19 +124,14 @@ body.wallpaper-mode-transition #banner-wrapper {
 body.enable-banner .absolute.w-full.z-30:not(.no-banner-layout) {
   top: var(--current-banner-height) !important;
   min-height: calc(100vh - var(--current-banner-height)) !important;
-  /* The content anchor and its viewport fill follow the same curve as the
-     banner and top row, so the shell never flashes between page heights. */
-  transition:
-    top 700ms cubic-bezier(0.22, 1, 0.36, 1),
-    min-height 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* 仅过渡 top（避免每帧重算 min-height 导致整页高度重排），并与 Banner 高度同步完成 */
+  transition: top 380ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body.wallpaper-mode-transition .absolute.w-full.z-30:not(.no-banner-layout) {
   top: var(--wallpaper-transition-main-top, auto) !important;
   min-height: var(--wallpaper-transition-main-min-height, auto) !important;
-  transition:
-    top var(--wallpaper-mode-transition-duration) var(--wallpaper-mode-transition-easing),
-    min-height var(--wallpaper-mode-transition-duration) var(--wallpaper-mode-transition-easing) !important;
+  transition: top var(--wallpaper-mode-transition-duration) var(--wallpaper-mode-transition-easing) !important;
 }
 
 body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
@@ -116,26 +139,11 @@ body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
   will-change: opacity;
 }
 
-@media (min-width: 1280px) {
-  /* Use the same curve for the header spacer so banner, content, and navbar
-     arrive at their route-specific heights as one continuous shell motion. */
-  body.enable-banner #top-row {
-    transition: height 700ms cubic-bezier(0.22, 1, 0.36, 1) !important;
-  }
-
-  body.wallpaper-mode-transition #top-row {
-    height: var(--wallpaper-transition-top-row-height, auto) !important;
-    transition: height var(--wallpaper-mode-transition-duration) var(--wallpaper-mode-transition-easing) !important;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   body.enable-banner #banner-wrapper,
   body.enable-banner .absolute.w-full.z-30:not(.no-banner-layout),
-  body.enable-banner #top-row,
   body.wallpaper-mode-transition #banner-wrapper,
   body.wallpaper-mode-transition .absolute.w-full.z-30:not(.no-banner-layout),
-  body.wallpaper-mode-transition #top-row,
   body.wallpaper-mode-transition [data-fullscreen-wallpaper],
   #header-waves use {
     transition: none !important;
@@ -160,8 +168,8 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   border-radius: var(--radius-large);
   background: var(--card-bg-transparent) !important;
   box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
 }
 
 #toc-wrapper.toc-hide,
@@ -262,10 +270,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 
 .sidebar-sticky-column {
   top: calc(5.5rem + env(safe-area-inset-top));
-}
-
-body.lg\:is-home .sidebar-sticky-column {
-  top: 1rem;
 }
 
 /* Treat narrow tablets like mobile: side widgets stay in the collapsible

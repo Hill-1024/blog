@@ -53,10 +53,9 @@ const optimizedIconSrc = iconSrc.endsWith("/assets/home/avatar.webp")
 	: iconSrc;
 const iconSrcset = optimizedIconSrc !== iconSrc ? `${optimizedIconSrc} 64w` : undefined;
 ---
-<nav id="navbar" aria-label="主导航" class="z-50 onload-animation group" data-transparent-mode={navbarTransparentMode} data-is-home={isHomePage}>
-    <div class="navbar-transition-mask absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)]"></div> <!-- used for onload animation -->
+<nav id="navbar" aria-label="主导航" class="z-50 group" data-transparent-mode={navbarTransparentMode} data-is-home={isHomePage}>
     <div class:list={[className, "navbar-surface !overflow-visible max-w-[var(--page-width)] h-[4.5rem] mx-auto flex items-center justify-between px-4"]}>
-        <a href={url('/')} class="btn-plain scale-animation rounded-lg h-[2.5rem] md:h-[3.25rem] md:[.enable-banner_&]:h-[2.5rem] md:[.enable-banner_&]:group-[.scrolled]:h-[3.25rem] px-3 sm:px-5 font-bold active:scale-95 shrink-0 transition-all duration-300">
+        <a href={url('/')} class="btn-plain scale-animation rounded-lg h-[2.75rem] md:h-[3rem] px-3 sm:px-5 font-bold active:scale-95 shrink-0 transition-colors duration-200">
             <div class="flex flex-row items-center text-md">
 				{/* 使用navbarTitle配置或默认配置 */}
                 {siteConfig.navbarTitle ? (
@@ -64,10 +63,10 @@ const iconSrcset = optimizedIconSrc !== iconSrc ? `${optimizedIconSrc} 64w` : un
                         hasLogoPngFallback ? (
                             <picture>
                                 <source srcset={logoWebpSrc} type="image/webp" />
-                                <img src={logoSrc} alt={siteConfig.navbarTitle.text} class="h-[2.5rem] md:h-[3.25rem] md:[.enable-banner_&]:h-[2.5rem] md:[.enable-banner_&]:group-[.scrolled]:h-[3.25rem] max-w-full object-contain transition-all duration-300" loading="lazy" />
+                                <img src={logoSrc} alt={siteConfig.navbarTitle.text} class="h-[2.75rem] md:h-[3rem] max-w-full object-contain" loading="lazy" />
                             </picture>
                         ) : (
-                            <img src={logoSrc} alt={siteConfig.navbarTitle.text} class="h-[2.5rem] md:h-[3.25rem] md:[.enable-banner_&]:h-[2.5rem] md:[.enable-banner_&]:group-[.scrolled]:h-[3.25rem] max-w-full object-contain transition-all duration-300" loading="lazy" />
+                            <img src={logoSrc} alt={siteConfig.navbarTitle.text} class="h-[2.75rem] md:h-[3rem] max-w-full object-contain" loading="lazy" />
                         )
                     ) : (
                         <>
@@ -127,6 +126,8 @@ const iconSrcset = optimizedIconSrc !== iconSrc ? `${optimizedIconSrc} 64w` : un
 </nav>
 
 <script>
+	import { BANNER_HEIGHT, BANNER_HEIGHT_HOME } from "../../../constants/constants";
+
 	const searchContainer = document.getElementById("search-container");
 	const navbarLinksContainer = document.getElementById("navbar-links-container");
 
@@ -216,66 +217,57 @@ async function loadButtonScript() {
 
 loadButtonScript();
 
-// 为semifull模式添加滚动检测逻辑
+// 同步导航栏滚动区域状态（实际高频滚动监听由 BackToTopHandler 统一在单次 rAF 中驱动）
 function initSemifullScrollDetection() {
     const navbar = document.getElementById('navbar');
     if (!navbar) {return;}
-    
-    // 移除之前的滚动事件监听器（如果存在）
+
+    // 清理历史残留的独立监听器（如果存在）
     // @ts-ignore
     if (window.semifullScrollHandler) {
         // @ts-ignore
         window.removeEventListener('scroll', window.semifullScrollHandler);
+        // @ts-ignore
+        window.semifullScrollHandler = null;
     }
-    
-    // 获取当前是否为首页
-    // @ts-ignore
-    const isHomePage = navbar.dataset.isHome === 'true';
 
-    // 如果不是首页，在平板/桌面端强制显示为scrolled状态
-    if (!isHomePage) {
+    const body = document.body;
+    const isBannerMode = body.classList.contains('enable-banner');
+    const dynamicMode = navbar.getAttribute('data-dynamic-transparent');
+    const transparentMode = navbar.getAttribute('data-transparent-mode');
+    const banner = document.getElementById('banner-wrapper');
+    const isHome = body.classList.contains('lg:is-home');
+    const viewportWidth = window.innerWidth;
+    const isBannerHiddenOnMobile =
+        viewportWidth < 1280 &&
+        (banner?.classList.contains('mobile-hide-banner') || !isHome);
+
+    if (!isBannerMode || !banner || isBannerHiddenOnMobile || dynamicMode === 'none' || dynamicMode === 'semi') {
+        navbar.style.setProperty('--nav-alpha', '1');
+        navbar.setAttribute('data-nav-in-banner', 'false');
         navbar.classList.add('scrolled');
-        return;
+    } else {
+        const scrollTop = Math.max(0, window.scrollY || document.documentElement.scrollTop);
+        const bannerHeight = viewportWidth >= 1280
+            ? window.innerHeight * ((isHome ? BANNER_HEIGHT_HOME : BANNER_HEIGHT) / 100)
+            : (banner.offsetHeight || window.innerHeight * (BANNER_HEIGHT / 100));
+        const leaveDistance = Math.max(64, bannerHeight - (navbar.offsetHeight || 72));
+        const progress = Math.min(1, Math.max(0, scrollTop / leaveDistance));
+        const rawAlpha = transparentMode === 'semi' ? 0.65 + 0.35 * progress : progress;
+        const alpha = rawAlpha <= 0.002 ? 0 : rawAlpha >= 0.998 ? 1 : Number(rawAlpha.toFixed(3));
+        navbar.style.setProperty('--nav-alpha', String(alpha));
+        navbar.setAttribute('data-nav-in-banner', String(progress > 0 && progress < 1));
+        navbar.classList.toggle('scrolled', progress >= 1);
     }
-    
-    let ticking = false;
-    
-    function updateNavbarState() {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const threshold = 50; // 滚动阈值，可以根据需要调整
-        
-        if (navbar && scrollTop > threshold) {
-            navbar.classList.add('scrolled');
-        } else if (navbar) {
-            navbar.classList.remove('scrolled');
-        }
-        
-        ticking = false;
-    }
-    
-    function requestTick() {
-        if (!ticking) {
-            requestAnimationFrame(updateNavbarState);
-            ticking = true;
-        }
-    }
-    
-    // 保存新的事件处理器引用
-    // @ts-ignore
-    window.semifullScrollHandler = requestTick;
-    
-    // 监听滚动事件
-    window.addEventListener('scroll', requestTick, { passive: true });
-    
-    // 初始化状态
-    updateNavbarState();
+
+    window.dispatchEvent(new Event('navbar:sync'));
 }
 
 // 将函数暴露到全局对象，供页面切换时调用
 // @ts-ignore
 window.initSemifullScrollDetection = initSemifullScrollDetection;
 
-// 页面加载完成后初始化滚动检测
+// 页面加载完成后同步一次初始状态
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSemifullScrollDetection);
 } else {

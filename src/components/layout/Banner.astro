@@ -65,6 +65,10 @@ const kbDurationMs = carouselIntervalMs + fadeMs;
 
 const hasBannerCredit = siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
+const navbarTransparentMode =
+	siteConfig.banner?.navbar?.transparentMode || "semi";
+const showBannerTopHighlight =
+	navbarTransparentMode === "full" || navbarTransparentMode === "semifull";
 
 // Public banner files are intentionally kept outside `src/`, so Astro cannot
 // generate a responsive srcset for them automatically. The 480px and 768px
@@ -90,9 +94,12 @@ const getDesktopBannerSrcset = (src: string): string | undefined => {
 
 <div
 	id="banner-wrapper"
-	class={`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`}
+	class={`absolute z-10 w-full overflow-hidden ${mobileNonHomeBannerClass}`}
 	style="top: 0"
 >
+	{showBannerTopHighlight && (
+		<div class="banner-top-highlight" aria-hidden="true" />
+	)}
 	{isCarouselEnabled ? (
 		/* 轮播图模式：Ken Burns + Crossfade */
 		<div
@@ -396,20 +403,30 @@ const getDesktopBannerSrcset = (src: string): string | undefined => {
 					newSlot.innerHTML = frames[targetIndex];
 					oldSlot.parentNode.insertBefore(newSlot, oldSlot.nextSibling);
 
-					// 双 rAF：确保 opacity:0 已绘制，然后同时触发淡入 + Ken Burns
-					requestAnimationFrame(function() {
+					var startFade = function() {
+						// 双 rAF：确保 opacity:0 已绘制，然后同时触发淡入 + Ken Burns
 						requestAnimationFrame(function() {
-							newSlot.style.opacity = '1';
-							newSlot.classList.add('banner-kb');
+							requestAnimationFrame(function() {
+								newSlot.style.opacity = '1';
+								newSlot.classList.add('banner-kb');
+							});
 						});
-					});
 
-					// 淡入完成后：移除旧层，清理 transition，释放锁
-					setTimeout(function() {
-						if (oldSlot.parentNode) oldSlot.parentNode.removeChild(oldSlot);
-						newSlot.style.transition = '';
-						isCrossfading[type] = false;
-					}, FADE_MS + 50);
+						// 淡入完成后：移除旧层，清理 transition，释放锁
+						setTimeout(function() {
+							if (oldSlot.parentNode) oldSlot.parentNode.removeChild(oldSlot);
+							newSlot.style.transition = '';
+							isCrossfading[type] = false;
+						}, FADE_MS + 50);
+					};
+
+					// 优先等待下一帧图片解码完成后再开始淡入，避免大图解码阻塞导致 crossfade 掉帧
+					var nextImg = newSlot.querySelector('img');
+					if (nextImg && typeof nextImg.decode === 'function') {
+						nextImg.decode().then(startFade, startFade);
+					} else {
+						startFade();
+					}
 				}
 
 				// 自动轮播用的 crossfade（前进到下一张）
@@ -739,30 +756,3 @@ const getDesktopBannerSrcset = (src: string): string | undefined => {
 		</a>
 	)}
 </div>
-
-<style>
-	/* Banner 文本样式 */
-	.banner-title {
-		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-		animation: fadeInUp 1s ease-out;
-		font-weight: bold;
-	}
-
-	.banner-subtitle {
-		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-		animation: fadeInUp 1s ease-out 0.3s both;
-		min-height: 1.5em;
-		line-height: 1.2;
-	}
-
-	@keyframes fadeInUp {
-		from {
-			opacity: 0;
-			transform: translateY(30px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-</style>
