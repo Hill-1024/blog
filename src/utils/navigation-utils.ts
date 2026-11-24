@@ -156,7 +156,11 @@ function isSlowConnection(): boolean {
 	if (!conn) {
 		return false;
 	}
-	return conn.effectiveType === "2g" || conn.effectiveType === "slow-2g";
+	return (
+		Boolean(conn.saveData) ||
+		conn.effectiveType === "2g" ||
+		conn.effectiveType === "slow-2g"
+	);
 }
 
 /**
@@ -164,8 +168,12 @@ function isSlowConnection(): boolean {
  * 使用 IntersectionObserver 观察视口内的链接，在进入视野时预加载
  */
 export function initLinkPreloading(): void {
-	// 如果 Swup 不可用或用户偏好减少动画，不进行预加载
-	if (!isSwupReady() || isSlowConnection()) {
+	// 如果 Swup 或 preload 插件不可用、网络较慢/省流模式或偏好减少动画，不进行预加载
+	if (
+		!isSwupReady() ||
+		typeof (window as any).swup?.preload !== "function" ||
+		isSlowConnection()
+	) {
 		return;
 	}
 
@@ -174,34 +182,37 @@ export function initLinkPreloading(): void {
 		return;
 	}
 
-	// 已预加载的 URL 集合，避免重复预加载
+	// 已预加载的 URL 与已观察的节点集合，避免重复预加载或重复注册观察
 	const preloadedUrls = new Set<string>();
+	const observedLinks = new WeakSet<Element>();
 
 	const observer = new IntersectionObserver(
 		(entries) => {
 			entries.forEach((entry) => {
-				if (entry.isIntersecting) {
-					const link = entry.target as HTMLAnchorElement;
-					const href = link.href;
+				if (!entry.isIntersecting) {
+					return;
+				}
+				const link = entry.target as HTMLAnchorElement;
+				observer.unobserve(link);
+				const href = link.href;
 
-					// 检查是否有效、是否同源、是否已预加载、是否当前页面
-					if (
-						href &&
-						isSameOrigin(href) &&
-						!preloadedUrls.has(href) &&
-						href !== window.location.href &&
-						!href.includes("#")
-					) {
-						preloadedUrls.add(href);
+				// 检查是否有效、是否同源、是否已预加载、是否当前页面
+				if (
+					href &&
+					isSameOrigin(href) &&
+					!preloadedUrls.has(href) &&
+					href !== window.location.href &&
+					!href.includes("#")
+				) {
+					preloadedUrls.add(href);
 
-						// 使用 requestIdleCallback 在空闲时预加载
-						if ("requestIdleCallback" in window) {
-							requestIdleCallback(() => preloadPage(href), {
-								timeout: 2000,
-							});
-						} else {
-							setTimeout(() => preloadPage(href), 100);
-						}
+					// 使用 requestIdleCallback 在空闲时预加载
+					if ("requestIdleCallback" in window) {
+						requestIdleCallback(() => preloadPage(href), {
+							timeout: 2000,
+						});
+					} else {
+						setTimeout(() => preloadPage(href), 100);
 					}
 				}
 			});
@@ -211,23 +222,33 @@ export function initLinkPreloading(): void {
 		},
 	);
 
-	// 观察所有内部链接
-	const observeLinks = () => {
-		document
-			.querySelectorAll('a[href^="/"], a[href^="./"], a[href^="../"]')
-			.forEach((link) => {
+	// 观察指定范围内的内部链接
+	const observeLinks = (root: ParentNode = document) => {
+		root.querySelectorAll(
+			'a[href^="/"], a[href^="./"], a[href^="../"]',
+		).forEach((link) => {
+			if (!observedLinks.has(link)) {
+				observedLinks.add(link);
 				observer.observe(link);
-			});
+			}
+		});
 	};
 
 	// 初始观察
 	observeLinks();
 
-	// 页面切换后重新观察（Swup 会替换 main 容器内容）
+	// 页面切换后重新观察（Swup 会替换 main 容器内容），使用防抖避免高频 DOM 变动反复全量查询
 	const mainContainer = document.querySelector("main");
 	if (mainContainer) {
+		let observeTimer: number | undefined;
 		const mutationObserver = new MutationObserver(() => {
-			observeLinks();
+			if (observeTimer !== undefined) {
+				window.clearTimeout(observeTimer);
+			}
+			observeTimer = window.setTimeout(() => {
+				observeTimer = undefined;
+				observeLinks(mainContainer);
+			}, 120);
 		});
 		mutationObserver.observe(mainContainer, {
 			childList: true,

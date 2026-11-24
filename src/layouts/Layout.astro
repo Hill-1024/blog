@@ -179,13 +179,21 @@ const fontVariables = [
 		<link
 			rel="stylesheet"
 			href={fancyboxStylesheetUrl}
+			media="print"
+			onload="this.media='all'"
 			data-dynamic-stylesheet="fancybox"
 		/>
 		<link
 			rel="stylesheet"
 			href="/styles/fancybox-custom.css"
+			media="print"
+			onload="this.media='all'"
 			data-dynamic-stylesheet="fancybox-custom"
 		/>
+		<noscript>
+			<link rel="stylesheet" href={fancyboxStylesheetUrl} />
+			<link rel="stylesheet" href="/styles/fancybox-custom.css" />
+		</noscript>
 
 		<!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
 		<slot name="head" />

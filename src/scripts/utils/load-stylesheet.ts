@@ -22,6 +22,9 @@ export function loadStylesheet(
 		`link[data-dynamic-stylesheet="${id}"]`,
 	);
 	if (existing?.rel === "stylesheet") {
+		if (existing.media && existing.media !== "all") {
+			existing.media = "all";
+		}
 		return Promise.resolve();
 	}
 

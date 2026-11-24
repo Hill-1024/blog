@@ -22,6 +22,7 @@
 	}
 
 	onMount(() => {
+		state = musicPlayerStore.getState();
 		window.addEventListener("music-sidebar:state", handleStateUpdate);
 	});
 

@@ -74,10 +74,10 @@ const iconSrcset = optimizedIconSrc !== iconSrc ? `${optimizedIconSrc} 64w` : un
                             {hasIconPngFallback ? (
                                 <picture>
                                     <source srcset={iconWebpSrc} type="image/webp" />
-									<img src={optimizedIconSrc} srcset={iconSrcset} sizes="28px" width="28" height="28" alt="" class="h-[1.75rem] w-[1.75rem] mr-2 object-contain" loading="lazy" />
+									<img src={optimizedIconSrc} srcset={iconSrcset} sizes="28px" width="28" height="28" alt="" class="h-[1.75rem] w-[1.75rem] mr-2 object-contain" loading="eager" decoding="async" />
                                 </picture>
                             ) : (
-								<img src={optimizedIconSrc} srcset={iconSrcset} sizes="28px" width="28" height="28" alt="" class="h-[1.75rem] w-[1.75rem] mr-2 object-contain" loading="lazy" />
+								<img src={optimizedIconSrc} srcset={iconSrcset} sizes="28px" width="28" height="28" alt="" class="h-[1.75rem] w-[1.75rem] mr-2 object-contain" loading="eager" decoding="async" />
                             )}
                             <span class="site-brand dark:text-white text-black">{siteConfig.navbarTitle.text}</span>
                         </>
@@ -122,7 +122,7 @@ const iconSrcset = optimizedIconSrc !== iconSrc ? `${optimizedIconSrc} 64w` : un
             </button>
         </div>
         <NavMenuPanel links={links}></NavMenuPanel>
-        <DisplaySettings client:only="svelte"></DisplaySettings>
+        {!siteConfig.themeColor.fixed && <DisplaySettings client:only="svelte"></DisplaySettings>}
     </div>
 </nav>
 
