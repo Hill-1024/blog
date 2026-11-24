@@ -29,10 +29,10 @@ import { getFileDirFromPath } from "@utils/url-utils";
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
-import CryptoJS from "crypto-js";
 import { licenseConfig } from "src/config";
 
 import { permalinkConfig } from "@/config";
+import { encryptContent } from "@/utils/crypto-utils";
 
 import { profileConfig, siteConfig } from "../config";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
@@ -84,11 +84,10 @@ let encryptedContent = "";
 const isEncrypted = !!(entry.data.encrypted && entry.data.password);
 
 if (isEncrypted) {
-	const contentToEncrypt = "MIZUKI-VERIFY:" + entry.body;
-	encryptedContent = CryptoJS.AES.encrypt(
-		contentToEncrypt,
+	encryptedContent = await encryptContent(
+		entry.body ?? "",
 		String(entry.data.password),
-	).toString();
+	);
 }
 
 const jsonLd = {

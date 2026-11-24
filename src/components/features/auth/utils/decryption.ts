@@ -1,67 +1,42 @@
 /**
  * Decryption utilities for password-protected content
  *
- * Note: These functions are designed to run in the browser where CryptoJS
- * is available as a global variable after loading /assets/js/crypto-js.min.js
+ * Uses native Web Crypto API (PBKDF2 + AES-256-GCM) with zero external dependencies.
  */
+
+import { decryptContentPayload } from "@/utils/crypto-utils";
 
 import type { DecryptResult } from "../types/auth";
 
-declare const CryptoJS: {
-	AES: {
-		decrypt: (
-			encryptedContent: string,
-			password: string,
-		) => {
-			toString: (encoding: typeof CryptoJS.enc.Utf8) => string;
-		};
-	};
-	enc: { Utf8: unknown };
-};
-
-const CRYPTOJS_URL = "/assets/js/crypto-js.min.js";
-const VERIFICATION_PREFIX = "MIZUKI-VERIFY:";
-
 export async function loadCryptoLibraries(): Promise<void> {
-	if (typeof CryptoJS === "undefined") {
-		await new Promise<void>((resolve, reject) => {
-			const script = document.createElement("script");
-			script.src = CRYPTOJS_URL;
-			script.onload = () => resolve();
-			script.onerror = () => reject(new Error("Failed to load CryptoJS"));
-			document.head.appendChild(script);
-		});
-	}
+	// Native Web Crypto API requires no external library loading
 }
 
 export function verifyCryptoLoaded(): boolean {
-	return typeof CryptoJS !== "undefined";
+	return typeof globalThis.crypto?.subtle !== "undefined";
 }
 
 export async function decryptContent(
 	encryptedContent: string,
 	password: string,
 ): Promise<DecryptResult> {
-	if (!verifyCryptoLoaded()) {
-		await loadCryptoLibraries();
-	}
-
 	if (!password) {
 		return { success: false, content: null, error: "passwordRequired" };
 	}
 
-	try {
-		const decryptedBytes = CryptoJS.AES.decrypt(encryptedContent, password);
-		const decryptedString = decryptedBytes.toString(CryptoJS.enc.Utf8);
+	if (!verifyCryptoLoaded()) {
+		return { success: false, content: null, error: "decryptionError" };
+	}
 
-		if (
-			!decryptedString ||
-			!decryptedString.startsWith(VERIFICATION_PREFIX)
-		) {
+	try {
+		const realContent = await decryptContentPayload(
+			encryptedContent,
+			password,
+		);
+		if (realContent === null) {
 			return { success: false, content: null, error: "incorrect" };
 		}
 
-		const realContent = decryptedString.replace(VERIFICATION_PREFIX, "");
 		return { success: true, content: realContent, error: null };
 	} catch (error) {
 		console.error("Decryption error:", error);

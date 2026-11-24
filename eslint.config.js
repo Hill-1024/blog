@@ -1,5 +1,5 @@
 import eslint from "@eslint/js";
-import astroParser from "astro-eslint-parser";
+import * as astroParser from "astro-eslint-parser";
 import astroPlugin from "eslint-plugin-astro";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import sveltePlugin from "eslint-plugin-svelte";
@@ -28,7 +28,6 @@ const browserGlobals = {
 	sessionStorage: "readonly",
 	localStorage: "readonly",
 	navigator: "readonly",
-	CryptoJS: "readonly",
 	Fancybox: "readonly",
 	twikoo: "readonly",
 };

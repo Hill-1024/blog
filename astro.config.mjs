@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
-import { umami } from "oddmisc";
+import { umami } from "oddmisc/astro";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeComponents from "rehype-components";
 import rehypeExternalLinks from "rehype-external-links";
@@ -193,10 +193,9 @@ export default defineConfig({
 			assetsInlineLimit: 4096,
 			// CSS 代码分割
 			cssCodeSplit: true,
-			cssMinify: "esbuild",
-			// 生产环境移除 console 和 debugger
-			minify: "esbuild",
-			rollupOptions: {
+			cssMinify: "lightningcss",
+			minify: "oxc",
+			rolldownOptions: {
 				onwarn(warning, warn) {
 					if (
 						warning.message.includes(
@@ -211,13 +210,6 @@ export default defineConfig({
 					warn(warning);
 				},
 			},
-		},
-		// 生产环境移除 console.log 和 debugger
-		esbuild: {
-			drop:
-				process.env.NODE_ENV === "production"
-					? ["console", "debugger"]
-					: [],
 		},
 	},
 });
