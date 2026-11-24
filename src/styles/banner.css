@@ -239,6 +239,13 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   display: none;
 }
 
+/* Banner 滚出视口或移动端隐藏时暂停波浪与 Ken Burns 动画，降低滚动 GPU/CPU 消耗 */
+#banner-wrapper.banner-offscreen #header-waves .parallax use,
+#banner-wrapper.banner-offscreen .banner-kb,
+#banner-wrapper.mobile-hide-banner #header-waves .parallax use {
+  animation-play-state: paused !important;
+}
+
 /* --------------------------------------------------------------------------
    Grid and sidebar fallbacks
    -------------------------------------------------------------------------- */

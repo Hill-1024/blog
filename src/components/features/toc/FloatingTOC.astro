@@ -73,7 +73,10 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		opacity: 0;
 		visibility: hidden;
 		transform: translateY(10px) scale(0.95);
-		transition: all 0.2s ease;
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease,
+			visibility 0.2s ease;
 		pointer-events: none;
 		z-index: 52;
 	}
@@ -206,7 +209,6 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 <script>
 	import { findActiveHeadingIndex } from "./hooks/useTocHighlight";
-	import { throttle } from "./hooks/useTocScroll";
 	import {
 		generateTOCItems,
 		getTOCConfig,
@@ -221,6 +223,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		isOpen: boolean;
 		observer: MutationObserver | null;
 		headings: HTMLElement[];
+		links: HTMLAnchorElement[];
+		activeIndex: number;
 	}
 
 	class FloatingTOC {
@@ -229,7 +233,16 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		private boundButton: HTMLElement | null = null;
 		private boundCloseButton: HTMLButtonElement | null = null;
 		private boundContent: HTMLElement | null = null;
-		private handleScroll = throttle(() => this.updateActiveHeading(), 50);
+		private scrollRafId: number | null = null;
+		private mutateTimer: number | null = null;
+		private handleScroll = () => {
+			if (!this.state.isOpen || this.state.headings.length === 0) return;
+			if (this.scrollRafId !== null) return;
+			this.scrollRafId = requestAnimationFrame(() => {
+				this.scrollRafId = null;
+				this.updateActiveHeading();
+			});
+		};
 
 		private handleButtonClick = (event: Event) => {
 			event.stopPropagation();
@@ -276,6 +289,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 				isOpen: false,
 				observer: null,
 				headings: [],
+				links: [],
+				activeIndex: -1,
 			};
 			this.init();
 		}
@@ -350,7 +365,13 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			const contentWrapper = document.getElementById("post-container");
 			if (contentWrapper) {
 				this.state.observer = new MutationObserver(() => {
-					this.generateTOC();
+					if (this.mutateTimer !== null) {
+						window.clearTimeout(this.mutateTimer);
+					}
+					this.mutateTimer = window.setTimeout(() => {
+						this.mutateTimer = null;
+						this.generateTOC();
+					}, 120);
 				});
 				this.state.observer.observe(contentWrapper, {
 					childList: true,
@@ -359,37 +380,43 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			}
 		}
 
-		updateActiveHeading() {
-			const { content, headings } = this.state;
-			if (!content || headings.length === 0) return;
+		updateActiveHeading(force = false) {
+			const { content, headings, links } = this.state;
+			if (!content || headings.length === 0 || links.length === 0) return;
 
 			const activeIndex = Math.max(
 				0,
 				findActiveHeadingIndex(headings, window.scrollY, 150),
 			);
-			const links = Array.from(
-				content.querySelectorAll(".floating-toc-item"),
-			) as HTMLAnchorElement[];
+			if (!force && activeIndex === this.state.activeIndex) {
+				return;
+			}
 
-			links.forEach((link, index) => {
-				if (index === activeIndex) {
-					link.classList.add("active");
-					link.setAttribute("aria-current", "location");
-					if (this.state.isOpen) {
-						const panelRect = content.getBoundingClientRect();
-						const linkRect = link.getBoundingClientRect();
-						if (
-							linkRect.top < panelRect.top ||
-							linkRect.bottom > panelRect.bottom
-						) {
-							link.scrollIntoView({ block: "nearest" });
-						}
+			const prevLink =
+				this.state.activeIndex >= 0
+					? links[this.state.activeIndex]
+					: undefined;
+			if (prevLink) {
+				prevLink.classList.remove("active");
+				prevLink.removeAttribute("aria-current");
+			}
+
+			const nextLink = links[activeIndex];
+			this.state.activeIndex = activeIndex;
+			if (nextLink) {
+				nextLink.classList.add("active");
+				nextLink.setAttribute("aria-current", "location");
+				if (this.state.isOpen) {
+					const panelRect = content.getBoundingClientRect();
+					const linkRect = nextLink.getBoundingClientRect();
+					if (
+						linkRect.top < panelRect.top ||
+						linkRect.bottom > panelRect.bottom
+					) {
+						nextLink.scrollIntoView({ block: "nearest" });
 					}
-				} else {
-					link.classList.remove("active");
-					link.removeAttribute("aria-current");
 				}
-			});
+			}
 		}
 
 		private setNoTOC() {
@@ -399,6 +426,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.state.btn?.classList.add("hide");
 			this.state.content?.replaceChildren();
 			this.state.headings = [];
+			this.state.links = [];
+			this.state.activeIndex = -1;
 		}
 
 		generateTOC() {
@@ -471,7 +500,13 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			});
 
 			this.state.content.replaceChildren(fragment);
-			this.updateActiveHeading();
+			this.state.links = Array.from(
+				this.state.content.querySelectorAll(".floating-toc-item"),
+			) as HTMLAnchorElement[];
+			this.state.activeIndex = -1;
+			if (this.state.isOpen) {
+				this.updateActiveHeading(true);
+			}
 		}
 
 		toggle() {
@@ -487,6 +522,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.state.btn?.classList.add("active");
 			this.state.wrapper?.classList.add("active");
 			this.syncTriggerAccessibility();
+			this.updateActiveHeading(true);
 		}
 
 		close(restoreFocus = false) {

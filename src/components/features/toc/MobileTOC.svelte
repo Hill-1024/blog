@@ -21,12 +21,16 @@
 	let isOpen = $state(false);
 
 	let observer: IntersectionObserver | undefined;
+	let headingElements: HTMLElement[] = [];
 	let activeFrame: number | undefined;
 	let refreshTimer: number | undefined;
 	let registeredSwup: Swup | undefined;
 
 	const togglePanel = async () => {
 		isOpen = await panelManager.togglePanel("mobile-toc-panel");
+		if (isOpen) {
+			updateActiveHeading();
+		}
 	};
 
 	const closePanel = async (restoreFocus = false): Promise<void> => {
@@ -51,14 +55,14 @@
 	};
 
 	const updateActiveHeading = () => {
-		const headings = tocItems
-			.map((item) => document.getElementById(item.id))
-			.filter((heading): heading is HTMLElement => heading !== null);
+		if (headingElements.length === 0) {
+			return;
+		}
 
 		// Keep the first item active at the top of the article instead of
 		// presenting a TOC with no current location.
-		let currentActiveId = headings[0]?.id ?? "";
-		for (const heading of headings) {
+		let currentActiveId = headingElements[0]?.id ?? "";
+		for (const heading of headingElements) {
 			if (heading.getBoundingClientRect().top <= 112) {
 				currentActiveId = heading.id;
 			} else {
@@ -66,10 +70,16 @@
 			}
 		}
 
-		activeId = currentActiveId;
+		if (activeId !== currentActiveId) {
+			activeId = currentActiveId;
+		}
 	};
 
 	const scheduleActiveUpdate = () => {
+		// 面板关闭或在桌面端隐藏时不做任何几何查询，消除无意义的滚动重排
+		if (!isOpen || headingElements.length === 0 || window.innerWidth >= 1280) {
+			return;
+		}
 		if (activeFrame !== undefined) {
 			return;
 		}
@@ -87,17 +97,15 @@
 			threshold: 0,
 		});
 
-		tocItems.forEach((item) => {
-			const heading = document.getElementById(item.id);
-			if (heading) {
-				observer?.observe(heading);
-			}
+		headingElements.forEach((heading) => {
+			observer?.observe(heading);
 		});
 	};
 
 	const init = async () => {
 		await closePanel();
 		observer?.disconnect();
+		headingElements = [];
 
 		if (checkIsHomePage()) {
 			tocItems = [];
@@ -117,6 +125,10 @@
 			activeId = "";
 			return;
 		}
+
+		headingElements = tocItems
+			.map((item) => document.getElementById(item.id))
+			.filter((heading): heading is HTMLElement => heading !== null);
 
 		setupIntersectionObserver();
 		updateActiveHeading();

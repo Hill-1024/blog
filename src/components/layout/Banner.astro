@@ -436,6 +436,8 @@ const getDesktopBannerSrcset = (src: string): string | undefined => {
 				var hasStartedAutoRotation = false;
 				var initialRotationDelay = Math.max(10000, interval);
 				var isPaused = false;
+				var isBannerVisible = true;
+				var bannerVisibilityObserver = null;
 
 				// 触摸手势状态
 				var touchStartX = 0;
@@ -444,14 +446,14 @@ const getDesktopBannerSrcset = (src: string): string | undefined => {
 
 				function startCarousel() {
 					stopCarousel();
-					if (isPaused || document.hidden) return;
+					if (isPaused || document.hidden || !isBannerVisible) return;
 
 					var startTimer = function() {
 						applyInitialKB('banner-image-slot-mobile');
 						applyInitialKB('banner-image-slot-desktop');
 
 						timerId = setInterval(function() {
-							if (!isPaused) {
+							if (!isPaused && isBannerVisible) {
 								advanceCarousel('banner-image-slot-mobile', mobileCount, 'mobile');
 								advanceCarousel('banner-image-slot-desktop', desktopCount, 'desktop');
 							}
@@ -462,7 +464,7 @@ const getDesktopBannerSrcset = (src: string): string | undefined => {
 						startupDelayId = setTimeout(function() {
 							startupDelayId = null;
 							hasStartedAutoRotation = true;
-							if (!isPaused && !document.hidden) startTimer();
+							if (!isPaused && !document.hidden && isBannerVisible) startTimer();
 						}, initialRotationDelay);
 						return;
 					}
@@ -563,11 +565,32 @@ const getDesktopBannerSrcset = (src: string): string | undefined => {
 				container.addEventListener('mouseenter', onMouseEnter);
 				container.addEventListener('mouseleave', onMouseLeave);
 
+				// 离屏暂停：Banner 滚出视口时停止轮播、Ken Burns 和水波纹动画，降低阅读滚动开销
+				var bannerWrapper = document.getElementById('banner-wrapper');
+				if (bannerWrapper && 'IntersectionObserver' in window) {
+					bannerVisibilityObserver = new IntersectionObserver(function(entries) {
+						var entry = entries[0];
+						if (!entry) return;
+						isBannerVisible = entry.isIntersecting;
+						bannerWrapper.classList.toggle('banner-offscreen', !isBannerVisible);
+						if (!isBannerVisible) {
+							stopCarousel();
+						} else if (!isPaused && !document.hidden) {
+							startCarousel();
+						}
+					}, { threshold: 0 });
+					bannerVisibilityObserver.observe(bannerWrapper);
+				}
+
 				startCarousel();
 
 				// 注册清理函数，供下次 Swup 导航或销毁时调用
 				window.__bannerCarouselCleanup = function() {
 					stopCarousel();
+					if (bannerVisibilityObserver) {
+						bannerVisibilityObserver.disconnect();
+						bannerVisibilityObserver = null;
+					}
 					document.removeEventListener('visibilitychange', visibilityHandler);
 					if ('ontouchstart' in window) {
 						container.removeEventListener('touchstart', onTouchStart);

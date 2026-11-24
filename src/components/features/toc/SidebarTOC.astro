@@ -14,10 +14,7 @@ import "@/styles/toc.css";
 	aria-label="文章目录"></table-of-contents>
 
 <script>
-	import {
-		calculateActiveIndicatorPosition,
-		throttle,
-	} from "./hooks/useTocScroll";
+	import { calculateActiveIndicatorPosition } from "./hooks/useTocScroll";
 	import {
 		extractHeadings,
 		generateTOCItems,
@@ -41,8 +38,23 @@ import "@/styles/toc.css";
 		activeIndex = -1;
 		navbarHeight = 88;
 		initialized = false;
+		scrollRafId: number | null = null;
 
-		onScroll = throttle(() => this.updateActiveHeading(), 60);
+		onScroll = () => {
+			// Desktop rail TOC 仅在 >= 1800px 视口展示，隐藏状态下跳过所有布局查询
+			if (
+				this.headings.length === 0 ||
+				window.innerWidth < 1800 ||
+				this.offsetParent === null
+			) {
+				return;
+			}
+			if (this.scrollRafId !== null) return;
+			this.scrollRafId = requestAnimationFrame(() => {
+				this.scrollRafId = null;
+				this.updateActiveHeading();
+			});
+		};
 
 		connectedCallback() {
 			window.setTimeout(() => this.initialise(), 80);
@@ -54,6 +66,10 @@ import "@/styles/toc.css";
 		}
 
 		cleanup() {
+			if (this.scrollRafId !== null) {
+				cancelAnimationFrame(this.scrollRafId);
+				this.scrollRafId = null;
+			}
 			window.removeEventListener("scroll", this.onScroll);
 			window.removeEventListener("resize", this.onScroll);
 			this.removeEventListener("click", this.handleAnchorClick);
