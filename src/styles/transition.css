@@ -40,7 +40,10 @@ html.is-animating.is-leaving .transition-leaving {
 
 /* Swup fade 动画 */
 html.is-changing .transition-swup-fade {
-  transition: all var(--transition-duration) ease-out;
+  transition:
+    opacity var(--transition-duration) ease-out,
+    transform var(--transition-duration) ease-out;
+  will-change: transform, opacity;
 }
 
 html.is-animating .transition-swup-fade {
@@ -144,16 +147,20 @@ html.is-animating .transition-swup-fade {
   transform: translateX(0);
 }
 
-/* 性能优化 */
+/* 性能优化：仅在页面实际切换时提升合成层，避免静态页面数十个 .onload-animation 元素常驻 GPU 显存 */
+html.is-changing .transition-main,
+html.is-animating .transition-main,
+html.is-leaving .transition-leaving {
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
 .transition-main,
 .transition-leaving,
 .onload-animation,
 .transition-slide-in,
 .card-animation {
-  backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
-  transform: translateZ(0);
-  will-change: transform;
 }
 
 /* GPU 加速优化 - 用于 wave 等重型动画 */
@@ -226,19 +233,15 @@ html.is-theme-transitioning.use-view-transition #main-grid {
   animation-play-state: paused !important;
 }
 
-/* 移动端性能优化 */
+/* 移动端性能优化：仅在切页过渡态启用 GPU 合成层 */
 @media (max-width: 768px) {
-  .transition-main,
-  .transition-leaving,
-  .onload-animation,
-  .transition-slide-in,
-  .card-animation {
+  html.is-changing .transition-main,
+  html.is-animating .transition-main,
+  html.is-leaving .transition-leaving {
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    -webkit-perspective: 1000;
-    perspective: 1000;
   }
 }
 

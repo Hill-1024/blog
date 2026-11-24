@@ -137,7 +137,7 @@ class PanelManager {
 			panel.style.pointerEvents = "none";
 
 			requestAnimationFrame(() => {
-				panel.style.transition = `all ${this.duration}ms ease-out`;
+				panel.style.transition = `opacity ${this.duration}ms ease-out, transform ${this.duration}ms ease-out`;
 
 				requestAnimationFrame(() => {
 					panel.style.opacity = "1";
@@ -173,7 +173,7 @@ class PanelManager {
 				return;
 			}
 
-			panel.style.transition = `all ${this.duration}ms ease-out`;
+			panel.style.transition = `opacity ${this.duration}ms ease-out, transform ${this.duration}ms ease-out`;
 			panel.style.pointerEvents = "none";
 			panel.style.opacity = "0";
 			panel.style.transform = "scale(0.95) translateY(-10px)";

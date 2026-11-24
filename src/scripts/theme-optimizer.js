@@ -66,79 +66,49 @@ class ThemeOptimizer {
 	setupSwupHooks() {
 		// 设置 Swup 钩子的函数
 		const setupHooks = () => {
-			if (window.swup) {
-				// 监听 page:view 事件
-				window.swup.hooks.on("page:view", () => {
-					// 页面切换后重新初始化代码块优化
-					setTimeout(() => {
-						this.observeCodeBlocks();
-						this.applyCodeBlockTransitionBehavior();
-						// 确保主题切换样式正确应用
-						this.forceApplyThemeTransitionStyles();
-					}, 100);
-				});
-
-				// 监听 content:replace 事件（更早触发）
+			if (window.swup && !this.swupHooksRegistered) {
+				this.swupHooksRegistered = true;
+				// 监听 content:replace 事件（新 DOM 替换完成后立即同步一次）
 				window.swup.hooks.on("content:replace", () => {
-					// 内容替换时也重新应用代码块过渡行为
-					setTimeout(() => {
-						this.applyCodeBlockTransitionBehavior();
-						// 确保主题切换样式正确应用
+					requestAnimationFrame(() => {
+						this.observeCodeBlocks();
 						this.forceApplyThemeTransitionStyles();
-					}, 50);
+					});
 				});
 
 				return true;
 			}
-			return false;
+			return Boolean(this.swupHooksRegistered);
 		};
 
 		// 尝试立即设置 Swup 钩子
 		if (!setupHooks()) {
-			// 如果 Swup 尚未初始化，等待它加载
-			document.addEventListener("swup:enable", () => {
-				setupHooks();
+			document.addEventListener("swup:enable", setupHooks, {
+				once: true,
 			});
-
-			// 额外的延迟重试机制，确保捕获到 Swup
-			const retryInterval = setInterval(() => {
-				if (setupHooks()) {
-					clearInterval(retryInterval);
-				}
-			}, 100);
-
-			// 最多重试 20 次（2 秒）
-			setTimeout(() => {
-				clearInterval(retryInterval);
-			}, 2000);
 		}
 	}
 
 	forceApplyThemeTransitionStyles() {
-		// 强制应用主题切换样式，确保在页面切换后也能正确工作
+		// 应用主题切换样式，避免在循环中读取 offsetWidth 触发 N 次强制同步重排
 		const codeBlocks = document.querySelectorAll(".expressive-code");
+		if (codeBlocks.length === 0) {
+			return;
+		}
+
+		const isTransitioning = document.documentElement.classList.contains(
+			"is-theme-transitioning",
+		);
 
 		codeBlocks.forEach((block) => {
-			// 确保代码块有正确的类
 			if (this.hideCodeBlocksDuringTransition) {
 				block.classList.add("hide-during-transition");
 			} else {
 				block.classList.remove("hide-during-transition");
 			}
 
-			// 强制重新计算样式
-			void block.offsetWidth;
-		});
-
-		// 检查当前是否处于主题切换状态
-		const isTransitioning = document.documentElement.classList.contains(
-			"is-theme-transitioning",
-		);
-
-		if (isTransitioning) {
-			// 如果正在切换主题，确保样式立即应用
-			codeBlocks.forEach((block) => {
-				if (block.classList.contains("hide-during-transition")) {
+			if (isTransitioning) {
+				if (this.hideCodeBlocksDuringTransition) {
 					block.style.setProperty(
 						"content-visibility",
 						"hidden",
@@ -146,14 +116,11 @@ class ThemeOptimizer {
 					);
 					block.style.setProperty("opacity", "0.99", "important");
 				}
-			});
-		} else {
-			// 如果不在切换状态，确保样式恢复正常
-			codeBlocks.forEach((block) => {
+			} else if (block.style.contentVisibility || block.style.opacity) {
 				block.style.removeProperty("content-visibility");
 				block.style.removeProperty("opacity");
-			});
-		}
+			}
+		});
 	}
 
 	// ==================== 配置初始化 ====================
@@ -254,13 +221,6 @@ class ThemeOptimizer {
 
 		// 监听主题变化
 		this.setupThemeListener();
-
-		// 页面变化时重新观察
-		if (window.swup) {
-			window.swup.hooks.on("page:view", () => {
-				setTimeout(() => this.observeCodeBlocks(), 100);
-			});
-		}
 	}
 
 	observeCodeBlocks() {

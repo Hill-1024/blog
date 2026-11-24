@@ -23,27 +23,50 @@ const { enable, height, duration } = Astro.props;
 			if (el) {el.remove();}
 			}
 
+			let finishTimer = null;
+			let doneTimer = null;
+			let progressBarHooked = false;
+
+			function clearProgressTimers() {
+				if (finishTimer !== null) {
+					clearTimeout(finishTimer);
+					finishTimer = null;
+				}
+				if (doneTimer !== null) {
+					clearTimeout(doneTimer);
+					doneTimer = null;
+				}
+			}
+
 			function setupProgressBar() {
-				if (!window.swup) {return;}
+				if (!window.swup || progressBarHooked) {return;}
+				progressBarHooked = true;
 
 				window.swup.hooks.on("visit:start", () => {
+					clearProgressTimers();
 					const bar = document.getElementById("page-progress-bar");
 					if (bar) {
-						bar.classList.remove("finishing", "done");
-						void bar.offsetWidth;
-						bar.classList.add("loading");
+						bar.classList.remove("loading", "finishing", "done");
+						requestAnimationFrame(() => {
+							bar.classList.add("loading");
+						});
 					}
 				});
 
 				window.swup.hooks.on("visit:end", () => {
+					clearProgressTimers();
 					const bar = document.getElementById("page-progress-bar");
 					if (bar) {
 						bar.classList.remove("loading");
 						bar.classList.add("finishing");
-						setTimeout(() => {
+						finishTimer = setTimeout(() => {
+							finishTimer = null;
 							bar.classList.remove("finishing");
 							bar.classList.add("done");
-							setTimeout(() => bar.classList.remove("done"), 300);
+							doneTimer = setTimeout(() => {
+								doneTimer = null;
+								bar.classList.remove("done");
+							}, 300);
 						}, 200);
 					}
 				});

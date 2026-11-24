@@ -98,9 +98,11 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
   box-shadow: var(--nav-shadow);
   border-radius: var(--nav-radius);
 
-  /* 性能优化 */
-  will-change: background, backdrop-filter, box-shadow;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 仅过渡实际变化的视觉属性，避免常驻 will-change: backdrop-filter 占用昂贵合成层 */
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /*

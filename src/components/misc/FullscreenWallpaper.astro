@@ -90,7 +90,7 @@ const renderGroups = [
 		"fixed inset-0 w-full h-full overflow-hidden pointer-events-none",
 		className,
 	]}
-	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0);`}
+	style={`z-index: ${zIndex}; opacity: ${opacity};${blurAmount > 0 ? ` filter: blur(${blurAmount}px);` : ""} transform: translateZ(0);`}
 	data-fullscreen-wallpaper
 >
 	{isCarouselEnabled ? (
@@ -108,7 +108,7 @@ const renderGroups = [
 									alt={`${group.key} wallpaper ${index + 1}`}
 									class={`absolute inset-0 w-full h-full object-cover transition-opacity ${positionClass}`}
 									data-carousel-item={index}
-									style={`${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ""} opacity: ${index === 0 ? 1 : 0}; transition-duration: ${carouselFadeDuration}ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);`}
+									style={`opacity: ${index === 0 ? 1 : 0}; transition-duration: ${carouselFadeDuration}ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);`}
 									decoding="async"
 									loading={index === 0 ? "eager" : "lazy"}
 									fetchpriority={index === 0 ? "high" : undefined}
@@ -132,7 +132,6 @@ const renderGroups = [
 		desktopImages: imageSources.desktop,
 		mobileImages: imageSources.mobile,
 		positionClass,
-		blurAmount,
 		carouselFadeDuration,
 	}}
 >
@@ -194,7 +193,7 @@ const renderGroups = [
 			image.className =
 				`absolute inset-0 w-full h-full object-cover transition-opacity ${positionClass}`;
 			image.style.cssText =
-				`${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ""} opacity: 1; transition-duration: ${carouselFadeDuration}ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);`;
+				`opacity: 1; transition-duration: ${carouselFadeDuration}ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);`;
 			image.decoding = "async";
 			image.loading = "eager";
 			image.fetchPriority = "high";

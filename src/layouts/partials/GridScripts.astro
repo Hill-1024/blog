@@ -367,7 +367,12 @@ const {
 			tocWrapper.classList.toggle("toc-hide", shouldHideTOC);
 		};
 
-		// 强制重排以确保样式正确应用
+		const modeChanged =
+			previousWallpaperMode !== null &&
+			previousWallpaperMode !== wallpaperMode;
+
+		// 强制重排仅在壁纸模式真正切换且处于非动画回退路径时使用，
+		// 避免每次 Swup 切页或首次加载额外插入同步重排。
 		const forceReflow = function () {
 			void document.body.offsetHeight;
 		};
@@ -400,9 +405,7 @@ const {
 				// 先移除body类，避免CSS冲突
 				body.classList.remove("wallpaper-transparent");
 				body.classList.remove("no-banner-mode");
-				// 动画基线已在 prepareWallpaperModeTransition 中建立，切换时
-				// 不再插入同步重排，避免点击后出现一帧卡顿。
-				if (!wallpaperModeTransitioning) {
+				if (modeChanged && !wallpaperModeTransitioning) {
 					forceReflow();
 				}
 				// 移除内联样式，让CSS完全接管
@@ -427,9 +430,6 @@ const {
 						window.initSemifullScrollDetection();
 					}
 				}
-				if (!wallpaperModeTransitioning) {
-					forceReflow();
-				}
 				// 读取恢复后的真实 Banner 高度，避免从其他模式切回时
 				// 因先前的 display:none 得到 0 并错误显示目录。
 				if (!wallpaperModeTransitioning) {
@@ -451,7 +451,7 @@ const {
 				}
 				// 先移除body类，避免CSS冲突
 				body.classList.remove("enable-banner");
-				if (!wallpaperModeTransitioning) {
+				if (modeChanged && !wallpaperModeTransitioning) {
 					forceReflow();
 				}
 				// 移除内联样式，让CSS完全接管
@@ -466,9 +466,6 @@ const {
 					navbar.setAttribute("data-dynamic-transparent", "semi");
 					// 强制移除 config 中的 data-transparent-mode 影响
 					navbar.removeAttribute("data-transparent-mode");
-				}
-				if (!wallpaperModeTransitioning) {
-					forceReflow();
 				}
 				break;
 
@@ -487,7 +484,7 @@ const {
 				// 先移除body类，避免CSS冲突
 				body.classList.remove("enable-banner");
 				body.classList.remove("wallpaper-transparent");
-				if (!wallpaperModeTransitioning) {
+				if (modeChanged && !wallpaperModeTransitioning) {
 					forceReflow();
 				}
 				// 移除内联样式，让CSS完全接管
@@ -501,9 +498,6 @@ const {
 					navbar.setAttribute("data-dynamic-transparent", "none");
 					// 强制移除 config 中的 data-transparent-mode 影响
 					navbar.removeAttribute("data-transparent-mode");
-				}
-				if (!wallpaperModeTransitioning) {
-					forceReflow();
 				}
 				break;
 		}
@@ -590,17 +584,11 @@ const {
 		return false;
 	}
 
-	// 尝试立即设置，如果失败则延迟重试
+	// 尝试立即设置，如果 Swup 尚未就绪则通过事件监听挂载，避免 50ms 轮询
 	if (!setupSwupLayoutSync()) {
-		const checkSwup = setInterval(function () {
-			if (setupSwupLayoutSync()) {
-				clearInterval(checkSwup);
-			}
-		}, 50);
-
-		setTimeout(function () {
-			clearInterval(checkSwup);
-		}, 2000);
+		document.addEventListener("swup:enable", setupSwupLayoutSync, {
+			once: true,
+		});
 	}
 
 	// 支持 Swup 页面过渡

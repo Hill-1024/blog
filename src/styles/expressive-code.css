@@ -2,6 +2,7 @@
 
 .expressive-code {
   @apply relative;
+  contain: layout style;
 
   /* Mermaid 全屏按钮与按钮体系的配色保持一致 */
   .mermaid-fullscreen-btn {

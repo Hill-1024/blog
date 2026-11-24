@@ -160,8 +160,11 @@ class CodeBlockCollapser {
 			return;
 		}
 
-		if (frame.classList.contains("has-title")) {
-			this.log("Code block has title, skipping collapse feature");
+		if (
+			frame.classList.contains("has-title") ||
+			frame.querySelector(".collapse-toggle-btn")
+		) {
+			this.log("Code block already enhanced or has title, skipping");
 			return;
 		}
 
@@ -281,7 +284,10 @@ class CodeBlockCollapser {
 			}
 		});
 
-		this.observer.observe(document.body, {
+		// 仅观察主内容容器，避免打字机/音乐播放器/轮播图等全局 DOM 变化频繁触发扫描
+		const observeTarget =
+			document.getElementById("swup-container") || document.body;
+		this.observer.observe(observeTarget, {
 			childList: true,
 			subtree: true,
 		});
@@ -321,60 +327,27 @@ window.CodeBlockCollapser = CodeBlockCollapser;
 window.codeBlockCollapser = codeBlockCollapser;
 
 // 设置 Swup 钩子的函数
+let swupHooksAttached = false;
 function setupSwupHooks() {
-	if (window.swup) {
+	if (window.swup && !swupHooksAttached) {
+		swupHooksAttached = true;
 		codeBlockCollapser.log("Setting up Swup hooks");
 
-		// 监听 page:view 事件
-		window.swup.hooks.on("page:view", () => {
-			codeBlockCollapser.log(
-				"Swup page:view event - reinitializing code blocks",
-			);
-			// 页面切换后重置 processedBlocks，确保新页面的代码块被处理
-			codeBlockCollapser.processedBlocks = new WeakSet();
-			setTimeout(() => {
-				codeBlockCollapser.setupCodeBlocks();
-			}, 100);
-		});
-
-		// 监听 content:replace 事件（更早触发）
+		// 监听 content:replace 事件（新内容替换后只需初始化一次）
 		window.swup.hooks.on("content:replace", () => {
 			codeBlockCollapser.log(
-				"Swup content:replace event - preparing for reinitialization",
+				"Swup content:replace event - reinitializing code blocks",
 			);
-			// 内容替换时也重置，确保不会因为缓存而跳过处理
-			codeBlockCollapser.processedBlocks = new WeakSet();
-			setTimeout(() => {
-				codeBlockCollapser.setupCodeBlocks();
-			}, 50);
+			codeBlockCollapser.setupCodeBlocks();
 		});
 
 		return true;
 	}
-	return false;
+	return swupHooksAttached;
 }
 
 // 尝试立即设置 Swup 钩子
 if (!setupSwupHooks()) {
-	// 如果 Swup 尚未初始化，等待它加载
 	codeBlockCollapser.log("Swup not ready, waiting for initialization");
-
-	// 监听 swup:enable 事件
-	document.addEventListener("swup:enable", () => {
-		codeBlockCollapser.log("Swup enabled, setting up hooks");
-		setupSwupHooks();
-	});
-
-	// 额外的延迟重试机制，确保捕获到 Swup
-	const retryInterval = setInterval(() => {
-		if (setupSwupHooks()) {
-			codeBlockCollapser.log("Swup hooks set up successfully via retry");
-			clearInterval(retryInterval);
-		}
-	}, 100);
-
-	// 最多重试 20 次（2 秒）
-	setTimeout(() => {
-		clearInterval(retryInterval);
-	}, 2000);
+	document.addEventListener("swup:enable", setupSwupHooks, { once: true });
 }
