@@ -32,7 +32,7 @@
 
 	.tag-chip:hover {
 		background-color: var(--primary);
-		color: white;
+		color: var(--on-primary);
 	}
 
 	:global(.dark) .tag-chip {
@@ -42,7 +42,7 @@
 
 	:global(.dark) .tag-chip:hover {
 		background-color: var(--primary);
-		color: white;
+		color: var(--on-primary);
 	}
 
 	@media (pointer: coarse) {

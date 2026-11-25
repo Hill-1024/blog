@@ -88,7 +88,7 @@
 }
 
 .expressive-code.collapsible .frame:hover {
-  background-color: rgba(var(--primary-rgb, 59, 130, 246), 0.03);
+  background-color: color-mix(in oklch, var(--primary) 5%, transparent);
 }
 
 /* 折叠按钮 */
@@ -169,7 +169,7 @@
 }
 
 /* 移动端适配 (Mobile) */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   /* 调整复制按钮大小和位置 */
   .expressive-code .copy-btn {
     width: 1.75rem;
@@ -207,17 +207,7 @@
   }
 }
 
-/* 主题适配 (Theme Support) */
-@media (prefers-color-scheme: light) {
-  .expressive-code.collapsible .collapse-toggle-btn,
-  .expressive-code .copy-btn {
-    box-shadow:
-      0 1px 3px 0 rgba(0, 0, 0, 0.1),
-      0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* 支持 Astro 的主题切换（非 dark 类时） */
+/* 支持 Astro 的主题切换（非 dark 类时，避免与系统 prefers-color-scheme 冲突） */
 :root:not(.dark) .expressive-code.collapsible .collapse-toggle-btn,
 :root:not(.dark) .expressive-code .copy-btn {
   box-shadow:

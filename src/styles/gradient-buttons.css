@@ -17,28 +17,30 @@
   white-space: nowrap;
 }
 
-/* 主题色渐变按钮 */
+/* 主题色渐变按钮：保持与 --on-primary 高对比度，避免亮色模式悬停发白 */
 .btn-gradient-primary {
-  background: linear-gradient(135deg, oklch(from var(--primary) l c h) 0%, oklch(from var(--primary) calc(l + 0.1) c calc(h + 30)) 100%);
-  color: white;
+  background: linear-gradient(135deg, oklch(from var(--primary) l c h) 0%, oklch(from var(--primary) calc(l - 0.06) c calc(h + 24)) 100%);
+  color: var(--on-primary);
   box-shadow: 0 2px 4px oklch(from var(--primary) l c h / 0.3);
 }
 
-/* 夜间模式下主题色渐变按钮更暗 */
+/* 夜间模式下主题色渐变按钮配合深色前景色 --on-primary */
+:root.dark .btn-gradient-primary,
 .dark .btn-gradient-primary {
-  background: linear-gradient(135deg, oklch(from var(--primary) calc(l - 0.1) c h) 0%, oklch(from var(--primary) l c calc(h + 30)) 100%);
+  background: linear-gradient(135deg, oklch(from var(--primary) calc(l - 0.04) c h) 0%, oklch(from var(--primary) calc(l + 0.04) c calc(h + 24)) 100%);
   box-shadow: 0 2px 4px oklch(from var(--primary) calc(l - 0.1) c h / 0.4);
 }
 
 .btn-gradient-primary:hover {
-  background: linear-gradient(135deg, oklch(from var(--primary) calc(l + 0.05) c h) 0%, oklch(from var(--primary) calc(l + 0.15) c calc(h + 30)) 100%);
+  background: linear-gradient(135deg, oklch(from var(--primary) calc(l - 0.04) c h) 0%, oklch(from var(--primary) calc(l - 0.1) c calc(h + 24)) 100%);
   box-shadow: 0 4px 8px oklch(from var(--primary) l c h / 0.4);
   transform: translateY(-2px);
 }
 
 /* 夜间模式下悬停效果 */
+:root.dark .btn-gradient-primary:hover,
 .dark .btn-gradient-primary:hover {
-  background: linear-gradient(135deg, oklch(from var(--primary) l c h) 0%, oklch(from var(--primary) calc(l + 0.1) c calc(h + 30)) 100%);
+  background: linear-gradient(135deg, oklch(from var(--primary) l c h) 0%, oklch(from var(--primary) calc(l + 0.06) c calc(h + 24)) 100%);
   box-shadow: 0 4px 8px oklch(from var(--primary) l c h / 0.5);
 }
 
@@ -48,6 +50,7 @@
 }
 
 /* 夜间模式下激活效果 */
+:root.dark .btn-gradient-primary:active,
 .dark .btn-gradient-primary:active {
   box-shadow: 0 2px 4px oklch(from var(--primary) calc(l - 0.1) c h / 0.4);
 }
@@ -96,7 +99,7 @@
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .btn-gradient {
     padding: 0.4rem 0.8rem;
     font-size: 0.8125rem;
@@ -126,7 +129,7 @@
 }
 
 /* 为移动端堆叠按钮添加类 */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .md\:btn-stack-mobile {
     flex-direction: column;
     align-items: stretch;

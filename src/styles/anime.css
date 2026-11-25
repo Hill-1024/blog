@@ -33,7 +33,7 @@
 }
 .anime-filter-tag.anime-active {
   background: var(--primary);
-  color: white;
+  color: var(--on-primary);
   border-color: var(--primary);
 }
 

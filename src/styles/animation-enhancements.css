@@ -228,15 +228,13 @@ html.is-entering .transition-main {
   }
 }
 
-/* 暗色模式动画调整 */
-@media (prefers-color-scheme: dark) {
-  .button-enhance:hover {
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-  }
+/* 暗色模式动画调整（跟随站点 .dark 类而非系统偏好） */
+:root.dark .button-enhance:hover {
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
 
-  .button-enhance:active {
-    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
-  }
+:root.dark .button-enhance:active {
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
 }
 
 /* 性能优化 */

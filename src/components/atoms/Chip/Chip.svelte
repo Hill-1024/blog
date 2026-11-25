@@ -86,7 +86,7 @@
 	}
 
 	:global(.dark) .chip-dot {
-		background-color: var(--card-bg);
+		background-color: var(--primary);
 	}
 
 	.chip-badge {

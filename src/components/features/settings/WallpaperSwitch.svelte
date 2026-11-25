@@ -96,12 +96,12 @@
 <style>
 	button[data-active="true"] {
 		background-color: var(--primary) !important;
-		color: white !important;
+		color: var(--on-primary) !important;
 	}
 
 	button[data-active="true"]:hover {
 		background-color: var(--primary) !important;
-		color: white !important;
+		color: var(--on-primary) !important;
 	}
 
 	:global(button[data-active="true"])::before {

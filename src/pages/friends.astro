@@ -149,7 +149,7 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 
 	/* 搜索框焦点效果 */
 	#friend-search:focus {
-		box-shadow: 0 0 0 3px var(--primary) / 0.1;
+		box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 16%, transparent);
 	}
 
 	/* 标签筛选按钮样式 */
@@ -180,13 +180,13 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 
 	.filter-tag.active {
 		background: var(--primary);
-		color: white;
+		color: var(--on-primary);
 		border-color: var(--primary);
 	}
 
 	.filter-tag.active:hover {
 		background: var(--primary) !important;
-		color: white !important;
+		color: var(--on-primary) !important;
 		border-color: var(--primary) !important;
 		transform: translateY(-1px);
 	}
