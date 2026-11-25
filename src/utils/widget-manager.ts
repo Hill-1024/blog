@@ -40,26 +40,29 @@ export class WidgetManager {
 		if (deviceType === "mobile") {
 			activeSidebar = "drawer";
 		}
-		// 平板端优先使用左栏；未配置左栏时，将右栏组件迁入唯一的平板栏。
-		else if (deviceType === "tablet") {
+		// 平板端仅渲染单侧栏，合并左栏与右栏组件（将 profile 置前并去重），
+		// 避免 960px–1279px 区间因隐藏右侧栏导致资料卡和标签云完全消失。
+		let componentTypes: WidgetComponentType[];
+		if (deviceType === "tablet") {
 			if (sidebar === "right") {
 				return [];
 			}
-			const hasTabletLeftComponent = this.config.components.left.some(
-				(type) => {
-					if (!this.isSidebarComponent(type)) {
-						return false;
-					}
-					const prop = this.config.properties.find(
-						(item) => item.type === type,
-					);
-					return !prop?.responsive?.hidden?.includes("tablet");
-				},
+			const rightProfile = this.config.components.right.filter(
+				(type) => type === "profile",
 			);
-			activeSidebar = hasTabletLeftComponent ? "left" : "right";
+			const rightOthers = this.config.components.right.filter(
+				(type) => type !== "profile",
+			);
+			componentTypes = Array.from(
+				new Set([
+					...rightProfile,
+					...this.config.components.left,
+					...rightOthers,
+				]),
+			);
+		} else {
+			componentTypes = this.config.components[activeSidebar] || [];
 		}
-
-		const componentTypes = this.config.components[activeSidebar] || [];
 
 		return componentTypes
 			.filter((type) => this.isSidebarComponent(type))

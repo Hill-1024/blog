@@ -224,7 +224,7 @@ html.is-theme-transitioning.use-view-transition #main-grid {
 }
 
 /* 移动端性能优化：仅在切页过渡态启用 GPU 合成层 */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   html.is-changing .transition-main,
   html.is-animating .transition-main,
   html.is-leaving .transition-leaving {

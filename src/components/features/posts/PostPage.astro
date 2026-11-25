@@ -60,10 +60,10 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 				return;
 			}
 
-			if (window.innerWidth >= 769) {
+			if (window.innerWidth >= 1280) {
 				updatePostListLayout(currentLayout);
 			} else {
-				postListContainer.classList.add("js-initialized");
+				updatePostListLayout("list");
 			}
 
 			publishLayoutInit();
@@ -127,13 +127,15 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 	window.addEventListener("resize", () => {
 		clearTimeout(resizeTimeout);
 		resizeTimeout = window.setTimeout(() => {
-			if (window.innerWidth >= 769) {
+			if (window.innerWidth >= 1280) {
 				const savedLayout = localStorage.getItem("postListLayout");
 				const defaultLayout =
 					document
 						.getElementById("post-list-container")
 						?.getAttribute("data-default-layout") || "list";
 				updatePostListLayout(savedLayout || defaultLayout);
+			} else {
+				updatePostListLayout("list");
 			}
 		}, 100);
 	});

@@ -140,7 +140,7 @@
 		}
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		.music-fab {
 			border-radius: 0.75rem;
 		}

@@ -19,7 +19,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   :root {
     --transition-translate: 0.5rem;
     --transition-duration: 200ms;
